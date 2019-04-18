@@ -63,11 +63,17 @@ namespace AmpGen
   class ArgumentPack
   {
     public:
+      struct do_construct {
+        do_construct(std::vector<std::shared_ptr<IArgument>>* m_parameters) : m_parameters(m_parameters) {}
+        template<class T> void operator()(const T& arg){ m_parameters->emplace_back( std::make_shared<T>(arg) ); }
+        std::vector<std::shared_ptr<IArgument>>* m_parameters;
+      };
       template <class... ARGS>
         ArgumentPack( const ARGS&... args )
         {
           std::tuple<ARGS...> argTuple( args... );
-          for_each( argTuple, [this]( auto& f ) { m_parameters.emplace_back( makeShared( f ) ); } );
+          auto it = do_construct( this->m_parameters );
+          for_each( argTuple, it);
         }
       template <class ARG>
         ARG getArg( const ARG& default_argument = ARG() ) const

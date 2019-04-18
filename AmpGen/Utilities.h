@@ -46,7 +46,7 @@ namespace AmpGen {
     }
 
   template <class T, class F>
-    std::string vectorToString( const std::vector<T>& obj, const std::string& delim="", const F& functor =[](auto& f){ return f ; }  )
+    std::string vectorToString( const std::vector<T>& obj, const std::string& delim="", const F& functor =[](const T& f){ return f ; }  )
     {
       std::string returnValue;
       std::stringstream ss;

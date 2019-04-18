@@ -807,7 +807,7 @@ int Particle::quasiCP() const
   for( auto& d : m_daughters ) prod *= d->quasiCP() ;
   return prod; 
 }
-
+#if __cplusplus > 201402L
 stdx::optional<std::string> Particle::attribute(const std::string& key) const 
 {
   for( auto& modifier : m_modifiers ){
@@ -816,3 +816,4 @@ stdx::optional<std::string> Particle::attribute(const std::string& key) const
   }
   return stdx::nullopt;
 }
+#endif

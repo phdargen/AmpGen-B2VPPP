@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #include "AmpGen/FastDT.h"
 #include "AmpGen/BinDT.h"
 #include <fstream>
@@ -84,3 +86,5 @@ int FastDT::makeNodes(std::vector<double*>& evts, std::queue<size_t> indexQueue,
   m_nodes.emplace_back(index+1, left, right, cutValue);
   return m_nodes.size() -1;
 }
+
+#endif

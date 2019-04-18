@@ -284,7 +284,7 @@ complex_t CoherentSum::getValNoCache( const Event& evt ) const
   return std::accumulate( m_matrixElements.begin(), 
       m_matrixElements.end(), 
       complex_t(0,0), 
-      [&evt]( auto& a, auto& b ){ return a + b.coefficient * b(evt);} );
+      [&evt]( complex_t& a, const TransitionMatrix<complex_t>& b ){ return a + b.coefficient * b(evt);} );
 }
 
 void CoherentSum::reset( bool resetEvents )
@@ -351,3 +351,31 @@ void CoherentSum::printVal(const Event& evt)
     }
   }
 }
+
+std::vector<unsigned int> CoherentSum::cacheAddresses( const EventList& evts ) const
+{
+  std::vector<unsigned int> addresses;
+  for ( auto& mE : m_matrixElements ) {
+    addresses.push_back( evts.getCacheIndex( mE.pdf ) );
+  }
+  return addresses;
+}
+
+complex_t CoherentSum::getVal( const Event& evt ) const
+{
+  complex_t value( 0., 0. );
+  for ( auto& mE : m_matrixElements ) {
+    value += mE.coefficient * evt.getCache( mE.addressData );
+  }
+  return value;
+}
+
+complex_t CoherentSum::getVal( const Event& evt, const std::vector<unsigned int>& cacheAddresses ) const
+{
+  complex_t value( 0., 0. );
+  for ( unsigned int i = 0; i < m_matrixElements.size(); ++i )
+    value += m_matrixElements[i].coefficient * evt.getCache( cacheAddresses[i] );
+  return value;
+}
+
+

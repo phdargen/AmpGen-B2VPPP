@@ -17,8 +17,6 @@ namespace stdx {
     using namespace ::std;
     using namespace ::std::experimental;
   }
-#else 
-#   error "Require c++ std >=14"
 #endif
 
 
@@ -158,7 +156,9 @@ namespace AmpGen
       void setPolarisationState( const int& state );
       std::pair<size_t,size_t> orbitalRange( const bool& converseParity = true ) const; ///< Range of possible orbital angular momenta between decay products
       std::vector<std::pair<double,double>> spinOrbitCouplings( const bool& conserveParity = true ) const;
-      stdx::optional<std::string> attribute(const std::string& key) const; 
+      #if __cplusplus > 201402L
+        stdx::optional<std::string> attribute(const std::string& key) const; 
+      #endif
       const ParticleProperties* props() const;
       QuarkContent quarks() const;
       QuarkContent daughterQuarks() const;

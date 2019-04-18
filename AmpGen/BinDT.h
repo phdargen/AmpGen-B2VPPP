@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #ifndef AMPGEN_BINDT_H
 #define AMPGEN_BINDT_H
 #include <memory.h>
@@ -155,4 +157,5 @@ namespace AmpGen
   };
 
 } // namespace AmpGen
+#endif
 #endif

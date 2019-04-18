@@ -49,7 +49,7 @@ bool FitResult::readFile( const std::string& fname )
   CHECK.close();
   std::vector<std::string> parameterLines;
 
-  processFile( fname, [this, &parameterLines]( auto& line ) {
+  processFile( fname, [this, &parameterLines]( const std::string& line ) {
     const std::string name = split( line, ' ' )[0];
     if ( name == "Parameter" ) parameterLines.push_back( line );
     else if ( name == "FitQuality" ) this->setFitQuality( line );

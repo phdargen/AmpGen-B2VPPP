@@ -131,7 +131,7 @@ namespace AmpGen
             m_events->updateCache( expression, index );
           }
     };
-
+  #if __cplusplus >= 201402L
   template <size_t NBINS = 100, size_t NROLL = 10>
     class BinnedIntegrator
     {
@@ -267,5 +267,6 @@ namespace AmpGen
             }
           }
     };
+  #endif
 } // namespace AmpGen
 #endif

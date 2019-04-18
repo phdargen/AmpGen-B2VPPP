@@ -5,7 +5,6 @@
 
 #include "AmpGen/Tensor.h"
 
-using namespace std::complex_literals;
 using namespace AmpGen;
 
 extern const AmpGen::Expression  AmpGen::I = Constant(0, 1);

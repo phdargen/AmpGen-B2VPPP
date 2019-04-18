@@ -134,7 +134,7 @@ namespace AmpGen
     static std::vector<size_t> dim( const ARGS&... args ){
       std::vector<size_t> rt; 
       auto up = std::tuple<ARGS...>(args...);
-      for_each(up, [&rt]( auto& f ) { rt.emplace_back(f); } );
+      for_each(up, [&rt]( const size_t& f ) { rt.emplace_back(f); } );
       return rt;
     }
   private:

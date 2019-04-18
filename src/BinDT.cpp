@@ -1,3 +1,4 @@
+#if __cplusplus >= 201402L
 #include "AmpGen/BinDT.h"
 
 #include <string.h>
@@ -474,3 +475,5 @@ void BinDT::Decision::visit( const std::function<void(BinDT::INode*)>& visit_fun
   m_left->visit( visit_function );
   m_right->visit( visit_function );
 }
+
+#endif

@@ -88,7 +88,7 @@ std::vector<AmplitudeRule> AmplitudeRules::rulesForDecay(const std::string& head
   if(!hasDecay(head)) return std::vector<AmplitudeRule>();
   if( prefix == "" )return m_rules[head];
   std::vector<AmplitudeRule> rt = m_rules[head];
-  rt.erase( std::remove_if( std::begin(rt), std::end(rt), [&prefix](auto& p){ return p.prefix() != prefix; } ) );
+  rt.erase( std::remove_if( std::begin(rt), std::end(rt), [&prefix]( const AmplitudeRule& p){ return p.prefix() != prefix; } ) );
   return rt;
 }
 
@@ -103,7 +103,7 @@ EventType AmplitudeRule::eventType() const
   std::vector<std::string> particleNames;
   particleNames.push_back( particle.name() );
   std::vector<std::shared_ptr<Particle>> fs = particle.getFinalStateParticles();
-  std::stable_sort( fs.begin(), fs.end(), []( auto& A, auto& B ) { return *A < *B; } );
+  std::stable_sort( fs.begin(), fs.end(), []( const std::shared_ptr<Particle>& A, const std::shared_ptr<Particle>& B ) { return *A < *B; } );
   for( auto& f : fs ) particleNames.push_back( f->name() );
   return EventType( particleNames );
 }

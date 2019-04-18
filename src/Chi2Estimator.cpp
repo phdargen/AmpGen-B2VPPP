@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #include "AmpGen/Chi2Estimator.h"
 
 #include <memory>
@@ -90,3 +92,4 @@ void   Chi2Estimator::doChi2( const EventList& dataEvents, const EventList& mcEv
   m_nBins = m_binning.size();
 }
 
+#endif

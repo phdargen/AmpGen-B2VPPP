@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #ifndef AMPGEN_COHERENCEFACTOR_H
 #define AMPGEN_COHERENCEFACTOR_H
 #include <stddef.h>
@@ -193,4 +195,5 @@ namespace AmpGen
   };
 } // namespace AmpGen
 
+#endif
 #endif

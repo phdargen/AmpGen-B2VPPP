@@ -50,13 +50,13 @@ namespace AmpGen
         void add_unary( const std::string& name, OP op )
         {
           m_unaryFunctions[name] =
-            std::function<Expression( const Expression& )>( [&op]( auto& expression ) { return op( expression ); } );
+            std::function<Expression( const Expression& )>( [&op]( const Expression& expression ) { return op( expression ); } );
         }
       template <class OP>
         void add_unary( const std::string& name )
         {
           m_unaryFunctions[name] =
-            std::function<Expression( const Expression& )>( []( auto& expression ) { return OP( expression ); } );
+            std::function<Expression( const Expression& )>( []( const Expression& expression ) { return OP( expression ); } );
         }
       void add_binary( const std::string& name, binaryFCN op ) { m_binaryFunctions.emplace_back( name, op ); }
 

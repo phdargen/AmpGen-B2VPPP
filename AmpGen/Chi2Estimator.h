@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #ifndef AMPGEN_CHI2ESTIMATOR_H
 #define AMPGEN_CHI2ESTIMATOR_H
 
@@ -32,5 +34,5 @@ namespace AmpGen
     BinDT   m_binning;
   };
 } // namespace AmpGen
-
+#endif
 #endif /* end of include guard: AMPGEN_CHI2ESTIMATOR_H */

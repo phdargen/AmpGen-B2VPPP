@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #ifndef AMPGEN_FASTDT_H
 #define AMPGEN_FASTDT_H
 #include <memory.h>
@@ -49,4 +51,5 @@ namespace AmpGen {
       void refreshQueue(std::vector<double*>& evts, std::queue<size_t>& indexQueue, const size_t& depth);
   };
 }
+#endif
 #endif
