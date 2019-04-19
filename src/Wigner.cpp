@@ -21,7 +21,6 @@
 
 using namespace AmpGen;
 using namespace AmpGen::fcn;
-using namespace std::complex_literals; 
 
 double fact( const double& z )
 {
@@ -135,6 +134,7 @@ Expression AmpGen::wigner_D(const Tensor& P,
   Expression px = P[0] / sqrt(pt2);
   Expression py = P[1] / sqrt(pt2);
 
+  complex_t i(0,1);
   auto little_d = make_cse ( wigner_d( pz, J, lA, lB ) );
   if( J != 0 && db != nullptr ){
     db->emplace_back("pt2", pt2 );
@@ -146,9 +146,9 @@ Expression AmpGen::wigner_D(const Tensor& P,
                             std::to_string(lB) +"](θ)", little_d );
     db->emplace_back("D[" + std::to_string(J)  +", " + 
                             std::to_string(lA) +", " + 
-                            std::to_string(lB) +"](Ω)", fpow(px+1i*py,lB-lA) * little_d );
+                            std::to_string(lB) +"](Ω)", fpow(px+i*py,lB-lA) * little_d );
   }
-  return  fpow( px + 1i* py, lB - lA ) * little_d; 
+  return  fpow( px + i* py, lB - lA ) * little_d; 
 }
 
 std::vector<LS> AmpGen::calculate_recoupling_constants( 
@@ -189,9 +189,10 @@ Tensor AmpGen::basisSpinor(const int& polState, const int& id)
 Tensor AmpGen::basisVector(const int& polState)
 {
   double N    = 1./sqrt(2);
+  complex_t i(0,1);
   if( polState ==  0 ) return    Tensor(std::vector<complex_t>({0., 0.,1.,0.}), Tensor::dim(4));
-  if( polState ==  1 ) return -N*Tensor(std::vector<complex_t>({1., 1i,0.,0.}), Tensor::dim(4));
-  if( polState == -1 ) return  N*Tensor(std::vector<complex_t>({1.,-1i,0.,0.}), Tensor::dim(4));
+  if( polState ==  1 ) return -N*Tensor(std::vector<complex_t>({1., i,0.,0.}), Tensor::dim(4));
+  if( polState == -1 ) return  N*Tensor(std::vector<complex_t>({1.,-i,0.,0.}), Tensor::dim(4));
   ERROR("Shouldn't reach here..., polState = " << polState);
   return Tensor();
 }
@@ -262,15 +263,15 @@ Expression AmpGen::helicityAmplitude(const Particle& particle,
   }
   else S = particle.S()/2.;
   auto recoupling_constants = calculate_recoupling_constants( particle.spin(), Mz, L, S, d1.spin(), d2.spin() );
-  auto mod = particle.attribute("helAmp");
-  if( mod != stdx::nullopt ) recoupling_constants = userHelicityCouplings( mod.value() );
+  //auto mod = particle.attribute("helAmp");
+  //if( mod != stdx::nullopt ) recoupling_constants = userHelicityCouplings( mod.value() );
 
   if( recoupling_constants.size() == 0 ){    
     WARNING( particle.uniqueString() << " " << particle.spin() << " " << 
         particle.orbitalRange(false).first << " " << particle.orbitalRange(false).second 
         <<  " transition Mz="<< Mz << " to " << d1.spin() << " x " << d2.spin() << " cannot be coupled in (LS) = " << L << ", " << S ); 
     WARNING( "Possible (LS) combinations = " << 
-      vectorToString( particle_couplings, ", ", []( auto& ls ){ return "("+std::to_string(int(ls.first)) + ", " + std::to_string(ls.second) +")";} ) );
+      vectorToString( particle_couplings, ", ", []( const std::pair<double,double>& ls ){ return "("+std::to_string(int(ls.first)) + ", " + std::to_string(ls.second) +")";} ) );
   } 
   Expression total = 0; 
   for( auto& coupling : recoupling_constants )

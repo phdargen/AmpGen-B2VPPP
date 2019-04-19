@@ -37,7 +37,8 @@ NormalOrderedExpression::Term::Term( const Expression& expression ) :
   addExpression(expression);
   std::sort( m_terms.begin(), 
              m_terms.end(), 
-             [](auto& t1, auto& t2 ){ return t1.second > t2.second; } ) ;
+             [](const std::pair<Expression,std::string>& t1, 
+                const std::pair<Expression,std::string>& t2 ){ return t1.second > t2.second; } ) ;
   Expression t = 1;
   for( auto& f : m_terms ) t = t * f.first;
   m_expressionAsString = ( t / m_divisor).to_string();  
@@ -57,7 +58,7 @@ NormalOrderedExpression::NormalOrderedExpression(const Expression& expression, c
     m_terms.emplace_back( t );
   }
   std::sort( m_terms.begin(), m_terms.end() , 
-      [](auto& t1, auto&t2 ){ return t1.m_expressionAsString > t2.m_expressionAsString ; });
+      []( const Term& t1, const Term&t2 ){ return t1.m_expressionAsString > t2.m_expressionAsString ; });
   groupExpressions();
 }
 
@@ -70,7 +71,7 @@ void NormalOrderedExpression::groupExpressions(){
       m_terms[j].m_markForRemoval = true; 
     }
   }
-  m_terms.erase( std::remove_if( m_terms.begin(), m_terms.end(), [=]( auto& it ){ return it.m_markForRemoval ; }  ) , m_terms.end() );
+  m_terms.erase( std::remove_if( m_terms.begin(), m_terms.end(), [=]( const Term& it ){ return it.m_markForRemoval ; }  ) , m_terms.end() );
 }
 
 NormalOrderedExpression::operator Expression(){

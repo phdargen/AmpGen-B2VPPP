@@ -1,3 +1,5 @@
+#if __cplusplus >= 201402L
+
 #ifndef AMPGEN_PLOTS_H
 #define AMPGEN_PLOTS_H
 #include "AmpGen/ErrorPropagator.h"
@@ -99,4 +101,5 @@ namespace AmpGen
     }
 } // namespace AmpGen
 
+#endif
 #endif

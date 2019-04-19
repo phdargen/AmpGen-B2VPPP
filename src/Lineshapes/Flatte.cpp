@@ -5,7 +5,7 @@
 
 using namespace AmpGen;
 using namespace AmpGen::fcn;
-using namespace std::complex_literals;
+
 
 Expression aSqrtTerm( const Expression& s, const Expression& m0 )
 {
@@ -19,6 +19,7 @@ Expression fSqrtTerm( const Expression& s, const Expression& m0 )
 }
 DEFINE_LINESHAPE( Flatte )
 {
+  complex_t i(0,1);
   auto props        = ParticlePropertiesList::get( particleName );
   Expression mass   = Parameter( particleName + "_mass", props->mass() );
   Expression radius = Parameter( particleName + "_radius", props->radius() );
@@ -52,7 +53,7 @@ DEFINE_LINESHAPE( Flatte )
     width = g2pieta * ( Gpieta + g2KK_by_g2pieta * GKK );
 
   }
-  auto D = mass*mass - 1i*mass*width; 
+  auto D = mass*mass - i*mass*width; 
   const Expression BW    = 1. / ( D - s ); 
   ADD_DEBUG( mass, dbexpressions );
   ADD_DEBUG( width, dbexpressions );

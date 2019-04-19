@@ -20,7 +20,7 @@ std::string AmpGen::programatic_name( std::string s )
   std::replace( s.begin(), s.end(), '+', 'p' );
   std::replace( s.begin(), s.end(), '-', 'm' );
   std::replace( s.begin(), s.end(), '*', 's' );
-  std::replace_if( s.begin(), s.end(), [](auto& c){ return ! std::isalnum(c) ; }, '_' );
+  std::replace_if( s.begin(), s.end(), []( const char& c){ return ! std::isalnum(c) ; }, '_' );
   if( isdigit( s[0] ) ) s = "f" + s;
   std::replace( s.begin(), s.end(), '\'', '_' );
   return s;

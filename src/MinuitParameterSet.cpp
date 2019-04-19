@@ -223,7 +223,7 @@ void MinuitParameterSet::loadFromStream()
 
 void MinuitParameterSet::loadFromFile( const std::string& file )
 {
-  processFile( file, [this]( auto& line ) {
+  processFile( file, [this]( const std::string& line ) {
       this->tryParameter( split( line, {' ', '\t'} ) );
       this->tryAlias( split( line, {' ', '\t'} ) );
       } );

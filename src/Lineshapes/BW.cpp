@@ -9,7 +9,6 @@
 
 using namespace AmpGen;
 using namespace AmpGen::fcn; 
-using namespace std::complex_literals;
 
 DEFINE_LINESHAPE( FormFactor )
 {
@@ -56,6 +55,7 @@ DEFINE_LINESHAPE( None ) { return Constant( 1); }
 DEFINE_LINESHAPE( BW )
 {
   auto s_cse = make_cse(s);
+  complex_t i(0,1);
   auto props = ParticlePropertiesList::get( particleName );
   const Expression& mass     = Parameter( particleName + "_mass", props->mass() );
   const Expression& width0   = Parameter( particleName + "_width", props->width() );
@@ -65,7 +65,7 @@ DEFINE_LINESHAPE( BW )
   Expression FormFactor                       = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
   if ( lineshapeModifier == "BL" ) FormFactor = sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
   Expression runningWidth                     = width( s_cse, s1, s2, mass, width0, radius, L, dbexpressions );
-  const Expression BW = FormFactor / ( mass * mass - s_cse  -1i * mass * runningWidth );
+  const Expression BW = FormFactor / ( mass * mass - s_cse  -i * mass * runningWidth );
   const Expression kf = kFactor( mass, width0, dbexpressions );
   ADD_DEBUG( FormFactor, dbexpressions );
   ADD_DEBUG( runningWidth, dbexpressions );
@@ -77,11 +77,12 @@ DEFINE_LINESHAPE( BW )
 
 DEFINE_LINESHAPE( SBW )
 {
+  complex_t i(0,1);
   auto props        = ParticlePropertiesList::get( particleName );
   Expression mass   = Parameter( particleName + "_mass", props->mass() );
   Expression width0 = Parameter( particleName + "_width", props->width() );
   const Expression kF = kFactor( mass, width0 ) ;
-  const Expression BW = 1 / ( mass * mass - s - 1i*mass * width0 );
+  const Expression BW = 1 / ( mass * mass - s - i*mass * width0 );
   ADD_DEBUG( kF, dbexpressions );
   ADD_DEBUG( BW, dbexpressions );
   return kF * BW;

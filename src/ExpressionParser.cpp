@@ -87,14 +87,14 @@ ExpressionParser::ExpressionParser() : m_mps( nullptr )
   add_unary<Exp>( "exp" );
   add_unary<Log>( "log" );
 
-  add_binary( "/", []( auto& A, auto& B ) { return A / B; } ); ///  operator ordering here matters!
-  add_binary( "*", []( auto& A, auto& B ) { return A * B; } );
-  add_binary( "+", []( auto& A, auto& B ) { return A + B; } );
-  add_binary( "-", []( auto& A, auto& B ) { return A - B; } );
-  add_binary( ">", []( auto& A, auto& B ) { return A > B; } );
-  add_binary( "<", []( auto& A, auto& B ) { return A < B; } );
-  add_binary( "&&", []( auto& A, auto& B ) { return A && B; } );
-  add_binary( ",", []( auto& A, auto& B ) { return ExpressionPack( A, B ); } );
+  add_binary( "/", [](const Expression& A, const Expression& B) { return A / B; } ); ///  operator ordering here matters!
+  add_binary( "*", [](const Expression& A, const Expression& B) { return A * B; } );
+  add_binary( "+", [](const Expression& A, const Expression& B) { return A + B; } );
+  add_binary( "-", [](const Expression& A, const Expression& B) { return A - B; } );
+  add_binary( ">", [](const Expression& A, const Expression& B) { return A > B; } );
+  add_binary( "<", [](const Expression& A, const Expression& B) { return A < B; } );
+  add_binary("&&", [](const Expression& A, const Expression& B) { return A && B; } );
+  add_binary( ",", [](const Expression& A, const Expression& B) { return ExpressionPack( A, B ); } );
 }
 
 Expression ExpressionParser::Parse( const std::string& str ) { return getMe()->parseTokens( split( str, ' ' ) ); }

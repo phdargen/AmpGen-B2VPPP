@@ -30,7 +30,6 @@
 #include "AmpGen/Simplify.h"
 
 using namespace AmpGen;
-using namespace std::complex_literals; 
 
 PolarisedSum::PolarisedSum( const EventType& type, 
                             MinuitParameterSet& mps, 
@@ -49,7 +48,7 @@ PolarisedSum::PolarisedSum( const EventType& type,
   std::vector<std::vector<int>> allStates;
   for(auto& pol : production_polarisations ) allStates.push_back({pol}); 
   for(size_t i = 0 ; i < type.size(); ++i ) allStates = polarisationOuterProduct( allStates, polarisations( type[i] ) );
-  auto set_polarisation_state = []( auto& matrix_element, auto& polState ){
+  auto set_polarisation_state = []( std::pair<Particle, CouplingConstant>& matrix_element, const std::vector<int>& polState ){
     auto fs = matrix_element.first.getFinalStateParticles();
     matrix_element.first.setPolarisationState(polState[0]);
     for(size_t i = 0 ; i < fs.size(); ++i ) fs[i]->setPolarisationState( polState[i+1] );
@@ -147,8 +146,9 @@ void   PolarisedSum::prepare()
     double px = m_pVector[0];
     double py = m_pVector[1];
     double pz = m_pVector[2];
-    m_psi = {1+pz    ,   px+1i*py,
-             px-1i*py,   1-pz     };
+    complex_t i(0,1);
+    m_psi = {1+pz    ,   px+i*py,
+             px-i*py,   1-pz     };
   }
   else m_psi = {1};
   if( m_integrator.isReady() )

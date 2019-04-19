@@ -136,7 +136,7 @@ int main( int argc, char** argv )
   EventList accepted = infile == "" ? EventList( eventType ) : EventList( infile, eventType );
   
   std::string input_units = NamedParameter<std::string>("Units","GeV");
-  if( input_units == "MeV" && infile != "") accepted.transform([](auto& event){ for( int i = 0;i<16;++i) event[i]/=1000; } );
+  if( input_units == "MeV" && infile != "") accepted.transform([](Event& event){ for(size_t i = 0;i<event.size();++i) event[i]/=1000; } );
   if( infile == "" ){
     Event evt = PhaseSpace( eventType, rndm ).makeEvent();
     accepted.push_back(evt);

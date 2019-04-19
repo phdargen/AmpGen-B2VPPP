@@ -15,7 +15,6 @@
 #include "AmpGen/Units.h"
 
 using namespace AmpGen;
-using namespace std::complex_literals;
 
 Expression AmpGen::phsp_twoBody( const Expression& s, const double& m0, const double& m1 )
 {
@@ -51,10 +50,11 @@ Expression AmpGen::gFromGamma( const Expression& m, const Expression& gamma, con
 Tensor AmpGen::getPropagator(const Tensor& kMatrix, const std::vector<Expression>& phaseSpace)
 {
   unsigned int nChannels = kMatrix.dims()[0];
+  complex_t i(0,1);
   Tensor T( Tensor::dim(nChannels, nChannels) );
   for (size_t i = 0; i < nChannels; ++i ) {
     for (size_t j = 0; j < nChannels; ++j ) {
-      T[{i, j}] = SubTree( ( i == j ? 1 : 0 ) - 1i * kMatrix[{i, j}] * phaseSpace[j] );
+      T[{i, j}] = SubTree( ( i == j ? 1 : 0 ) - i * kMatrix[{i, j}] * phaseSpace[j] );
     }
   }
   return T.Invert();

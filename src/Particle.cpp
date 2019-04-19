@@ -28,7 +28,6 @@
 #include "AmpGen/Types.h"
 
 using namespace AmpGen;
-using namespace std::complex_literals; 
 
 Particle::Particle()
 {
@@ -149,6 +148,9 @@ void Particle::parseModifier( const std::string& mod )
   }
   else if ( Lineshape::Factory::isLineshape( mod ) )
     m_lineshape = mod;
+  if( mod.find("=") ){
+    FATAL("Particle attributes only supported under builds with g++ > 11");
+  }
 }
 
 double Particle::spin() const { return double( m_props->twoSpin() / 2. ) ; }
@@ -305,7 +307,8 @@ std::vector<std::shared_ptr<Particle>> Particle::getFinalStateParticles( const b
     }
   }
   if ( sort ) {
-    std::sort( ffs.begin(), ffs.end(), []( auto& p1, auto& p2 ) { return p1->originalIndex() < p2->originalIndex(); } );
+    std::sort( ffs.begin(), ffs.end(), 
+        []( const std::shared_ptr<Particle>& p1, const std::shared_ptr<Particle>& p2 ) { return p1->originalIndex() < p2->originalIndex(); } );
   }
   return ffs;
 }
@@ -385,8 +388,8 @@ Expression Particle::getExpression( DebugSymbols* db, const unsigned int& index 
   if( db != nullptr && !isStable() ) 
     db->emplace_back( uniqueString() , Parameter( "NULL", 0, true ) );
   auto spinFormalism  = m_spinFormalism; 
-  auto localFormalism = attribute("SpinFormalism"); 
-  if( localFormalism != stdx::nullopt ) localFormalism = localFormalism.value();
+  //auto localFormalism = attribute("SpinFormalism"); 
+  //if( localFormalism != stdx::nullopt ) localFormalism = localFormalism.value();
   if( spinFormalism != "Covariant" && spinFormalism != "Canonical")
   {
     FATAL("Invalid value for SpinFormalism: " << spinFormalism << ", possible values are: " << italic_on << " Covariant, Canonical." << italic_off  );
@@ -491,8 +494,9 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
   Expression pE   = p.get(3);
   Expression pP   = fcn::sqrt( pX*pX + pY*pY + pZ*pZ );
   Expression m    = mass();
-  Expression z    = pX + 1i*pY; 
-  Expression zb   = pX - 1i*pY;
+  complex_t i(0,1);
+  Expression z    = pX + i*pY; 
+  Expression zb   = pX - i*pY;
   auto id = props()->pdgID(); 
   if ( m_props->twoSpin() == 2 && m_spinBasis == "Weyl" ) {
     Expression N = 1./(sqrt(2)); 
@@ -500,8 +504,8 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
     Expression invP   = make_cse(Ternary( pP            > 1e-6, 1./pP,0));
     Expression pZoverP = make_cse(Ternary( pP > 1e-6, pZ/pP, 1) );
     Expression f = (pP-pZ)*invPT2;
-    if(polState ==  1) return N * Tensor({-pZoverP + 1i*z *pY*f*invP, -1i*pZoverP - 1i*z *pX*f*invP, z*invP           , 0.  }); 
-    if(polState == -1) return N * Tensor({ pZoverP + 1i*zb*pY*f*invP, -1i*pZoverP - 1i*zb*pX*f*invP,-zb*invP          , 0.  });
+    if(polState ==  1) return N * Tensor({-pZoverP + i*z *pY*f*invP, -i*pZoverP - i*z *pX*f*invP, z*invP           , 0.  }); 
+    if(polState == -1) return N * Tensor({ pZoverP + i*zb*pY*f*invP, -i*pZoverP - i*zb*pX*f*invP,-zb*invP          , 0.  });
     if(polState ==  0) return     Tensor({pX*pE*invP/m    , pY*pE*invP/m       , pZoverP*pE/m, pP/m}); 
   }
   if( m_props->twoSpin() == 2 && m_spinBasis == "Dirac" ){
@@ -509,8 +513,8 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
       ERROR("Use the Weyl (helicity) basis for calculations involving photons, as they don't have a rest frame. This will result in ill-defined amplitudes.");
     } 
     Expression N = make_cse(1./(m*(pE + m)));
-    if( polState ==  1 ) return -Tensor({1.+ z *pX*N,  1i +  z*pY*N,  z*pZ*N    ,  z*m })/sqrt(2);
-    if( polState == -1 ) return  Tensor({1.+ zb*pX*N, -1i + zb*pY*N, zb*pZ*N    , zb*m })/sqrt(2);
+    if( polState ==  1 ) return -Tensor({1.+ z *pX*N,  i +  z*pY*N,  z*pZ*N    ,  z*m })/sqrt(2);
+    if( polState == -1 ) return  Tensor({1.+ zb*pX*N, -i + zb*pY*N, zb*pZ*N    , zb*m })/sqrt(2);
     if( polState == -1 ) return  Tensor({pX*pZ*N    ,       pY*pZ*N, 1 + pZ*pZ*N, pZ/m });
   }
   if( m_props->twoSpin() == 1 && m_spinBasis == "Weyl" ){
@@ -625,7 +629,8 @@ std::string Particle::texLabel( const bool& printHead, const bool& recurse ) con
 
 void Particle::sortDaughters()
 {
-  std::stable_sort( m_daughters.begin(), m_daughters.end(), []( auto& A, auto& B ) { return *A < *B; } );
+  std::stable_sort( m_daughters.begin(), m_daughters.end(), 
+      []( const std::shared_ptr<Particle>& A, const std::shared_ptr<Particle>& B ) { return *A < *B; } );
 }
 
 int Particle::conjugate( bool invertHead , bool reorder )

@@ -90,15 +90,12 @@ ParticlePropertiesList::ParticlePropertiesList( const std::string& fname_in )
 
 bool ParticlePropertiesList::readLatexLabels( const std::string& name )
 {
-
   if ( !fileExists( name ) ) return false;
-
   m_latexLabels.clear();
-  processFile( name, [this]( auto& line ) {
+  processFile( name, [this]( const std::string& line ) {
     auto tokens                            = split( line, ' ' );
     this->m_latexLabels[stoi( tokens[0] )] = std::make_pair( tokens[1], tokens[2] );
   } );
-
   return true;
 }
 
@@ -110,7 +107,7 @@ bool ParticlePropertiesList::readFile( const std::string& name )
     return false;
   }
   DEBUG( "Reading file: " << name );
-  processFile( name, [this]( auto& line ) {
+  processFile( name, [this]( const std::string& line ) {
     if ( line[0] == '*' ) return;
     ParticleProperties P( line );
     if ( !P.isValid() ) {

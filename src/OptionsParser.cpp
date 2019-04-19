@@ -79,7 +79,7 @@ void OptionsParser::import( const std::string& fName )
   }
   int braceDepth = 0 ; 
   std::vector<std::string> currentTokens; 
-  processFile( fName, [this, &currentTokens, &braceDepth]( auto& line ) {
+  processFile( fName, [this, &currentTokens, &braceDepth]( const std::string& line ) {
       if ( this->ignoreThisLine( line ) ) return;
       auto tokens = this->makeParsedStrings( line, braceDepth );
       for ( auto& token : tokens ) currentTokens.push_back( token );

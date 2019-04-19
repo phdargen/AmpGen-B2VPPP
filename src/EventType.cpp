@@ -53,7 +53,7 @@ EventType::EventType( const std::vector<std::string>& particleNames, const bool&
   for ( unsigned int i = 0; i < m_particleNames.size(); ++i ) {
     DEBUG( m_particleNames[i] << " = " << m_particleNamesPickled[i] << " = " << m_particleMasses[i] );
   }
-  auto dimOfParticle = [](auto& name){
+  auto dimOfParticle = [](const std::string& name){
     return name == "gamma0" ? 2 : ParticlePropertiesList::get(name)->twoSpin() + 1;
   };
   m_dim.first = dimOfParticle(m_mother);
@@ -211,7 +211,7 @@ std::function<void( Event& )> EventType::symmetriser() const
     for ( auto& s : shuffle ) shuffle_string += std::to_string( s ) + " ";
     DEBUG( "Shuffle = " << shuffle_string );
   }
-  auto fcn = [shuffles, rng]( auto& event ) mutable -> void {
+  auto fcn = [shuffles, rng]( Event& event ) mutable -> void {
     for ( auto shuffled : shuffles ) {
       for ( unsigned int index = 0; index < shuffled.size(); ++index ) {
         unsigned int j = std::uniform_int_distribution<int>( 0, index )( rng );

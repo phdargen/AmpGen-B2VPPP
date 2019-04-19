@@ -42,7 +42,7 @@ TH1D* Projection::plot(const std::string& prefix) const {
   return plot;
 }
 std::function<size_t(const Event& evt )> Projection::binFunctor() const {
-  return [this](auto& evt){ 
+  return [this](const Event& evt){ 
 
     return int ( ( (*this)(evt) - m_min ) / m_width ) ; };
 }

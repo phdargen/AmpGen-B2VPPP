@@ -69,6 +69,7 @@ Expression AmpGen::phaseSpace(const Expression& s, const Particle& p, const size
     auto s2 = p.daughter(1)->massSq();
     auto k2 = make_cse( Q2(s,s1,s2) );
     const Expression k2p  = Ternary( k2 > 0, k2, 0 );
+    /*
     auto phsp_parameterisation = p.attribute("phsp"); 
     if( !phsp_parameterisation ){
       const Expression radius       = Parameter(p.name()  + "_radius", p.props()->radius());
@@ -80,6 +81,7 @@ Expression AmpGen::phaseSpace(const Expression& s, const Particle& p, const size
  //     return 2*fpow(k2,l)*complex_sqrt(k2) * E * 2 / ((1.5+k2p) * sqrt(s) ); 
       return 2 * complex_sqrt(k2/s);
     }
+    */
   }
   if( fs.size() == 3 && ! p.daughter(0)->isStable() ) return rho_threeBody( s, *p.daughter(0), *p.daughter(1) );
   if( fs.size() == 3 && ! p.daughter(1)->isStable() ) return rho_threeBody( s, *p.daughter(1), *p.daughter(0) );

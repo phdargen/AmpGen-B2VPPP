@@ -72,7 +72,7 @@ namespace AmpGen
         ArgumentPack( const ARGS&... args )
         {
           std::tuple<ARGS...> argTuple( args... );
-          auto it = do_construct( this->m_parameters );
+          auto it = do_construct( &this->m_parameters );
           for_each( argTuple, it);
         }
       template <class ARG>

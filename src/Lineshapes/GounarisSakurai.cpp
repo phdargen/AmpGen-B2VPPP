@@ -10,7 +10,6 @@
 //// implementation of Gounaris Sakurai Lineshape ///
 using namespace AmpGen;
 using namespace AmpGen::fcn;
-using namespace std::complex_literals;
 
 Expression q2( const Expression& s )
 {
@@ -31,6 +30,7 @@ Expression logTerm( const Expression& s )
 
 DEFINE_LINESHAPE( GounarisSakurai )
 {
+  complex_t i(0,1);
   auto props        = ParticlePropertiesList::get( particleName );
   Expression mass   = Parameter( particleName + "_mass", props->mass() );
   Expression radius = Parameter( particleName + "_radius", props->radius() );
@@ -44,7 +44,7 @@ DEFINE_LINESHAPE( GounarisSakurai )
   
   Expression M2 = s0 + width0 * (t1 + t2 + t3 )/M_PI; 
 
-  Expression  D = M2 - 1i*mass*width(s,s1,s2,mass,width0,0,L);
+  Expression  D = M2 - i*mass*width(s,s1,s2,mass,width0,0,L);
   const Expression q2  = abs( Q2( s, s1, s2 ) );
   Expression FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
   if ( lineshapeModifier == "BL" ) FormFactor = sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
