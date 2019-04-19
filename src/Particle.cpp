@@ -148,14 +148,13 @@ void Particle::parseModifier( const std::string& mod )
   }
   else if ( Lineshape::Factory::isLineshape( mod ) )
     m_lineshape = mod;
-  if( mod.find("=") ){
-    FATAL("Particle attributes only supported under builds with g++ > 11");
+  if( mod.find("=") != std::string::npos ){
+    FATAL("Particle attributes only supported under builds with C++ standard >= 14");
   }
 }
 
 double Particle::spin() const { return double( m_props->twoSpin() / 2. ) ; }
 double Particle::S() const { return m_spinConfigurationNumber ; }
-
 std::string Particle::vertexName() const
 {
   if ( m_daughters.size() != 2 ){

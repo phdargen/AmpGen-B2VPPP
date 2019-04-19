@@ -31,8 +31,7 @@ using namespace AmpGen;
 
 struct FixedLibPDF {
   void* lib;
-  AmpGen::DynamicFCN<double( const double*, int )> PDF;
-
+  AmpGen::DynamicFCN<double( const double*, const int& )> PDF;
   void prepare(){};
   void setEvents( AmpGen::EventList& evts ){};
   double prob_unnormalised( const AmpGen::Event& evt ) const { return PDF( evt, 1 ); }
@@ -40,7 +39,7 @@ struct FixedLibPDF {
   {
     void* handle = dlopen( lib.c_str(), RTLD_NOW );
     if ( handle == nullptr ) ERROR( dlerror() );
-    PDF = AmpGen::DynamicFCN<double( const double*, int )>( handle, "FCN" );
+    PDF = AmpGen::DynamicFCN<double( const double*, const int& )>( handle, "FCN" );
   }
   size_t size() { return 0; }
   void reset( const bool& flag = false ){};
@@ -60,6 +59,47 @@ template <class PDF_TYPE, class PRIOR_TYPE>
   signalGenerator.fillEventList( pdf, events, nEvents );
 }
 
+template <class T> void GenerateSource(T& pdf, const std::string& output, MinuitParameterSet& mps)
+{
+  bool normalise      = NamedParameter<bool>("Normalise",true);
+  std::string type    = NamedParameter<std::string>( "Type", "CoherentSum" );
+  int seed            = NamedParameter<int>("Seed", 0);
+  double safetyFactor = NamedParameter<double>( "SafefyFactor", 3 );
+  size_t NormEvents   = NamedParameter<size_t>( "NormEvents", 1000000 );
+  auto oEventType     = NamedParameter<std::string>("EventType").getVector();
+  EventType eventType( oEventType ); 
+  TRandom3 rnd(seed); 
+  Generator<PhaseSpace> phsp(eventType, &rnd);
+  EventList normEvents = phsp.generate(NormEvents);
+  double norm = 1; 
+  if( normalise ){
+    double pMax = 0 ;
+    pdf.setEvents( normEvents );
+    pdf.prepare();
+    normEvents[0].print();
+    normEvents[0].printCache();
+    INFO( pdf.prob_unnormalised( normEvents[0] ) );
+    pdf.debug( normEvents[0] ); 
+    for ( auto& evt : normEvents ) {
+      if( type == "PolarisedSum" ){ 
+        double px, py, pz; 
+        gRandom->Sphere(px,py,pz, gRandom->Uniform(0,1));
+        mps["Px"]->setCurrentFitVal(px);
+        mps["Py"]->setCurrentFitVal(py);
+        mps["Pz"]->setCurrentFitVal(pz);
+        pdf.transferParameters();
+      }
+      double n = pdf.prob_unnormalised( evt );
+      if ( n > pMax ) pMax = n;
+    }
+    norm = pMax * safetyFactor; 
+    INFO( "Making source with " << pMax << " x safety factor = " << safetyFactor );
+  }
+  mps.resetToInit(); 
+  pdf.generateSourceCode( output, norm, true );
+}
+
+
 int main( int argc, char** argv )
 {
   OptionsParser::setArgs( argc, argv );
@@ -67,8 +107,8 @@ int main( int argc, char** argv )
   size_t nEvents      = NamedParameter<size_t>     ("nEvents"  , 1, "Total number of events to generate" );
   size_t blockSize    = NamedParameter<size_t>     ("BlockSize", 100000, "Number of events to generate per block" );
   int seed            = NamedParameter<int>        ("Seed"     , 0, "Random seed used in event Generation" );
-  std::string outfile = NamedParameter<std::string>("Output"   , "Generate_Output.root" , "Name of output file" );
-  
+  bool sourceOnly     = NamedParameter<bool>       ("SourceOnly",false,"Flag to generate source code only"); 
+  std::string outfile = NamedParameter<std::string>("Output"   , sourceOnly ? "Generate_Output.root" : "amp.cpp" , "Name of output file" );
   std::string gen_type = NamedParameter<std::string>( "Type", "CoherentSum", optionalHelpString("Generator configuration to use:", 
     { {"CoherentSum", "Full phase-space generator with (pseudo)scalar amplitude"}
     , {"PolarisedSum", "Full phase-space generator with particles carrying spin in the initial/final states"}
@@ -87,12 +127,10 @@ int main( int argc, char** argv )
 
   TRandom3 rand;
   rand.SetSeed( seed + 934534 );
-
   MinuitParameterSet MPS;
   MPS.loadFromStream();
   
   Particle p;
-  
   EventType eventType( NamedParameter<std::string>( "EventType" , "", "EventType to generate, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(),
                        NamedParameter<bool>( "GenerateTimeDependent", false , "Flag to include possible time dependence of the amplitude") );
 
@@ -103,13 +141,14 @@ int main( int argc, char** argv )
   if ( gen_type == "CoherentSum" ) {
     CoherentSum sig( eventType, MPS );
     PhaseSpace phsp(eventType,&rand);
-    GenerateEvents( accepted, sig, phsp , nEvents, blockSize, &rand );
+    if( !sourceOnly ) GenerateEvents( accepted, sig, phsp , nEvents, blockSize, &rand );
+    else GenerateSource(sig, outfile, MPS); 
   } 
   else if ( gen_type == "PolarisedSum" ){
-    PolarisedSum sig( eventType, MPS );
-    
+    PolarisedSum sig( eventType, MPS );    
     RecursivePhaseSpace phsp( sig.matrixElements()[0].decayTree.quasiStableTree() , eventType, &rand );
-    GenerateEvents( accepted, sig, phsp, nEvents, blockSize, &rand );
+    if( !sourceOnly ) GenerateEvents( accepted, sig, phsp, nEvents, blockSize, &rand );
+    else GenerateSource(sig,outfile,MPS);
   }
   else if ( gen_type == "RGenerator" ) {
     CoherentSum sig( eventType, MPS, "" );
@@ -125,9 +164,9 @@ int main( int argc, char** argv )
     FixedLibPDF pdf( lib  );
     signalGenerator.fillEventList( pdf, accepted, nEvents );
   } 
-  else {
-    ERROR("Did not recognise configuration: " << gen_type );
-  }
+  else ERROR("Did not recognise configuration: " << gen_type );
+  if( sourceOnly ) return true; 
+
   if( accepted.size() == 0 ) return -1;
   TFile* f = TFile::Open( outfile.c_str(), "RECREATE" );
   accepted.tree( "DalitzEventList" )->Write();
@@ -142,9 +181,7 @@ int main( int argc, char** argv )
         accepted.makeProjection( Projection2D(proj[i],proj[j] ) )->Write(); 
       }
     }
-  } 
-  
+  }  
   INFO( "Writing output file " );
-
   f->Close();
 }
