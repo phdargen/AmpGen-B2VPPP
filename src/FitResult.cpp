@@ -141,6 +141,26 @@ void FitResult::writeToFile( const std::string& fname )
   outlog.close();
 }
 
+void FitResult::writeToRootFile(TFile * output, unsigned seed){
+        
+        double nll,chi2;
+        unsigned status;
+        
+        output->cd();
+        TTree* outputTree = new TTree("Result","Result");
+        outputTree->Branch("nll", &nll, "nll/D");
+        outputTree->Branch("chi2", &chi2, "chi2/D");
+        outputTree->Branch("seed", &seed, "seed/I");
+        outputTree->Branch("status", &status, "status/I");
+        
+        nll = m_LL;
+        chi2 = m_chi2 / dof();
+        status = m_status;
+        outputTree->Fill();
+        
+        outputTree->Write();
+}
+
 void FitResult::print() const
 {
   INFO( "Chi2 per bin = " << m_chi2 / m_nBins );

@@ -523,7 +523,7 @@ KeyedFunctors<double(Event)> PolarisedSum::componentEvaluator(const EventList_ty
       auto ci = this->m_matrixElements[i].coefficient;
       auto cj = this->m_matrixElements[j].coefficient;
       double s = (i==j) ? 1 : 2 ;
-      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_" + programatic_name( mj.decayTree.decayDescriptor() );
+      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_x_" + programatic_name( mj.decayTree.decayDescriptor() );
       rt.add( [ci,cj,i,j,s, cache, this](const Event& event){  
         auto [s1,s2] = this->m_dim;
         auto R = s1 * s2; 

@@ -29,7 +29,6 @@
 #include "AmpGen/Generator.h"
 #include "AmpGen/ErrorPropagator.h"
 #include "AmpGen/ThreeBodyCalculators.h"
-//#include "AmpGen/Plots.h"
 #include "AmpGen/LHCbStyle.h"
 #include "AmpGen/PolarisedSum.h"
 
@@ -51,7 +50,7 @@ using namespace std;
 using namespace AmpGen;
 
 
-void getAmplitudeWeight(KeyedFunctors<double, Event>& weightFunction, const EventList& events, TTree* tree, const std::string& branchName, const std::string& selectAmp = "" )
+void getAmplitudeWeight(KeyedFunctors<double(Event)>& weightFunction, const EventList& events, TTree* tree, const std::string& branchName, const std::string& selectAmp = "" )
 {
         
     double weight(0);
@@ -61,8 +60,8 @@ void getAmplitudeWeight(KeyedFunctors<double, Event>& weightFunction, const Even
     std::vector<std::string> selectAmps;
     while( ss.good() ){
         std::string substr;
-        getline( ss, substr, '+' );
-        selectAmps.push_back( substr );
+        getline( ss, substr, '_' );
+        selectAmps.push_back( AmpGen::programatic_name(substr) );
     }
      
     vector<unsigned> index;

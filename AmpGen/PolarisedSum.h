@@ -62,7 +62,8 @@ namespace AmpGen
       void updateNorms(); 
       void generateSourceCode(const std::string&, const double& = 1, bool = false);
       Expression probExpression(const Tensor&, const std::vector<Expression>&, DebugSymbols* = nullptr) const; 
-      size_t size() const;  
+      size_t size() const;
+      size_t numAmps() const { return m_matrixElements.size(); }
       real_t norm() const;
       complex_t norm(const size_t&, const size_t&, Integrator* = nullptr); 
       real_t getValNoCache(const Event&) const;

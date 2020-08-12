@@ -175,7 +175,7 @@ void Particle::pdgLookup()
         << " name   =  " << m_name << " d0     =  " << m_daughters[0]->name()
         << " d1     =  " << m_daughters[1]->name() );
   }
-  if ( m_orbital == 0 ) m_orbital = m_minL; // define in ground state unless specified
+  if ( m_orbital == 999 ) m_orbital = m_minL; // define in ground state unless specified
   if( m_daughters.size() != 0 ){
     DEBUG( m_name << " is decaying via " << ( isStrong ? "strong" : "electroweak" ) << " interactions; P = " << props()->P() << "l = " << m_orbital );
   }
@@ -555,15 +555,25 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
     ERROR( "L not well defined for nDaughters == " << m_daughters.size() );
     return {999, 998};
   }
-  const int S  = m_props->twoSpin();
-  const int s1 = daughter(0)->props()->twoSpin();
-  const int s2 = daughter(1)->props()->twoSpin();
-  int min = std::abs( S - s1 - s2 );
-  min     = std::min(min, std::abs( S + s1 - s2 ));
-  min     = std::min(min, std::abs( S - s1 + s2 ));
-  int max = S + s1 + s2;
-  min /= 2;
-  max /= 2;
+  const int S  = m_props->twoSpin()/2;
+  const int s1 = daughter( 0 )->props()->twoSpin()/2;
+  const int s2 = daughter( 1 )->props()->twoSpin()/2;
+        
+  // int min                                  = std::abs( S - s1 - s2 );
+  // if ( std::abs( S + s1 - s2 ) < min ) min = std::abs( S + s1 - s2 );
+  // if ( std::abs( S - s1 + s2 ) < min ) min = std::abs( S - s1 + s2 );
+  // int max                                  = S + s1 + s2;
+    
+  int min_s12 = std::abs( s1 - s2 );
+  int max_s12 = std::abs( s1 + s2 );
+        
+  int min = std::abs( S - min_s12 );
+  int max = std::abs( S + max_s12 );
+        
+  for(int i=min_s12;i<=max_s12;i++){
+                if(std::abs( S - i )< min)  min = std::abs( S - i );
+                if(std::abs( S + i )> max)  max = std::abs( S + i );
+  }
   DEBUG( "Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S << " s1= " << s1 << " s2= " << s2 );
   if ( conserveParity == false ) return {min, max}; 
   int l = min;

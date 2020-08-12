@@ -3,6 +3,8 @@
 
 #include "TMatrixD.h"
 #include "TClass.h"
+#include "TFile.h"
+#include "TTree.h"
 
 #include "AmpGen/FitFraction.h"
 #include "AmpGen/MinuitParameter.h"
@@ -29,6 +31,7 @@ namespace AmpGen
     void addFraction( const std::string& name, const double& frac, const double& err );
     void setCov( const size_t& x, const size_t& y, const double& F );
     void writeToFile( const std::string& fname );
+    void writeToRootFile( TFile * output,  unsigned seed = 0 );
     void clearFitFractions();
 
     bool readFile( const std::string& fname );

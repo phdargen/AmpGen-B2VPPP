@@ -286,7 +286,7 @@ namespace AmpGen
       int m_polState                         = {0};          ///< Projection of the spin along the quantisation axis, i.e. 'z'
       unsigned m_index                       = {999};        ///< Index, for constructing four-momenta
       unsigned m_originalIndex               = {999};        ///< Starting index, used in Bose-symmetrisation
-      unsigned m_orbital                     = {0};          ///< Orbital angular momentum between daughters
+      unsigned m_orbital                     = {999};          ///< Orbital angular momentum between daughters
       unsigned m_spinConfigurationNumber     = {0};          ///< Spin configuration quantum number 'S'
       unsigned m_minL                        = {0};          ///< Minimum orbital angular momentum
       bool m_usesDefaultLineshape            = {false};      ///< Flag to check if default shape is used
