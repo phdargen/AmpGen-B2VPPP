@@ -38,6 +38,7 @@ double MinuitParameter::errPos()           const { return m_errPosResult; }
 double MinuitParameter::errNeg()           const { return m_errNegResult; }
 double MinuitParameter::err()              const { return m_errResult; }
 bool   MinuitParameter::isFixed()          const { return m_flag == Flag::Fix || m_flag == Flag::CompileTimeConstant; }
+bool   MinuitParameter::isHidden()          const { return m_flag == Flag::Hide || m_flag == Flag::CompileTimeConstant; }
 bool   MinuitParameter::isFree()           const { return m_flag == Flag::Free; }
 const std::string& MinuitParameter::name() const { return m_name; }
 

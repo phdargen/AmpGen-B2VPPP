@@ -237,11 +237,14 @@ void makePlots(){
 	TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
   weight_file->cd();
 	auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
-	
   if(weight_tree->GetEntries() != eventsMC.size()){
       cout << "ERROR inconsistent number of events" << endl;
       throw "ERROR";
   }
+    
+  cout << "Using data file: " << dataFile << endl;
+  cout << "Using MC file: " << intFile << endl;
+  cout << "Using weight file: " << FitWeightFileName << endl;
 
   //Dimensions to plot
   //EventType B+ psi(2S)0 K+ pi+ pi- 

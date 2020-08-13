@@ -23,6 +23,7 @@ namespace AmpGen
 
     Flag flag() const;
     bool isFixed() const;
+    bool isHidden() const;
     bool isFree()  const;
     const std::string& name() const;
 

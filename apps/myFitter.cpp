@@ -78,7 +78,7 @@ void getAmplitudeWeight(KeyedFunctors<double(Event)>& weightFunction, const Even
         for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
             if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || selectAmp == "") {
                 index.push_back(counter);
-                if(selectAmp != "")INFO("Found " << key);
+                //if(selectAmp != "")INFO("Found " << key);
             }
         }
         counter++;
@@ -115,15 +115,6 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
         std::cout << "randomizeStartingPoint:: " << *param << std::endl;
     }
   }
-}
-
-unsigned int count_amplitudes( const AmpGen::MinuitParameterSet& mps )
-{
-  unsigned int counter = 0;
-  for ( auto param = mps.cbegin(); param != mps.cend(); ++param ) {
-    if ( ( *param )->name().find( "_Re" ) != std::string::npos ) counter++;
-  }
-  return counter;
 }
 
 // void removeRandomAmps( MinuitParameterSet& mps, TRandom3& rand, int n = 1 )
@@ -312,26 +303,26 @@ FitResult* doFit( likelihoodType&& likelihood, EventList& data, EventList& mc, M
     
     /* Make the plots for the different components in the PDF, i.e. the signal and backgrounds. 
      The structure assumed the PDF is some SumPDF<eventListType, pdfType1, pdfType2,... >. */
-    auto      nBins     = NamedParameter<Int_t>     ("nBins"      , 50           , "Number of bins" );
-    unsigned int counter = 1;
-    for_each(likelihood.pdfs(), [&](auto& pdf){
-        auto pfx = PlotOptions::Prefix("Model");
-        auto mc_plot3 = mc.makeDefaultProjections(WeightFunction(pdf),pfx,PlotOptions::Bins(nBins) );
-        for( auto& plot : mc_plot3 )
-        {
+    //auto      nBins     = NamedParameter<Int_t>     ("nBins"      , 50           , "Number of bins" );
+    //unsigned int counter = 1;
+    //for_each(likelihood.pdfs(), [&](auto& pdf){
+        //auto pfx = PlotOptions::Prefix("Model");
+        //auto mc_plot3 = mc.makeDefaultProjections(WeightFunction(pdf),pfx,PlotOptions::Bins(nBins) );
+        //for( auto& plot : mc_plot3 )
+        //{
             //plot->Scale( ( data.integral() * pdf.getWeight() ) / plot->Integral() );
-            plot->Write();
-        }
-        counter++;
-    });
+            //plot->Write();
+        //}
+        //counter++;
+    //});
     
     /* Estimate the chi2 using an adaptive / decision tree based binning, 
      down to a minimum bin population of 15, and add it to the output. */
-    //Chi2Estimator chi2( data, mc, likelihood, 15 );
+    //Chi2Estimator chi2( data, mc, likelihood, MinEvents(25) );
     //chi2.writeBinningToFile("chi2_binning.txt");
     //fr->addChi2( chi2.chi2(), chi2.nBins() );
     
-    fr->print();
+    //fr->print();
     return fr;
 }
 
@@ -349,7 +340,7 @@ int main( int argc, char* argv[] )
   std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
   std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
   std::string logFile  = NamedParameter<std::string>("LogFile"   , "Fitter.log", "Name of the output log file");
-  std::string plotFile = NamedParameter<std::string>("Plots"     , "plots.root", "Name of the output plot file");
+  std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
   
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
               ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
@@ -387,9 +378,6 @@ int main( int argc, char* argv[] )
   if(randomizeStartVals) randomizeStartingPoint(MPS,rndm);
   //sanityChecks(MPS);
 
-  size_t defaultCacheSize       = count_amplitudes( MPS );
-  cout << "Number of amplitudes = " << defaultCacheSize << endl;
-
   EventType evtType(pNames);
   EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight"));
   EventList eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
@@ -409,7 +397,9 @@ int main( int argc, char* argv[] )
 
   PolarisedSum sig(evtType, MPS);
   sig.setMC( eventsMC );
+  cout << "Number of amplitudes = " << sig.numAmps() << endl;
 
+    
   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
   /* Do the fit and return the fit results, which can be written to the log and contains the 
      covariance matrix, fit parameters, and other observables such as fit fractions */
@@ -420,21 +410,35 @@ int main( int argc, char* argv[] )
    */
   auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
   fr->addFractions( fitFractions );
-  fr->writeToFile( logFile );
-  fr->writeToRootFile( output, seed );
+
+  double sumFractions(0);
+  for( auto& f : fitFractions ){
+      if(f.name()=="Sum_B+")sumFractions = f.val();
+  }
+    
+  /* Estimate the chi2 using an adaptive / decision tree based binning, 
+     down to a minimum bin population of 15, and add it to the output. */
+  auto evaluator = sig.evaluator(&eventsMC);
+  auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+  Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
+  //chi2.writeBinningToFile("chi2_binning.txt");
+  fr->addChi2( chi2.chi2(), chi2.nBins() );
+
+  fr->print();
+  fr->writeToOptionsFile( logFile );
+  fr->writeToRootFile( output, seed, sig.numAmps(),sumFractions );
   output->cd();
   
   /* Write out the data plots. This also shows the first example of the named arguments 
      to functions, emulating python's behaviour in this area */
 
-  auto plots = events.makeDefaultProjections(PlotOptions::Prefix("Data"), PlotOptions::Bins(nBins));
-  for ( auto& plot : plots ) plot->Write();
+  //auto plots = events.makeDefaultProjections(PlotOptions::Prefix("Data"), PlotOptions::Bins(nBins));
+  //for ( auto& plot : plots ) plot->Write();
 
   //auto projections = evtType.defaultProjections(nBins);
   //for ( auto& proj : projections ) perAmplitudePlot( eventsMC, proj, sig);
 
   output->Close();
-
 
  unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
  if( saveWeights ){
@@ -472,7 +476,6 @@ int main( int argc, char* argv[] )
   auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
 
   auto weightFunction = sig.componentEvaluator(&eventsPlotMC);
- 
   getAmplitudeWeight( weightFunction,eventsPlotMC, weight_tree, "weight" );
   for(int i = 0; i < plot_amps.size(); i++){
       cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;

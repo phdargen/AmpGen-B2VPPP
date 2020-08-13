@@ -31,7 +31,8 @@ namespace AmpGen
     void addFraction( const std::string& name, const double& frac, const double& err );
     void setCov( const size_t& x, const size_t& y, const double& F );
     void writeToFile( const std::string& fname );
-    void writeToRootFile( TFile * output,  unsigned seed = 0 );
+    void writeToOptionsFile( const std::string& fname );
+    void writeToRootFile( TFile * output,  unsigned seed = 0, unsigned numAmps = 0, double sumFrac = 0 );
     void clearFitFractions();
 
     bool readFile( const std::string& fname );

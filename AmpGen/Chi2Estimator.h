@@ -34,12 +34,25 @@ namespace AmpGen
     {
       doChi2(dataEvents, mcEvents, fcn);
     }
+      
+    template <typename... argument_types> 
+    Chi2Estimator( const EventList_type& dataEvents, const EventList_type& mcEvents,
+                    KeyedFunctors<double(Event)>& weightFunction, 
+                    const argument_types&... args ) : m_binning(dataEvents.begin(), dataEvents.end(), ArgumentPack(args...) ) 
+      {
+          doChi2(dataEvents, mcEvents, weightFunction);
+      }  
 
     double chi2() const;
     double nBins() const; 
     void writeBinningToFile( const std::string& filename ); 
     void doChi2( const EventList_type& dataEvents, const EventList_type& mcEvents,
                  const std::function<double( const Event& )>& fcn );
+
+    void doChi2( const EventList_type& dataEvents, const EventList_type& mcEvents,
+                  KeyedFunctors<double(Event)>& weightFunction );
+      
+      
   private: 
     double  m_chi2;
     size_t  m_nBins;

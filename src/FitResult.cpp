@@ -141,23 +141,60 @@ void FitResult::writeToFile( const std::string& fname )
   outlog.close();
 }
 
-void FitResult::writeToRootFile(TFile * output, unsigned seed){
+void FitResult::writeToOptionsFile( const std::string& fname )
+{
+    std::ofstream outlog;
+    outlog << std::setprecision( 4 );
+    outlog.open( fname );
+    for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
+        auto param = m_mps->at(i);
+        if(param->isHidden() || param->name().find( "Spline" ) != std::string::npos )continue;
+        if(param->name().find( "_Re" ) != std::string::npos){
+            outlog << replaceAll(param->name(),"_Re", "") << "  " << (int)param->flag() << " " 
+                   << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+                   << param->minInit() << " ";
+            if(abs(param->mean()-param->maxInit())<1) outlog << param->maxInit()*2 << "    " ;       
+            else outlog << param->maxInit()*5 << "    " ;               
+            auto param_im = m_mps->at(i+1);
+            outlog << (int)param_im->flag() << " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+            << param_im->minInit() << " " << param_im->maxInit() << " " ;               
+            i++;            
+        }
+        else{
+            outlog << param->name() << "  " << (int)param->flag() << " " 
+            << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+            << param->minInit() << " " << param->maxInit() << "    " ;               
+        }
+        outlog << std::endl;
+    }
+    outlog.close();
+}
+
+void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned numAmps, double sumFrac){
         
-        double nll,chi2;
-        unsigned status;
-        
+        double nll,chi2,sumFractions;
+        unsigned status, nPar,nAmps;
+
         output->cd();
         TTree* outputTree = new TTree("Result","Result");
+        outputTree->Branch("status", &status, "status/I");
         outputTree->Branch("nll", &nll, "nll/D");
         outputTree->Branch("chi2", &chi2, "chi2/D");
         outputTree->Branch("seed", &seed, "seed/I");
-        outputTree->Branch("status", &status, "status/I");
-        
+        outputTree->Branch("nPar", &nPar, "nPar/I");
+        outputTree->Branch("nAmps", &nAmps, "nAmps/I");
+        outputTree->Branch("sumFractions", &sumFractions, "sumFractions/D");
+
+        outputTree->Branch("seed", &seed, "seed/I");
+    
         nll = m_LL;
         chi2 = m_chi2 / dof();
         status = m_status;
+        nPar = nParam();
+        nAmps = numAmps;
+        sumFractions = sumFrac;
+    
         outputTree->Fill();
-        
         outputTree->Write();
 }
 
