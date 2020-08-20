@@ -93,7 +93,6 @@ void getAmplitudeWeight(KeyedFunctors<double(Event)>& weightFunction, const Even
     
 }
 
-
 std::vector<ThreeBodyCalculator> threeBodyCalculators( MinuitParameterSet& mps )
 {
   std::vector<std::string> threeBodiesToIntegrate = NamedParameter<std::string>( "ThreeBodiesToIntegrate" ).getVector();
@@ -104,17 +103,40 @@ std::vector<ThreeBodyCalculator> threeBodyCalculators( MinuitParameterSet& mps )
 
 void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool SplineOnly = false )
 {
-  double range = 5;
   for (auto& param : MPS) {
     if ( param->isFree() == 0 ) continue;
-    if ( SplineOnly && param->name().find( "::Spline::" ) == std::string::npos ) continue;
+    if ( SplineOnly && param->name().find( "::Spline" ) == std::string::npos ) continue;
     if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos ||
-    param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos ){
-        range = param->maxInit() - param->minInit();
-        param->setInit( range * rand.Rndm() + param->meanInit() );
-        std::cout << "randomizeStartingPoint:: " << *param << std::endl;
+    param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos ){        
+        double min = param->minInit();
+        double max = param->maxInit();
+        //if(param->name().find( "_Re" ) != std::string::npos){
+           //min = 0;
+           // max = 2;
+        //}
+        if((min == 0 && max == 0) || min == max){
+            INFO(min << " " << max );
+            min = param->mean()-100*param->stepInit();
+            max = param->mean()+100*param->stepInit();
+            INFO(min << " " << max );
+        } 
+        
+        double new_val = rand.Uniform(min+5*param->stepInit(),max-5*param->stepInit()); 
+        param->setInit(new_val);
+        param->setCurrentFitVal(new_val);
+        INFO( param->name() << " = " << param->mean() );
     }
   }
+}
+
+void perturb( MinuitParameterSet& MPS, double sigma = 1)
+{
+    for ( auto& param : MPS ) {
+        if ( !param->isFree() ) continue;
+        double new_val = gRandom->Gaus( param->mean(), param->err()* sigma);
+        param->setInit(new_val);
+        param->setCurrentFitVal( new_val );
+    }
 }
 
 // void removeRandomAmps( MinuitParameterSet& mps, TRandom3& rand, int n = 1 )
@@ -237,13 +259,31 @@ struct phsp_cut {
 };
 
 struct rnd_cut {
-    rnd_cut(double fraction):_fraction(fraction){}
+    rnd_cut(double fraction,bool random, int N):_fraction(fraction),_random(random),_counter(0),_N(N){
+        INFO("Keeping " << _fraction * _N << " events (" << _fraction*100 << " %)" );
+    }
     bool operator()(const Event& evt){
-        if( gRandom->Rndm()>_fraction)return true;
-        else return false;
+        
+        if(_random){        
+            if( gRandom->Rndm()>_fraction)return true;
+            else return false;
+        }
+        else {
+            if(_counter > (1-_fraction) * _N ){
+                INFO(_counter);
+                return true;
+                }
+            else{
+                _counter++;
+                return false;
+                }
+        }
     }
     private:
       double _fraction;
+      bool _random;
+      int _counter;
+      int _N;
 };
 
 template <typename likelihoodType>
@@ -293,11 +333,24 @@ FitResult* doFit( likelihoodType&& likelihood, EventList& data, EventList& mc, M
     for( auto& shape : threeBodyShapes ) rw_new.push_back(shape.widthGraph(1.));
     for( auto& graph : rw_new) graph->Write();
     
+    int nTries = 1;
+    unsigned int nReTries = NamedParameter<unsigned int>( "nReTries", 5 );
+    while(mini.status()>0 && nTries-1 < nReTries){
+        INFO("Fit not converged, try again with small perturbation");
+        perturb(MPS,nTries);
+        mini.doFit();
+        nTries++;
+    }
+    
     FitResult* fr = new FitResult(mini);
     
     auto twall_end  = std::chrono::high_resolution_clock::now();
     double time_cpu = ( std::clock() - time ) / (double)CLOCKS_PER_SEC;
     double tWall    = std::chrono::duration<double, std::milli>( twall_end - time_wall ).count();
+    INFO("Done after " << nTries << " iteration");
+    if(mini.status() == 0)INFO("Fit conveged");
+    else if(mini.status() == 1)INFO("Valid minimum, Covar was made pos def");
+    else INFO("Fit failed");
     INFO( "Wall time = " << tWall / 1000. );
     INFO( "CPU  time = " << time_cpu );
     
@@ -339,7 +392,7 @@ int main( int argc, char* argv[] )
      as an option. */
   std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
   std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
-  std::string logFile  = NamedParameter<std::string>("LogFile"   , "Fitter.log", "Name of the output log file");
+  std::string logFile  = NamedParameter<std::string>("LogFile"   , "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
   
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
@@ -380,7 +433,11 @@ int main( int argc, char* argv[] )
 
   EventType evtType(pNames);
   EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight"));
-  EventList eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
+  
+  auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
+  vector<size_t> entryListMC;
+  for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
+  EventList eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true),EntryList(entryListMC));
   
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
@@ -391,19 +448,62 @@ int main( int argc, char* argv[] )
   if(useFilter==1)events.filter(filter);
   if(useFilter==1)eventsMC.filter(filter);
 
-  auto integratorEventFraction = NamedParameter<double>("integratorEventFraction", 1);
-  rnd_cut filter_rnd(integratorEventFraction);
-  if(integratorEventFraction < 1)eventsMC.filter(filter_rnd);
+  //auto integratorEventFraction = NamedParameter<double>("integratorEventFraction", 1);
+  //rnd_cut filter_rnd(integratorEventFraction,false,eventsMC.size());
+  //if(integratorEventFraction < 1)eventsMC.filter(filter_rnd);
 
+    /*
+  PolarisedSum sig_norm(evtType, MPS);
+  sig_norm.setMC( eventsMC );   
+  auto ll_norm = make_likelihood(events, sig_norm);
+  sig_norm.prepare();
+  cout << sig_norm(events[0]) << endl;
+*/
+    
   PolarisedSum sig(evtType, MPS);
+  //for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,1./sqrt(sig_norm.norm(i,i).real()));
+  //for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,2.);
   sig.setMC( eventsMC );
   cout << "Number of amplitudes = " << sig.numAmps() << endl;
+//  for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,1./sqrt(sig_norm.norm(i,i).real()));
+    auto ll = make_likelihood(events, sig);
+    sig.prepare();
+    cout << ll(events[0]) << endl;
+    sig.normalizeAmps();
+  //sig.reset();
+  //sig.prepare();
+  //sig.updateNorms();
 
+/*
+    sig.prepare();
+    cout << ll(events[0]) << endl;
+        
+    for ( unsigned int i = 0; i < sig.numAmps(); ++i ) {
+        cout <<  sig[i].decayDescriptor() << endl;    
+        cout <<  sig.norm(i,i).real() << endl;
+        cout <<  sig[i].coefficient << endl << endl;    
+        //sig.scaleCoupling(i,2.);
+    }
+    //sig.reset();
+    
+    sig.normalizeAmps();
+    cout << endl << "scaled" << endl;
+    //sig.prepare();
+//    cout << ll(events[0]) << endl;
+//
+    for ( unsigned int i = 0; i < sig.numAmps(); ++i ) {
+        cout <<  sig[i].decayDescriptor() << endl;    
+        cout <<  sig.norm(i,i).real()  << endl;
+        cout <<  sig[i].coefficient << endl << endl;          
+    }
+    
+    //throw "";
+*/
     
   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
   /* Do the fit and return the fit results, which can be written to the log and contains the 
      covariance matrix, fit parameters, and other observables such as fit fractions */
-  FitResult* fr = doFit(make_likelihood(events, sig), events, eventsMC, MPS );
+  FitResult* fr = doFit(ll, events, eventsMC, MPS );
 
   /* Calculate the `fit fractions` using the signal model and the error propagator (i.e. 
      fit results + covariance matrix) of the fit result, and write them to a file. 
@@ -444,12 +544,12 @@ int main( int argc, char* argv[] )
  if( saveWeights ){
 
   EventList eventsPlotMC;
-  if(integratorEventFraction == 1) eventsPlotMC = eventsMC;
+  if(maxIntEvents == -1) eventsPlotMC = eventsMC;
   else {
     eventsPlotMC = EventList(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
     if(useFilter==1)eventsPlotMC.filter(filter);
       auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
-      rnd_cut filter_rnd2(plotEventFraction);
+      rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
       if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
   }
   sig.setMC( eventsPlotMC );

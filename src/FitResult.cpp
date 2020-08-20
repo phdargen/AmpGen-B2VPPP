@@ -148,13 +148,13 @@ void FitResult::writeToOptionsFile( const std::string& fname )
     outlog.open( fname );
     for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
         auto param = m_mps->at(i);
-        if(param->isHidden() || param->name().find( "Spline" ) != std::string::npos )continue;
+        if(param->isHidden() || param->name().find( "::Spline" ) != std::string::npos )continue;
         if(param->name().find( "_Re" ) != std::string::npos){
             outlog << replaceAll(param->name(),"_Re", "") << "  " << (int)param->flag() << " " 
                    << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
                    << param->minInit() << " ";
-            if(abs(param->mean()-param->maxInit())<1) outlog << param->maxInit()*2 << "    " ;       
-            else outlog << param->maxInit()*5 << "    " ;               
+            if(abs(param->mean()-param->maxInit())<10*param->stepInit()) outlog << param->maxInit()*2 << "    " ;       
+            else outlog << param->maxInit() << "    " ;               
             auto param_im = m_mps->at(i+1);
             outlog << (int)param_im->flag() << " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
             << param_im->minInit() << " " << param_im->maxInit() << " " ;               
@@ -170,10 +170,10 @@ void FitResult::writeToOptionsFile( const std::string& fname )
     outlog.close();
 }
 
-void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned numAmps, double sumFrac){
+void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned nAmps, double sumFractions){
         
-        double nll,chi2,sumFractions;
-        unsigned status, nPar,nAmps;
+        double nll,chi2;
+        unsigned status, nPar;
 
         output->cd();
         TTree* outputTree = new TTree("Result","Result");
@@ -191,8 +191,6 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned numAmps,
         chi2 = m_chi2 / dof();
         status = m_status;
         nPar = nParam();
-        nAmps = numAmps;
-        sumFractions = sumFrac;
     
         outputTree->Fill();
         outputTree->Write();

@@ -51,7 +51,6 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
   for ( const auto& d : dataEvents ) {
     if ( j % 10000 == 0 && j != 0 ) INFO( "Binned " << j << " data events" );
     double w = d.weight();
-    if ( j % 10000 == 0 && j != 0 ) INFO( "Weight =  " << w );
     data[m_binning.getBinNumber( d )].add( d.weight() );
     total_data_weight += w;
     j++;
@@ -61,7 +60,6 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
   {
     if ( j % 100000 == 0 && j != 0 ) INFO( "Binned " << j << " sim. events" );
     double w = fcn( evt ) * evt.weight() / evt.genPdf();
-    if ( j % 100000 == 0 && j != 0 ) INFO( "Weight =  " << fcn( evt ) );
     mc[m_binning.getBinNumber(evt)].add( w );
     total_int_weight += w;
     j++;
@@ -78,50 +76,3 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
   m_nBins = m_binning.size();
     
 }
-
-
-void Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_type& mcEvents, KeyedFunctors<double(Event)>& weightFunction )
-{
-    std::vector<Moment> data( m_binning.size() );
-    std::vector<Moment> mc( m_binning.size() );
-    
-    INFO( "Splitting: " << dataEvents.size() << " data " << mcEvents.size() << " amongst " << m_binning.size()
-         << " bins" );
-    unsigned int j           = 0;
-    double total_data_weight = 0;
-    double total_int_weight  = 0;
-    for ( const auto& d : dataEvents ) {
-        if ( j % 10000 == 0 && j != 0 ) INFO( "Binned " << j << " data events" );
-        double w = d.weight();
-        if ( j % 10000 == 0 && j != 0 ) INFO( "Weight =  " << w );
-        data[m_binning.getBinNumber( d )].add( d.weight() );
-        total_data_weight += w;
-        j++;
-    }
-    j = 0;
-    for ( auto& evt : mcEvents ) 
-    {
-        if ( j % 100000 == 0 && j != 0 ) INFO( "Binned " << j << " sim. events" );
-        
-        auto weights = weightFunction(evt);
-        double w = 0.;
-        for( unsigned j = 0 ; j != weights.size(); ++j ) w += evt.weight() * weights[j] / evt.genPdf(); 
-        if ( j % 100000 == 0 && j != 0 ) INFO( "Weight =  " << w );
-        mc[m_binning.getBinNumber(evt)].add( w );
-        total_int_weight += w;
-        j++;
-    }
-    double chi2 = 0;
-    
-    for ( unsigned int i = 0; i < m_binning.size(); ++i ) {
-        mc[i].rescale( total_data_weight / total_int_weight );
-        double delta = data[i].val() - mc[i].val();
-        double tChi2 = delta * delta / ( data[i].val() + mc[i].var() );
-        chi2 += tChi2;
-    }
-    m_chi2  = chi2;
-    m_nBins = m_binning.size();
-    
-}
-
-

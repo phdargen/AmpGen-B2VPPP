@@ -543,3 +543,21 @@ KeyedFunctors<double(Event)> PolarisedSum::componentEvaluator(const EventList_ty
   }
   return rt; 
 }
+
+void PolarisedSum::normalizeAmps(){
+    reset();
+    debug_norm();
+    prepare();
+    for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
+        //INFO(m_matrixElements[i].decayDescriptor());   
+        //INFO(sqrt(this->norm(i,i).real()));
+        //INFO(m_matrixElements[i].coefficient);   
+        //m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
+//        m_matrixElements[i].scaleCoupling(2.);
+        m_matrixElements[i].workToDo= true;
+    }
+    reset();
+    prepare();
+    updateNorms();
+    debug_norm();
+}
