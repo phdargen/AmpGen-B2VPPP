@@ -49,55 +49,94 @@ using EventList_type = AmpGen::EventList;
 using namespace std;
 using namespace AmpGen;
 
+void makePlotWeightFile(PolarisedSum& sig, const EventList& eventsPlotMC){
+    const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
+    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
+    weight_file->cd();
+    TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
+    
+    auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
+    plot_amps.push_back("");
+    plot_weights.push_back("weight");
+    
+    vector<double> weights(plot_amps.size(),0.);
+    vector<TBranch*> branches; 
+    vector<vector<unsigned>> indices;
 
-void getAmplitudeWeight(KeyedFunctors<double(Event)>& weightFunction, const EventList& events, TTree* tree, const std::string& branchName, const std::string& selectAmp = "" )
-{
+    auto weightFunction = sig.componentEvaluator(&eventsPlotMC);
+    
+    for(int i = 0; i < plot_amps.size(); i++){
+        cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
+
+        auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
+        branches.push_back(branch);
         
-    double weight(0);
-    auto branch = tree->Branch(branchName.c_str(),&weight);
-        
-    stringstream ss( selectAmp );
-    std::vector<std::string> selectAmps;
-    while( ss.good() ){
-        std::string substr;
-        getline( ss, substr, '_' );
-        selectAmps.push_back( AmpGen::programatic_name(substr) );
-    }
-     
-    vector<unsigned> index;
-    unsigned counter = 0;
-    for( auto& key : weightFunction.keys ){
-        stringstream ss( key );
-        std::vector<std::string> selectKeys;
+        stringstream ss( plot_amps[i] );
+        std::vector<std::string> selectAmps;
         while( ss.good() ){
             std::string substr;
-            getline( ss, substr, 'x' );
-            selectKeys.push_back( substr );
+            getline( ss, substr, '_' );
+            selectAmps.push_back( AmpGen::programatic_name(substr) );
         }
-        if(selectKeys.size()!=2)throw "ERROR";
-        for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
-            if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || selectAmp == "") {
-                index.push_back(counter);
-                //if(selectAmp != "")INFO("Found " << key);
+        
+        vector<unsigned> index;
+        unsigned counter = 0;
+        for( auto& key : weightFunction.keys ){
+            stringstream ss( key );
+            std::vector<std::string> selectKeys;
+            while( ss.good() ){
+                std::string substr;
+                getline( ss, substr, 'x' );
+                selectKeys.push_back( substr );
             }
+            if(selectKeys.size()!=2)throw "ERROR";
+            for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
+                if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
+                    index.push_back(counter);
+                    //if(selectAmp != "")INFO("Found " << key);
+                }
+            }
+            counter++;
         }
-        counter++;
+        indices.push_back(index);
     }
-                
-    for( const auto& evt : events ){
-        auto weights = weightFunction(evt);
-        weight = 0;
-        for( unsigned j = 0 ; j != index.size(); ++j ) weight += evt.weight() * weights[index[j]] / evt.genPdf() ; 
-        branch->Fill();
+
+    for( const auto& evt : eventsPlotMC ){
+        auto weightFun = weightFunction(evt);
+        for(int i = 0; i < plot_amps.size(); i++){
+            weights[i] = 0;
+            for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += evt.weight() * weightFun[indices[i][j]] / evt.genPdf() ; 
+        }
+        weight_tree->Fill();
     }
-    
+
+    weight_tree->Write();
+    weight_file->Write();
+    weight_file->Close();
+    std::cout << "Fit weights saved" << std::endl;    
 }
 
 std::vector<ThreeBodyCalculator> threeBodyCalculators( MinuitParameterSet& mps )
 {
   std::vector<std::string> threeBodiesToIntegrate = NamedParameter<std::string>( "ThreeBodiesToIntegrate" ).getVector();
   std::vector<ThreeBodyCalculator> calculators;
-  for ( auto& v : threeBodiesToIntegrate ) calculators.emplace_back( v, mps, 40, 0.6, 3);
+  for ( auto& v : threeBodiesToIntegrate ){
+      auto spline_params = NamedParameter<double>( v + "::Spline").getVector();
+      size_t nBins;
+      double min, max;
+      if( spline_params.size() == 3 ){
+          nBins = size_t( spline_params[0] );
+          min   =         spline_params[1] ; 
+          max   =         spline_params[2];
+      }
+      else {
+          nBins = NamedParameter<double>( v + "::Spline::N"  , 0. );
+          min   = NamedParameter<double>( v + "::Spline::Min", 0. );
+          max   = NamedParameter<double>( v + "::Spline::Max", 0. );
+      }
+      calculators.emplace_back( v, mps,nBins,min,max);      
+  }
   return calculators;
 }
 
@@ -528,64 +567,23 @@ int main( int argc, char* argv[] )
   fr->writeToOptionsFile( logFile );
   fr->writeToRootFile( output, seed, sig.numAmps(),sumFractions );
   output->cd();
-  
-  /* Write out the data plots. This also shows the first example of the named arguments 
-     to functions, emulating python's behaviour in this area */
-
-  //auto plots = events.makeDefaultProjections(PlotOptions::Prefix("Data"), PlotOptions::Bins(nBins));
-  //for ( auto& plot : plots ) plot->Write();
-
-  //auto projections = evtType.defaultProjections(nBins);
-  //for ( auto& proj : projections ) perAmplitudePlot( eventsMC, proj, sig);
-
   output->Close();
 
- unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
- if( saveWeights ){
+  unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+  if( saveWeights ){
+      EventList eventsPlotMC;
+      if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+      else {
+        eventsPlotMC = EventList(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
+        if(useFilter==1)eventsPlotMC.filter(filter);
+          auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
+          rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
+          if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
+      }
+      sig.setMC( eventsPlotMC );
+      sig.prepare();
 
-  EventList eventsPlotMC;
-  if(maxIntEvents == -1) eventsPlotMC = eventsMC;
-  else {
-    eventsPlotMC = EventList(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
-    if(useFilter==1)eventsPlotMC.filter(filter);
-      auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
-      rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
-      if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
-  }
-  sig.setMC( eventsPlotMC );
-  sig.prepare();
-
-  const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
-  TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
-  weight_file->cd();
-  TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
-	
-  double weight_sig(0);	
-  auto branch = weight_tree->Branch("w_sig",&weight_sig);
-  
-  double sum_sig(0);
-  for( auto& evt : eventsPlotMC )
-	{
-	  weight_sig = sig.getValNoCache(evt)/sig.norm() * (evt.weight() / evt.genPdf());
-	  sum_sig+= evt.weight() / evt.genPdf() * weight_sig;
-	  		   
-	  weight_tree->Fill();
-	}
-
-  auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
-  auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
-
-  auto weightFunction = sig.componentEvaluator(&eventsPlotMC);
-  getAmplitudeWeight( weightFunction,eventsPlotMC, weight_tree, "weight" );
-  for(int i = 0; i < plot_amps.size(); i++){
-      cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
-      getAmplitudeWeight( weightFunction, eventsPlotMC, weight_tree, plot_weights[i], plot_amps[i] );
-  }
-  
-  weight_tree->Write();
-  weight_file->Write();
-  weight_file->Close();
-  std::cout << "Fit weights saved" << std::endl;
+      makePlotWeightFile(sig,eventsPlotMC);  
   }
 
   cout << "==============================================" << endl;
