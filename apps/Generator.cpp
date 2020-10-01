@@ -141,7 +141,7 @@ int main( int argc, char** argv )
 {
   OptionsParser::setArgs( argc, argv );
 
-  size_t nEvents      = NamedParameter<size_t>     ("nEvents"  , 1, "Total number of events to generate" );
+  size_t nEvents      = NamedParameter<size_t>     ("nEvents"  , 1000, "Total number of events to generate" );
   size_t blockSize    = NamedParameter<size_t>     ("BlockSize", 5000000, "Number of events to generate per block" );
   int seed            = NamedParameter<int>        ("Seed"     , 0, "Random seed used in event Generation" );
   std::string outfile = NamedParameter<std::string>("Output"   , "Generate_Output.root" , "Name of output file" ); 

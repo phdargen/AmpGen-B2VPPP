@@ -33,11 +33,11 @@
 #include "AmpGen/PolarisedSum.h"
 
 #if ENABLE_AVX2
-#include "AmpGen/EventListSIMD.h"
-using EventList_type = AmpGen::EventListSIMD;
+    #include "AmpGen/EventListSIMD.h"
+    using EventList_type = AmpGen::EventListSIMD;
 #else
-#include "AmpGen/EventList.h"
-using EventList_type = AmpGen::EventList; 
+    #include "AmpGen/EventList.h"
+    using EventList_type = AmpGen::EventList; 
 #endif
 
 #include <TGraph.h>
@@ -49,7 +49,7 @@ using EventList_type = AmpGen::EventList;
 using namespace std;
 using namespace AmpGen;
 
-void makePlotWeightFile(PolarisedSum& sig, const EventList& eventsPlotMC){
+void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
     const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
     TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
     weight_file->cd();
@@ -64,7 +64,7 @@ void makePlotWeightFile(PolarisedSum& sig, const EventList& eventsPlotMC){
     vector<TBranch*> branches; 
     vector<vector<unsigned>> indices;
 
-    auto weightFunction = sig.componentEvaluator(&eventsPlotMC);
+    auto weightFunction = sig.componentEvaluator();
     
     for(int i = 0; i < plot_amps.size(); i++){
         cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
@@ -326,7 +326,7 @@ struct rnd_cut {
 };
 
 template <typename likelihoodType>
-FitResult* doFit( likelihoodType&& likelihood, EventList& data, EventList& mc, MinuitParameterSet& MPS )
+FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_type& mc, MinuitParameterSet& MPS )
 {
     auto time_wall = std::chrono::high_resolution_clock::now();
     auto time      = std::clock();
@@ -471,21 +471,21 @@ int main( int argc, char* argv[] )
   //sanityChecks(MPS);
 
   EventType evtType(pNames);
-  EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight"));
+  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight"));
   
   auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
   vector<size_t> entryListMC;
   for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
-  EventList eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true),EntryList(entryListMC));
+  EventList_type eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true),EntryList(entryListMC));
   
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
   auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
   auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
 
-  phsp_cut filter(cut_dim,cut_limits,invertCut);
-  if(useFilter==1)events.filter(filter);
-  if(useFilter==1)eventsMC.filter(filter);
+  //phsp_cut filter(cut_dim,cut_limits,invertCut);
+  //if(useFilter==1)events.filter(filter);
+  //if(useFilter==1)eventsMC.filter(filter);
 
   //auto integratorEventFraction = NamedParameter<double>("integratorEventFraction", 1);
   //rnd_cut filter_rnd(integratorEventFraction,false,eventsMC.size());
@@ -557,7 +557,7 @@ int main( int argc, char* argv[] )
     
   /* Estimate the chi2 using an adaptive / decision tree based binning, 
      down to a minimum bin population of 15, and add it to the output. */
-  auto evaluator = sig.evaluator(&eventsMC);
+  auto evaluator = sig.evaluator();
   auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
   Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
   //chi2.writeBinningToFile("chi2_binning.txt");
@@ -571,14 +571,14 @@ int main( int argc, char* argv[] )
 
   unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
   if( saveWeights ){
-      EventList eventsPlotMC;
+      EventList_type eventsPlotMC;
       if(maxIntEvents == -1) eventsPlotMC = eventsMC;
       else {
-        eventsPlotMC = EventList(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
-        if(useFilter==1)eventsPlotMC.filter(filter);
-          auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
-          rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
-          if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
+        eventsPlotMC = EventList_type(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
+        //if(useFilter==1)eventsPlotMC.filter(filter);
+        //auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
+        //rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
+        //if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
       }
       sig.setMC( eventsPlotMC );
       sig.prepare();

@@ -361,6 +361,15 @@ void makePlots(){
     c->Divide(4,2);
     for(int j=0;j<8;j++){ 
         c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+    }
+    c->Print("amp_plots2.eps");
+
+
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
         plotHistos(histo_set_cut1[j],true,1);
     }
     c->Print("amp_plots_cut1.eps");

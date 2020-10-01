@@ -85,6 +85,7 @@ TGraph* ThreeBodyCalculator::runningMass(
 TGraph* ThreeBodyCalculator::widthGraph( const size_t& steps, const double& min, const double& max )
 {
   TGraph* g = new TGraph();
+  g->SetName(m_name.c_str());
   double st = (max-min)/double(steps-1);
   for ( size_t c = 0; c < steps; ++c ) {
     double s = m_min + double( c ) * st;

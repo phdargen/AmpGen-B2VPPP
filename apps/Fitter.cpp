@@ -231,7 +231,7 @@ int main( int argc, char* argv[] )
   INFO( "Data events: " << events.size() );  
   INFO( "MC events  : " << eventsMC.size() );
   if( mcFile == "" ){
-    Generator<>( evtType, &rndm ).fillEventListPhaseSpace( eventsMC, 5e6 );
+    Generator<>( evtType, &rndm ).fillEventListPhaseSpace( eventsMC, 5e5 );
     INFO("Generated: " << eventsMC.size() << " events for integrals" );
   }
   

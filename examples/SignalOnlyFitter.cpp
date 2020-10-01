@@ -104,7 +104,7 @@ int main( int argc, char* argv[] )
   /* Events are read in from ROOT files. If only the filename and the event type are specified, 
      the file is assumed to be in the specific format that is defined by the event type, 
      unless the branches to load are specified in the user options */
-  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false) );
+  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), InputUnits(Units::MeV) );
   
   /* Generate events to normalise the PDF with. This can also be loaded from a file, 
      which will be the case when efficiency variations are included. Default number of normalisation events 

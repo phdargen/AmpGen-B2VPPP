@@ -11,6 +11,10 @@ CouplingConstant::AngularUnits deg
 # Import K-matrix parameters 
 Import $AMPGENROOT/options/kMatrix.opt
 
+fPDF 2 1.0 0
+fComb 2 0.0 0
+fMisID 2 0.0 0
+
 D0{K0S0,rho(770)0{pi+,pi-}}           2  1.000  0.00  2     0.0 0.0 
 D0{K*(892)bar-{K0S0,pi-},pi+}         0  1.740  0.01  0   139.0 0.3
 D0{K(0)*(1430)bar-,pi+}               0  8.200  0.70  0   153.0 8.0
