@@ -554,12 +554,16 @@ void PolarisedSum::normalizeAmps(){
         //INFO(m_matrixElements[i].decayDescriptor());   
         //INFO(sqrt(this->norm(i,i).real()));
         //INFO(m_matrixElements[i].coefficient);   
-        //m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
+        m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
 //        m_matrixElements[i].scaleCoupling(2.);
         m_matrixElements[i].workToDo= true;
+        m_matrixElements[i].prepare();
+
     }
     reset();
     prepare();
+    transferParameters();
+    m_probExpression.prepare();
     updateNorms();
     debug_norm();
 }

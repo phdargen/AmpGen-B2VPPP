@@ -49,7 +49,80 @@
 using namespace std;
 using namespace AmpGen;
 
+namespace AmpGen { 
+  make_enum(pdfTypes, CoherentSum, PolarisedSum, FixedLib)
+  make_enum(phspTypes, PhaseSpace, RecursivePhaseSpace, TreePhaseSpace)
+}  
+
 void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
+    const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
+    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
+    weight_file->cd();
+    TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
+    
+    auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
+    plot_amps.push_back("");
+    plot_weights.push_back("weight");
+    
+    vector<double> weights(plot_amps.size(),0.);
+    vector<TBranch*> branches; 
+    vector<vector<unsigned>> indices;
+
+    auto weightFunction = sig.componentEvaluator();
+    
+    for(int i = 0; i < plot_amps.size(); i++){
+        cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
+
+        auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
+        branches.push_back(branch);
+        
+        stringstream ss( plot_amps[i] );
+        std::vector<std::string> selectAmps;
+        while( ss.good() ){
+            std::string substr;
+            getline( ss, substr, '_' );
+            selectAmps.push_back( AmpGen::programatic_name(substr) );
+        }
+        
+        vector<unsigned> index;
+        unsigned counter = 0;
+        for( auto& key : weightFunction.keys ){
+            stringstream ss( key );
+            std::vector<std::string> selectKeys;
+            while( ss.good() ){
+                std::string substr;
+                getline( ss, substr, 'x' );
+                selectKeys.push_back( substr );
+            }
+            if(selectKeys.size()!=2)throw "ERROR";
+            for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
+                if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
+                    index.push_back(counter);
+                    //if(selectAmp != "")INFO("Found " << key);
+                }
+            }
+            counter++;
+        }
+        indices.push_back(index);
+    }
+
+    for( const auto& evt : eventsPlotMC ){
+        auto weightFun = weightFunction(evt);
+        for(int i = 0; i < plot_amps.size(); i++){
+            weights[i] = 0;
+            for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += evt.weight() * weightFun[indices[i][j]] / evt.genPdf() ; 
+        }
+        weight_tree->Fill();
+    }
+
+    weight_tree->Write();
+    weight_file->Write();
+    weight_file->Close();
+    std::cout << "Fit weights saved" << std::endl;    
+}
+
+void makePlotWeightFile(CoherentSum& sig, const EventList_type& eventsPlotMC){
     const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
     TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
     weight_file->cd();
@@ -430,15 +503,17 @@ int main( int argc, char* argv[] )
      then the default value, and then the help string that will be printed if --h is specified 
      as an option. */
   std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
+  std::string weightData = NamedParameter<std::string>("weightData", "weight");  
   std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
+  std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
+
   std::string logFile  = NamedParameter<std::string>("LogFile"   , "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
   
-  auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
-              ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
-
-  auto pNames = NamedParameter<std::string>("EventType" , ""    
-              , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
+  auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+  auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+  if(bNamesMC.size()==0)bNamesMC=bNames;
+  auto pNames = NamedParameter<std::string>("EventType" , "", "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
   
   size_t      nThreads = NamedParameter<size_t>     ("nCores"    , 8           , "Number of threads to use" );
   size_t      seed     = NamedParameter<size_t>     ("Seed"      , 0           , "Random seed used" );
@@ -471,12 +546,22 @@ int main( int argc, char* argv[] )
   //sanityChecks(MPS);
 
   EventType evtType(pNames);
-  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight"));
+  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
   
   auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
   vector<size_t> entryListMC;
   for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
-  EventList_type eventsMC(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true),EntryList(entryListMC));
+  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+
+  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+  if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
+    INFO("Changing data units from MeV -> GeV");
+    events.transform( scale_transform );
+  }
+  if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") {
+    INFO("Changing MC units from MeV -> GeV");
+    eventsMC.transform( scale_transform );
+  }
   
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
@@ -491,101 +576,91 @@ int main( int argc, char* argv[] )
   //rnd_cut filter_rnd(integratorEventFraction,false,eventsMC.size());
   //if(integratorEventFraction < 1)eventsMC.filter(filter_rnd);
 
-    /*
-  PolarisedSum sig_norm(evtType, MPS);
-  sig_norm.setMC( eventsMC );   
-  auto ll_norm = make_likelihood(events, sig_norm);
-  sig_norm.prepare();
-  cout << sig_norm(events[0]) << endl;
-*/
-    
-  PolarisedSum sig(evtType, MPS);
-  //for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,1./sqrt(sig_norm.norm(i,i).real()));
-  //for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,2.);
-  sig.setMC( eventsMC );
-  cout << "Number of amplitudes = " << sig.numAmps() << endl;
-//  for ( unsigned int i = 0; i < sig.numAmps(); ++i )sig.scaleCoupling(i,1./sqrt(sig_norm.norm(i,i).real()));
-    auto ll = make_likelihood(events, sig);
-    sig.prepare();
-    cout << ll(events[0]) << endl;
-    sig.normalizeAmps();
-  //sig.reset();
-  //sig.prepare();
-  //sig.updateNorms();
+  auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
+  if(pdfType==pdfTypes::CoherentSum){
+        CoherentSum sig(evtType, MPS);
+        sig.setMC( eventsMC );
 
-/*
-    sig.prepare();
-    cout << ll(events[0]) << endl;
-        
-    for ( unsigned int i = 0; i < sig.numAmps(); ++i ) {
-        cout <<  sig[i].decayDescriptor() << endl;    
-        cout <<  sig.norm(i,i).real() << endl;
-        cout <<  sig[i].coefficient << endl << endl;    
-        //sig.scaleCoupling(i,2.);
-    }
-    //sig.reset();
-    
-    sig.normalizeAmps();
-    cout << endl << "scaled" << endl;
-    //sig.prepare();
-//    cout << ll(events[0]) << endl;
-//
-    for ( unsigned int i = 0; i < sig.numAmps(); ++i ) {
-        cout <<  sig[i].decayDescriptor() << endl;    
-        cout <<  sig.norm(i,i).real()  << endl;
-        cout <<  sig[i].coefficient << endl << endl;          
-    }
-    
-    //throw "";
-*/
-    
-  TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
-  /* Do the fit and return the fit results, which can be written to the log and contains the 
-     covariance matrix, fit parameters, and other observables such as fit fractions */
-  FitResult* fr = doFit(ll, events, eventsMC, MPS );
+        cout << "Number of amplitudes = " << sig.size() << endl;    
+        TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
 
-  /* Calculate the `fit fractions` using the signal model and the error propagator (i.e. 
-     fit results + covariance matrix) of the fit result, and write them to a file. 
-   */
-  auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
-  fr->addFractions( fitFractions );
+        auto ll = make_likelihood(events, sig);
+        FitResult* fr = doFit(ll, events, eventsMC, MPS );
+        auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
+        fr->addFractions( fitFractions );
 
-  double sumFractions(0);
-  for( auto& f : fitFractions ){
-      if(f.name()=="Sum_B+")sumFractions = f.val();
+        double sumFractions(0);
+        for( auto& f : fitFractions ){
+            if(f.name()=="Sum_B+" || f.name()=="Sum_B0" )sumFractions = f.val();
+        }            
+        // Estimate the chi2 
+        auto evaluator = sig.evaluator();
+        auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
+        fr->addChi2( chi2.chi2(), chi2.nBins() );
+
+        fr->print();
+        fr->writeToOptionsFile( logFile );
+        fr->writeToRootFile( output, seed, sig.size(),sumFractions );
+        output->cd();
+        output->Close();
+
+        unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+        if( saveWeights ){
+            EventList_type eventsPlotMC;
+            if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+            else {
+                eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+            }
+            sig.setMC( eventsPlotMC );
+            sig.prepare();
+            makePlotWeightFile(sig,eventsPlotMC);  
+        }
+  } 
+  else if(pdfType==pdfTypes::PolarisedSum){  
+        PolarisedSum sig(evtType, MPS);
+        sig.setMC( eventsMC );
+        cout << "Number of amplitudes = " << sig.numAmps() << endl;
+        auto ll = make_likelihood(events, sig);
+        sig.prepare();
+        cout << ll(events[0]) << endl;
+        sig.normalizeAmps();
+            
+        TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+        FitResult* fr = doFit(ll, events, eventsMC, MPS );
+        auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
+        fr->addFractions( fitFractions );
+
+        double sumFractions(0);
+        for( auto& f : fitFractions ){
+            if(f.name()=="Sum_B+")sumFractions = f.val();
+        }
+            
+        // Estimate the chi2 
+        auto evaluator = sig.evaluator();
+        auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
+        //chi2.writeBinningToFile("chi2_binning.txt");
+        fr->addChi2( chi2.chi2(), chi2.nBins() );
+
+        fr->print();
+        fr->writeToOptionsFile( logFile );
+        fr->writeToRootFile( output, seed, sig.numAmps(),sumFractions );
+        output->cd();
+        output->Close();
+
+        unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+        if( saveWeights ){
+            EventList_type eventsPlotMC;
+            if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+            else {
+                eventsPlotMC = EventList_type(intFile, evtType, Branches(bNames), WeightBranch(weightMC), GetGenPdf(true));
+            }
+            sig.setMC( eventsPlotMC );
+            sig.prepare();
+            makePlotWeightFile(sig,eventsPlotMC);  
+        }
   }
-    
-  /* Estimate the chi2 using an adaptive / decision tree based binning, 
-     down to a minimum bin population of 15, and add it to the output. */
-  auto evaluator = sig.evaluator();
-  auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-  Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
-  //chi2.writeBinningToFile("chi2_binning.txt");
-  fr->addChi2( chi2.chi2(), chi2.nBins() );
-
-  fr->print();
-  fr->writeToOptionsFile( logFile );
-  fr->writeToRootFile( output, seed, sig.numAmps(),sumFractions );
-  output->cd();
-  output->Close();
-
-  unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
-  if( saveWeights ){
-      EventList_type eventsPlotMC;
-      if(maxIntEvents == -1) eventsPlotMC = eventsMC;
-      else {
-        eventsPlotMC = EventList_type(intFile, evtType, Branches(bNames), WeightBranch("weight"), GetGenPdf(true));
-        //if(useFilter==1)eventsPlotMC.filter(filter);
-        //auto plotEventFraction = NamedParameter<double>("plotEventFraction", 1);
-        //rnd_cut filter_rnd2(plotEventFraction,true,eventsMC.size());
-        //if(plotEventFraction < 1)eventsMC.filter(filter_rnd2);
-      }
-      sig.setMC( eventsPlotMC );
-      sig.prepare();
-
-      makePlotWeightFile(sig,eventsPlotMC);  
-  }
-
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
   cout << "==============================================" << endl;

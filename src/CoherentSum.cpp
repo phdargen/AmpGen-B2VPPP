@@ -393,7 +393,7 @@ KeyedFunctors<double(Event)> CoherentSum::componentEvaluator(const EventList_typ
       auto ci = this->m_matrixElements[i].coefficient;
       auto cj = this->m_matrixElements[j].coefficient;
       double s = (i==j) ? 1 : 2 ;
-      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_" + programatic_name( mj.decayTree.decayDescriptor() );
+      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_x_" + programatic_name( mj.decayTree.decayDescriptor() );
       auto functor = [ci,cj,i,j,s, cache](const Event& event){ return s * std::real( ci * cache->get<complex_t>( event.index(), i ) *  std::conj( cj * cache->get<complex_t>( event.index(), j ) ) ) ;};
       rt.add(functor, name, "");
     }

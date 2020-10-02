@@ -67,10 +67,17 @@ namespace AmpGen
       std::vector<Coupling>::const_iterator   end() const { return couplings.end() ; }
       void scaleCoupling(double scale){
           m_scale = scale;
+          //m_scale_expr.prepare();
       }  
     private:
       std::vector<Coupling> couplings;
       double            m_scale          = {1};
+   //   CompiledExpression<double(const double*, const double*)> makeScaleExpr(){
+     //     LambdaExpression scale( [&m_scale](){ return m_scale; } );
+       //  return make_expression<double>( scale, "scale" );
+     // }
+      //CompiledExpression<double(const double*, const double*)> m_scale_expr = {make_expression<double>( LambdaExpression( [this](){ return m_scale; } ) ,"scale")};
+      //LambdaExpression scale( [this](){ return m_scale; } );
   };
   
   class AmplitudeRules

@@ -55,3 +55,27 @@ BOOST_AUTO_TEST_CASE( lambda_expression )
   expr.prepare(); // update cache state 
   BOOST_CHECK( expr( static_cast<const double*>(nullptr)) == 19 );
 }
+
+BOOST_AUTO_TEST_CASE( scale_expression )
+{
+  double x = 1;
+  LambdaExpression test( [&x](){ return x; } );
+  auto f = test * Expression(std::complex<double>(2,0)); 
+
+  //Expression scale(f());
+
+  //INFO( std::real(f()) );
+  CompiledExpression<double(const double*, const double*)> expr = make_expression<double>( f, "test" );
+  Expression scale = expr.expression();
+  INFO( std::real(scale()) );  
+
+  //INFO(expr( static_cast<const double*>(nullptr)));
+  x = 2;
+  INFO( std::real(scale()) );  
+  //INFO(expr( static_cast<const double*>(nullptr)));
+  expr.prepare(); // update cache state 
+    INFO( std::real(scale()) );
+    //Expression scale = expr.expression();
+   // INFO(expr( static_cast<const double*>(nullptr)));
+  //BOOST_CHECK( expr( static_cast<const double*>(nullptr)) == 19 );
+}

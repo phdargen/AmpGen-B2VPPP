@@ -183,16 +183,29 @@ void plotHistos(vector<TH1D*>histos,bool plotComponents = true, int style = 0){
 
 void makePlots(){
 
-  std::string dataFile = NamedParameter<std::string>("DataSample", "", "Name of file containing data sample to fit." );
-  std::string intFile  = NamedParameter<std::string>("IntegrationSample","", "Name of file containing events to use for MC integration.");
+  std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
+  std::string weightData = NamedParameter<std::string>("weightData", "weight");  
+  std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
+  std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
               ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+  auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+  if(bNamesMC.size()==0)bNamesMC=bNames;
   auto pNames = NamedParameter<std::string>("EventType" , ""    
               , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
 
   EventType evtType(pNames);
-  EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch("weight") );
-  EventList eventsMC(intFile, evtType, Branches(bNames), GetGenPdf(true), WeightBranch("weight"));
+  EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData) );
+  EventList eventsMC(intFile, evtType, Branches(bNamesMC), GetGenPdf(true), WeightBranch(weightMC));
+  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+    if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
+        INFO("Changing data units from MeV -> GeV");
+        events.transform( scale_transform );
+  }
+  if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") {
+        INFO("Changing MC units from MeV -> GeV");
+        eventsMC.transform( scale_transform );
+  }
 
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
@@ -421,13 +434,258 @@ void makePlots(){
 }
 
 
+
+void makePlots3body(){
+    
+    std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
+    std::string weightData = NamedParameter<std::string>("weightData", "weight");  
+    std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
+    std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
+    auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
+                                              ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+    auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+    if(bNamesMC.size()==0)bNamesMC=bNames;
+    auto pNames = NamedParameter<std::string>("EventType" , ""    
+                                              , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
+    
+    EventType evtType(pNames);
+    EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData) );
+    EventList eventsMC(intFile, evtType, Branches(bNamesMC), GetGenPdf(true), WeightBranch(weightMC));
+    auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+    if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
+        INFO("Changing data units from MeV -> GeV");
+        events.transform( scale_transform );
+    }
+    if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") {
+        INFO("Changing MC units from MeV -> GeV");
+        eventsMC.transform( scale_transform );
+    }
+    
+    auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
+    auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
+    auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
+    
+    phsp_cut filter(cut_dim,cut_limits,invertCut);
+    if(useFilter==1)events.filter(filter);
+    if(useFilter==1)eventsMC.filter(filter);
+    
+    auto invertCut_plot1 = NamedParameter<bool>("invertCut_plot1", 0,"Invert cut logic");
+    auto cut_dim_plot1 = NamedParameter<unsigned int>("cut_dim_plot1", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot1 = NamedParameter<double>("cut_limits_plot1", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot1(cut_dim_plot1,cut_limits_plot1,invertCut_plot1);    
+    
+    auto invertCut_plot2 = NamedParameter<bool>("invertCut_plot2", 0,"Invert cut logic");
+    auto cut_dim_plot2 = NamedParameter<unsigned int>("cut_dim_plot2", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot2 = NamedParameter<double>("cut_limits_plot2", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot2(cut_dim_plot2,cut_limits_plot2,invertCut_plot2);    
+    
+    auto invertCut_plot3 = NamedParameter<bool>("invertCut_plot3", 0,"Invert cut logic");
+    auto cut_dim_plot3 = NamedParameter<unsigned int>("cut_dim_plot3", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot3 = NamedParameter<double>("cut_limits_plot3", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot3(cut_dim_plot3,cut_limits_plot3,invertCut_plot3);    
+    
+    auto invertCut_plot4 = NamedParameter<bool>("invertCut_plot4", 0,"Invert cut logic");
+    auto cut_dim_plot4 = NamedParameter<unsigned int>("cut_dim_plot4", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot4 = NamedParameter<double>("cut_limits_plot4", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot4(cut_dim_plot4,cut_limits_plot4,invertCut_plot4);    
+    
+    auto invertCut_plot5 = NamedParameter<bool>("invertCut_plot5", 0,"Invert cut logic");
+    auto cut_dim_plot5 = NamedParameter<unsigned int>("cut_dim_plot5", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot5 = NamedParameter<double>("cut_limits_plot5", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot5(cut_dim_plot5,cut_limits_plot5,invertCut_plot5);    
+    
+    auto invertCut_plot6 = NamedParameter<bool>("invertCut_plot6", 0,"Invert cut logic");
+    auto cut_dim_plot6 = NamedParameter<unsigned int>("cut_dim_plot6", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot6 = NamedParameter<double>("cut_limits_plot6", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot6(cut_dim_plot6,cut_limits_plot6,invertCut_plot6);    
+    
+    const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
+    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
+    weight_file->cd();
+    auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
+    if(weight_tree->GetEntries() != eventsMC.size()){
+        cout << "ERROR inconsistent number of events" << endl;
+        throw "ERROR";
+    }
+    
+    cout << "Using data file: " << dataFile << endl;
+    cout << "Using MC file: " << intFile << endl;
+    cout << "Using weight file: " << FitWeightFileName << endl;
+    
+    //Dimensions to plot
+    //EventType B0 D- K0S0 pi+ 
+    vector<unsigned int> m12{1,2};
+    vector<unsigned int> m02{0,2};
+    vector<unsigned int> m01{0,1};
+    
+    vector<vector<unsigned int>> dims{m12,m02,m01};
+    vector<string> labels{"m_Kspi","m_Dpi","m_DKs"};
+    vector<string> titles{"m(K_{s}#pi) [GeV]","m(D#pi) [GeV]","m(DK_{s}) [GeV]"};
+    
+    //Limits
+    vector<double> lim12{0.5,3.5};
+    vector<double> lim02{1.5,5};
+    vector<double> lim01{2,5.5};
+    vector<vector<double>> limits{lim12,lim02,lim01};
+    
+    //Amps to plot
+    auto legend = NamedParameter<string>("plot_legend", std::vector<string>() ).getVector();
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
+    
+    vector<string> weights{"data","weight"};
+    for (int i = 0; i < plot_weights.size(); i++)weights.push_back(plot_weights[i]);
+    
+    vector<double> w(weights.size());    
+    for(int i=1; i<weights.size();i++)weight_tree->SetBranchAddress(weights[i].c_str(),&w[i]);
+    
+    //Create histograms
+    auto nBins = NamedParameter<Int_t>("nBins", 50, "Number of bins");
+    vector<vector<TH1D*>> histo_set,histo_set_cut1,histo_set_cut2,histo_set_cut3,histo_set_cut4,histo_set_cut5,histo_set_cut6;
+    for(int i=0;i<dims.size();i++){
+        histo_set.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut2.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut3.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut5.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        histo_set_cut6.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));      
+    }
+    //Fill data
+    for( auto& evt : events )
+    {
+        for(int j=0;j<dims.size();j++) histo_set[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot1(evt))for(int j=0;j<dims.size();j++) histo_set_cut1[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot2(evt))for(int j=0;j<dims.size();j++) histo_set_cut2[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot3(evt))for(int j=0;j<dims.size();j++) histo_set_cut3[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot4(evt))for(int j=0;j<dims.size();j++) histo_set_cut4[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot5(evt))for(int j=0;j<dims.size();j++) histo_set_cut5[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+        if(filter_plot6(evt))for(int j=0;j<dims.size();j++) histo_set_cut6[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
+    }
+    
+    //Fill fit projections
+    for(int i=0; i< eventsMC.size(); i++ )
+    {
+        Event evt(eventsMC[i]);
+        weight_tree->GetEntry(i);
+        
+        for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot1(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut1[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot2(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut2[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot3(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut3[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot4(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot5(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        if(filter_plot6(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    }
+    
+    //Plot
+    TCanvas* c = new TCanvas();  
+    TLegend leg(0.,0.,1,1,"");
+    leg.SetLineStyle(0);
+    leg.SetLineColor(0);
+    leg.SetFillColor(0);
+    leg.SetTextFont(22);
+    leg.SetTextColor(1);
+    leg.SetTextSize(0.075);
+    leg.SetTextAlign(12);
+    //for(int k=2; k<weights.size();k++)leg.AddEntry(histo_set[0][k],legend[k].c_str(),"l");
+    
+    for(int j=0;j<dims.size();j++){ 
+        plotHistos(histo_set[j]);
+        c->Print((labels[j]+".eps").c_str());
+    }
+    
+    c->Clear();
+    c->Divide(3);
+    for(int j=0;j<3;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],false,1);
+    }
+    c->Print("plots.eps");
+    
+    c->Clear();
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+    }
+    c->cd(4);
+    leg.Draw();
+    c->Print("amp_plots.eps");
+    
+    return;
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+    }
+    c->Print("amp_plots2.eps");
+    
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut1[j],true,1);
+    }
+    c->Print("amp_plots_cut1.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut2[j],true,1);
+    }
+    c->Print("amp_plots_cut2.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut3[j],true,1);
+    }
+    c->Print("amp_plots_cut3.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut4[j],true,1);
+    }
+    c->Print("amp_plots_cut4.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut5[j],true,1);
+    }
+    c->Print("amp_plots_cut5.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut6[j],true,1);
+    }
+    c->Print("amp_plots_cut6.eps");
+    
+    
+    c->Clear();
+    leg.Draw();
+    c->Print("leg.eps");
+}
+
+
 int main( int argc, char* argv[] ){
 
   OptionsParser::setArgs( argc, argv );
 
   gStyle->SetOptStat(0);
   LHCbStyle();
-  makePlots();
+  makePlots3body();
 
   return 0;
 }

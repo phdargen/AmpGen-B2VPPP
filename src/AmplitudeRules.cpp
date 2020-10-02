@@ -133,12 +133,16 @@ Expression Coupling::to_expression() const
 
 std::complex<double> TotalCoupling::operator()() const
 {
+       //INFO(m_scale);
   return std::accumulate( couplings.begin(), couplings.end(), complex_t(m_scale,0), [](auto& prod, auto& coupling ){ return prod * coupling() ; } );
 }
 
 Expression TotalCoupling::to_expression() const
 {
-  return std::accumulate( couplings.begin(), couplings.end(), Expression(m_scale), [](auto& prod, auto& coupling ){ return prod * coupling.to_expression(); } );
+     //LambdaExpression scale( [this](){ return m_scale; } );
+     Expression val = std::accumulate( couplings.begin(), couplings.end(), Expression(1), [](auto& prod, auto& coupling ){ return prod * coupling.to_expression(); } );
+     //auto f = scale * val;
+     return val;
 }
 
 void TotalCoupling::print() const
