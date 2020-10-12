@@ -60,14 +60,28 @@ namespace AmpGen
       if constexpr( std::is_same<eventListType,EventList>::value )
       {
         double LL = 0;
+        double sumW = 0;
+        double sumW2 = 0;
         for_each( m_pdfs, []( auto& f ) { f.prepare(); } );
-        #pragma omp parallel for reduction( +: LL )
+        #pragma omp parallel for reduction( +: LL,sumW,sumW2 )
         for ( unsigned int i = 0; i < m_events->size(); ++i ) {
           auto prob = ((*this))(( *m_events)[i] );
           auto w = (*m_events)[i].weight();
-          LL += w*log(prob);
+          //w = (abs(w)<3) ? w : 0;
+          prob = (w < 0 && prob < 0.001) ? 0.001 : prob;
+          //if(w < 0 prob<0.0001)INFO(prob);
+          auto val = w*log(prob);
+          //INFO(val);
+          //LL += std::isnan(val) ? 0. : val;
+          LL += val;
+          sumW += w;
+          sumW2 += w*w;
         }
-        return -2 * LL;
+        //double N = (double)m_events->size();
+        //for_each( m_pdfs, [&LL,&N]( auto& f ) { LL += N * log(f.norm()) - f.norm() ; } );
+        //INFO(sumW/sumW2);
+        return -2 * sumW/sumW2 * LL;
+//        return -2 * sumW/sumW2 * LL;
       }
       #if ENABLE_AVX 
       if constexpr( std::is_same<eventListType, EventListSIMD>::value )

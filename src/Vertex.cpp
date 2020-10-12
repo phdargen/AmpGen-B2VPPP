@@ -73,6 +73,16 @@ Tensor AmpGen::Orbital_DWave(const Tensor& p, const Tensor& q)
   return f;  
 }
 
+Tensor AmpGen::Orbital_FWave(const Tensor& p, const Tensor& q)
+{
+    Tensor L = Orbital_PWave(p, q);
+    Tensor f =  L(mu) * L(nu) * L(alpha) - make_cse( dot( L, L ) / 5. ) * ( Spin1Projector(p) ( mu, nu ) * L(alpha) + Spin1Projector(p) ( mu, alpha ) * L(nu) + Spin1Projector(p) ( alpha, nu ) * L(mu) ) ;
+    f.imposeSymmetry({0,1,2}); 
+    f.st();
+    return f;  
+}
+
+
 Tensor AmpGen::Spin1Projector( const Tensor& P )
 {
   auto is = 1./make_cse( dot(P,P) , true);
@@ -271,6 +281,16 @@ DEFINE_VERTEX( V_TS_D )
   Tensor coupling = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu ) * Q( alpha );
   return coupling( -mu, -nu ) * V1( nu, alpha ) * L( -alpha ) / ( GeV * GeV * GeV );
 }
+
+DEFINE_VERTEX( S_HS_F )
+{
+    Tensor orbital = Orbital_FWave( P, Q );
+    return V2[0] * Tensor( {dot( orbital, V1 ) / ( GeV * GeV * GeV)}, {1} );
+}
+
+DEFINE_VERTEX( H_SS_F ) { return Orbital_FWave( P, Q )  * V1[0] * V2[0] / ( GeV * GeV * GeV ); }
+
+
 
 DEFINE_VERTEX( f_fS_S )
 {

@@ -65,6 +65,21 @@ namespace AmpGen
     double m_lambda;
     const CoherentSum* m_pdf;
   };
+    
+  class ExtendedNormalisation : public IExtendLikelihood
+    {
+    public:
+        double getVal() const override;
+        void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+                       const MinuitParameterSet& mps ) override;
+        IExtendLikelihood* create() override { return new ExtendedNormalisation(); }
+        static std::string _id;
+        
+    private:
+        const CoherentSum* m_pdf;
+    };
+
+    
 } // namespace AmpGen
 
 #endif

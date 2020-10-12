@@ -106,6 +106,7 @@ namespace AmpGen
     /// \ingroup Vertices class S_TT_S 
     /// \brief \f$ S = T_1^{\mu\nu} T_{2\mu\nu}\f$
     DECLARE_VERTEX( S_TT_S );
+        
 
     /// @ingroup Vertices class V_SS_P
     /// @brief @f$ V^{\mu} = L^{\mu} S_1 S_2 @f$
@@ -130,6 +131,9 @@ namespace AmpGen
     DECLARE_VERTEX( T_SS_D );
     DECLARE_VERTEX( T_TS_D );
     DECLARE_VERTEX( T_TS_S );
+      
+    DECLARE_VERTEX( S_HS_F );
+    DECLARE_VERTEX( H_SS_F );
 
     DECLARE_VERTEX( f_fS_S );
     DECLARE_VERTEX( f_fS_S1 );
@@ -193,6 +197,7 @@ namespace AmpGen
       where @f$ L_{\mu} @f$ is the Orbital_PWave operator and @f$ S_{\mu\nu} @f$ is the 
       Spin1Projector. */
   Tensor Orbital_DWave(const Tensor& p, const Tensor& q);
+  Tensor Orbital_FWave(const Tensor& p, const Tensor& q);
 
   /** @ingroup Vertices function Spin1Projector
       @brief Helper function that computes the projection operator onto a spin one state.

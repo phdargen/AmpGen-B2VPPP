@@ -9,6 +9,7 @@
 #include "AmpGen/ParticleProperties.h"
 #include "AmpGen/ParticlePropertiesList.h"
 #include "AmpGen/Utilities.h"
+#include "AmpGen/CoherentSum.h"
 
 using namespace AmpGen;
 
@@ -47,4 +48,18 @@ void GaussianConstraint::configure( const std::string& configString,
   }
 }
 
+
+double ExtendedNormalisation::getVal() const
+{
+    return m_pdf->norm();
+}
+
+void ExtendedNormalisation::configure( const std::string& configString, 
+                      const CoherentSum& pdf,
+                      const MinuitParameterSet& mps )
+{
+    m_pdf       = &pdf;
+}
+
+REGISTER( IExtendLikelihood, ExtendedNormalisation );
 REGISTER( IExtendLikelihood, GaussianConstraint );

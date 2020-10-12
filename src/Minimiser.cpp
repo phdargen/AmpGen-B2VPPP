@@ -70,7 +70,7 @@ void Minimiser::prepare()
   m_minimiser->SetMaxIterations( 100000 );
   m_minimiser->SetTolerance( tolerance );
 //  m_minimiser->SetStrategy( 3 );
-  //  m_minimiser->SetPrecision(std::numeric_limits<double>::epsilon());
+  m_minimiser->SetPrecision(std::numeric_limits<double>::epsilon());
   m_minimiser->SetPrintLevel( m_printLevel );
   m_mapping.clear();
   m_covMatrix.clear();

@@ -168,17 +168,70 @@ void plotHistos(vector<TH1D*>histos,bool plotComponents = true, int style = 0){
     histos[0]->SetMarkerSize(.1);
     histos[0]->GetYaxis()->SetTitle("");
   }
-  if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.2);
+  histos[0]->SetMinimum(1);
+  if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
   histos[0]->DrawNormalized("",1);
 
   //for (int i = (plotComponents == true ? histos.size()-1 : 1); i > 0; i--)
   for (int i = 1; i < (plotComponents == true ? histos.size() : 2); i++)
   {
+      histos[i]->SetMinimum(1);
       if(style == 1)histos[i]->SetLineWidth(1);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
   }
   histos[0]->DrawNormalized("same",1);
+}
+
+vector<TH2D*> createHistos2D(vector<unsigned int> dim1, vector<unsigned int> dim2, string name, string title, int nBins, vector<double> limits1, vector<double> limits2, vector<string> weights){
+
+  vector<TH2D*> histos;
+  TH2D* histo = new TH2D(name.c_str(),title.c_str(),nBins*2,limits1[0],limits1[1],nBins*2,limits2[0],limits2[1]);
+  histo->SetMinimum(0.);
+  histo->SetMarkerSize(0.1);
+	//histo->SetMarkerStyle(21);
+  histos.push_back(histo);
+
+  for(int i=1; i<weights.size();i++){
+      TH2D* h = (TH2D*) histo->Clone((name+weights[i]).c_str());
+
+      if(i==1){
+            h->SetLineColor(kBlue);
+            h->SetLineWidth(3);
+      }else if(i==2){
+            h->SetLineColor(kRed+1);
+            h->SetLineWidth(2);
+            //h->SetFillColor(kRed+1);
+            //h->SetFillStyle(3353);
+      }else if(i==7){
+            h->SetLineColor(kGreen+1);
+            h->SetLineWidth(3);
+            //h->SetFillColor(kGreen+3);
+            //h->SetFillStyle(3353);
+      }else if(i==4){
+            h->SetLineColor(kMagenta+1);
+            h->SetLineWidth(3);
+            //h->SetFillColor(kMagenta+3);
+            //h->SetFillStyle(3353);
+      }else if(i==5){
+            h->SetLineColor(kBlack);
+            h->SetLineWidth(3);
+            //h->SetLineStyle(kDashed);
+      }else if(i==6){
+            h->SetLineColor(kCyan+1);
+            h->SetLineWidth(3);
+            //h->SetFillColor(kGray+3);
+            //h->SetFillStyle(1001);
+      }else if(i==3){
+            h->SetLineColor(kGray+1);
+            h->SetLineWidth(2);
+            //h->SetFillColor(kGray+3);
+            //h->SetFillStyle(1001);
+      }else h->SetLineColor(i+1);
+
+      histos.push_back(h);
+  }
+  return histos;
 }
 
 void makePlots(){
@@ -433,8 +486,6 @@ void makePlots(){
 	c->Print("leg.eps");
 }
 
-
-
 void makePlots3body(){
     
     std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
@@ -525,8 +576,8 @@ void makePlots3body(){
     
     //Limits
     vector<double> lim12{0.5,3.5};
-    vector<double> lim02{1.5,5};
-    vector<double> lim01{2,5.5};
+    vector<double> lim02{1.9,5};
+    vector<double> lim01{2.1,5.25};
     vector<vector<double>> limits{lim12,lim02,lim01};
     
     //Amps to plot
@@ -542,6 +593,7 @@ void makePlots3body(){
     //Create histograms
     auto nBins = NamedParameter<Int_t>("nBins", 50, "Number of bins");
     vector<vector<TH1D*>> histo_set,histo_set_cut1,histo_set_cut2,histo_set_cut3,histo_set_cut4,histo_set_cut5,histo_set_cut6;
+    vector<vector<TH2D*>> histo2D_set;
     for(int i=0;i<dims.size();i++){
         histo_set.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
@@ -550,6 +602,8 @@ void makePlots3body(){
         histo_set_cut4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut5.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut6.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));      
+        for(int j=i+1;j<dims.size();j++)histo2D_set.push_back(createHistos2D(dims[i],dims[j],labels[i],";"+titles[i]+";"+titles[j],nBins,limits[i],limits[j],weights));
+
     }
     //Fill data
     for( auto& evt : events )
@@ -561,6 +615,9 @@ void makePlots3body(){
         if(filter_plot4(evt))for(int j=0;j<dims.size();j++) histo_set_cut4[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
         if(filter_plot5(evt))for(int j=0;j<dims.size();j++) histo_set_cut5[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
         if(filter_plot6(evt))for(int j=0;j<dims.size();j++) histo_set_cut6[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
+
+        int n = 0;
+        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ histo2D_set[n][0]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),evt.weight()); n++;}
     }
     
     //Fill fit projections
@@ -576,19 +633,27 @@ void makePlots3body(){
         if(filter_plot4(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
         if(filter_plot5(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
         if(filter_plot6(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+
+        int n = 0;
+        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){
+          for(int k=1; k<weights.size();k++){
+            histo2D_set[n][k]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),w[k]);
+          }
+          n++;
+          }
     }
     
     //Plot
     TCanvas* c = new TCanvas();  
-    TLegend leg(0.,0.,1,1,"");
+    TLegend leg(0.,0.,1,1.,"");
     leg.SetLineStyle(0);
     leg.SetLineColor(0);
     leg.SetFillColor(0);
     leg.SetTextFont(22);
     leg.SetTextColor(1);
-    leg.SetTextSize(0.075);
+    leg.SetTextSize(0.1);
     leg.SetTextAlign(12);
-    //for(int k=2; k<weights.size();k++)leg.AddEntry(histo_set[0][k],legend[k].c_str(),"l");
+    for(int k=2; k<weights.size();k++)leg.AddEntry(histo_set[0][k],legend[k].c_str(),"l");
     
     for(int j=0;j<dims.size();j++){ 
         plotHistos(histo_set[j]);
@@ -612,70 +677,107 @@ void makePlots3body(){
     c->cd(4);
     leg.Draw();
     c->Print("amp_plots.eps");
-    
-    return;
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set[j],true,1);
+        gPad->SetLogy(1);
     }
-    c->Print("amp_plots2.eps");
+    c->cd(4);
+    gPad->SetLogy(0);
+    leg.Draw();
+    c->Print("amp_plots_log.eps");
     
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut1[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut1.eps");
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut2[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut2.eps");
-    
+
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut3[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut3.eps");
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut4[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut4.eps");
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut5[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut5.eps");
-    
+
     c->Clear();
-    c->Divide(4,2);
-    for(int j=0;j<8;j++){ 
+    c->Divide(2,2);
+    for(int j=0;j<3;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut6[j],true,1);
     }
+    c->cd(4);
+    leg.Draw();
     c->Print("amp_plots_cut6.eps");
-    
+
     
     c->Clear();
     leg.Draw();
     c->Print("leg.eps");
+
+    c->Clear();
+    int n = 0;
+    for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ 
+      histo2D_set[n][0]->Draw("colz");
+      c->Print(("dalitz_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+      histo2D_set[n][0]->Draw();
+      c->Print(("dalitzScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+
+      histo2D_set[n][1]->Draw("colz");
+      c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+      histo2D_set[n][1]->Draw();
+      c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+
+      for(int k=2; k<weights.size();k++){
+        histo2D_set[n][k]->Draw("colz");
+        c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
+        histo2D_set[n][k]->Draw();
+        c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
+      }
+      n++; 
+    }
 }
 
 
@@ -685,7 +787,11 @@ int main( int argc, char* argv[] ){
 
   gStyle->SetOptStat(0);
   LHCbStyle();
-  makePlots3body();
 
+  auto pNames = NamedParameter<std::string>("EventType" , "").getVector(); 
+
+  if(pNames.size()==4)makePlots3body();
+  else makePlots();
+    
   return 0;
 }

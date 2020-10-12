@@ -74,8 +74,8 @@ namespace AmpGen
       const TransitionMatrix<void>& operator[](const size_t& i) const { return m_matrixElements[i] ; } 
       std::function<real_t(const Event&)> evaluator(const EventList_type* = nullptr) const; 
       KeyedFunctors<double(Event)> componentEvaluator(const EventList_type* = nullptr) const;     
-      void scaleCoupling(int i, double scale){ m_matrixElements[i].scaleCoupling(scale);}
-      void normalizeAmps();
+      //void scaleCoupling(int i, double scale){ m_matrixElements[i].scaleCoupling(scale);}
+      void normaliseAmps();
       
     private: 
       size_t                        m_nCalls      = {0};

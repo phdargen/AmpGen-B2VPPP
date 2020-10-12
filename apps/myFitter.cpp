@@ -578,14 +578,23 @@ int main( int argc, char* argv[] )
 
   auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
   if(pdfType==pdfTypes::CoherentSum){
-        CoherentSum sig(evtType, MPS);
+        PolarisedSum sig(evtType, MPS);
         sig.setMC( eventsMC );
+        IncoherentSum bkg( evtType, MPS, "Inco" );
+        bkg.setMC( eventsMC );
+
+        sig.setWeight( MPS["f_sig"] );
+        bkg.setWeight( MPS["f_bkg"] );
 
         cout << "Number of amplitudes = " << sig.size() << endl;    
         TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
 
-        auto ll = make_likelihood(events, sig);
+        auto ll =  make_likelihood(events, sig, bkg);
+        sig.prepare();
+        sig.normaliseAmps();
+
         FitResult* fr = doFit(ll, events, eventsMC, MPS );
+        MPS.print();
         auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
         fr->addFractions( fitFractions );
 
@@ -596,7 +605,7 @@ int main( int argc, char* argv[] )
         // Estimate the chi2 
         auto evaluator = sig.evaluator();
         auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
+        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
         fr->addChi2( chi2.chi2(), chi2.nBins() );
 
         fr->print();
@@ -618,14 +627,15 @@ int main( int argc, char* argv[] )
         }
   } 
   else if(pdfType==pdfTypes::PolarisedSum){  
+        // Signal pdf
         PolarisedSum sig(evtType, MPS);
         sig.setMC( eventsMC );
         cout << "Number of amplitudes = " << sig.numAmps() << endl;
         auto ll = make_likelihood(events, sig);
         sig.prepare();
-        cout << ll(events[0]) << endl;
-        sig.normalizeAmps();
+        sig.normaliseAmps();
             
+        // Do fit    
         TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
         FitResult* fr = doFit(ll, events, eventsMC, MPS );
         auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
@@ -639,7 +649,7 @@ int main( int argc, char* argv[] )
         // Estimate the chi2 
         auto evaluator = sig.evaluator();
         auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2) );
+        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
         //chi2.writeBinningToFile("chi2_binning.txt");
         fr->addChi2( chi2.chi2(), chi2.nBins() );
 
@@ -654,7 +664,7 @@ int main( int argc, char* argv[] )
             EventList_type eventsPlotMC;
             if(maxIntEvents == -1) eventsPlotMC = eventsMC;
             else {
-                eventsPlotMC = EventList_type(intFile, evtType, Branches(bNames), WeightBranch(weightMC), GetGenPdf(true));
+                eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
             }
             sig.setMC( eventsPlotMC );
             sig.prepare();

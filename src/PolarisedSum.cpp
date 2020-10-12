@@ -200,9 +200,17 @@ void   PolarisedSum::prepare()
   auto updateData  = [this](auto& t) mutable { if( t.workToDo && this->m_events != nullptr ) this->m_cache.update(this->m_events->store(), t) ; };
   auto updateInteg = [this](auto& t) mutable { if( t.workToDo ) this->m_integrator.updateCache(t) ; };
 
+//if( m_integrator.isReady() ){
+  //updateNorms();
+  //normaliseAmps();
+//}
   transferParameters();
   for_each_sequence(m_matrixElements.begin(), m_matrixElements.end(), flagUpdate, updateData, updateInteg); 
   if( m_integrator.isReady() ) updateNorms();
+  //normaliseAmps();
+  //transferParameters();
+  //for_each_sequence(m_matrixElements.begin(), m_matrixElements.end(), updateData, updateInteg); 
+
   std::for_each( m_matrixElements.begin(), m_matrixElements.end(), resetFlags );
   if constexpr( detail::debug_type<PolarisedSum>::value )
   {
@@ -317,6 +325,7 @@ void PolarisedSum::updateNorms()
   }
   m_integrator.flush();
   }
+  //normaliseAmps();
   complex_t z = 0;
   for(size_t i = 0; i < m_matrixElements.size(); ++i){
     for(size_t j = 0; j < m_matrixElements.size(); ++j){
@@ -324,6 +333,7 @@ void PolarisedSum::updateNorms()
     }
   }
   m_norm = std::real(z); 
+  //normaliseAmps();
 }
 
 void PolarisedSum::debug(const Event& evt)
@@ -546,24 +556,11 @@ KeyedFunctors<double(Event)> PolarisedSum::componentEvaluator(const EventList_ty
   return rt; 
 }
 
-void PolarisedSum::normalizeAmps(){
-    reset();
-    debug_norm();
-    prepare();
+void PolarisedSum::normaliseAmps(){
+    //prepare();
     for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
-        //INFO(m_matrixElements[i].decayDescriptor());   
-        //INFO(sqrt(this->norm(i,i).real()));
-        //INFO(m_matrixElements[i].coefficient);   
         m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
-//        m_matrixElements[i].scaleCoupling(2.);
-        m_matrixElements[i].workToDo= true;
-        m_matrixElements[i].prepare();
-
+        //m_matrixElements[i].workToDo= true;
+        //m_matrixElements[i].prepare();
     }
-    reset();
-    prepare();
-    transferParameters();
-    m_probExpression.prepare();
-    updateNorms();
-    debug_norm();
 }
