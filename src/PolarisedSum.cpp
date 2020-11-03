@@ -556,6 +556,25 @@ KeyedFunctors<double(Event)> PolarisedSum::componentEvaluator(const EventList_ty
   return rt; 
 }
 
+std::vector<double> PolarisedSum::numFracAboveThreshold( std::vector<double> t) 
+{
+    std::vector<double> numFrac(t.size(),0);
+    
+    for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
+        std::complex<double> c_i = m_matrixElements[i].coefficient;
+        double val = std::norm(c_i) * this->norm(i, i).real()/this->norm();
+
+        for(unsigned int j=0; j < t.size(); ++j){
+            if(val*100>t[j])numFrac[j] ++;
+        }
+    }
+    //for(unsigned int j=0; j < t.size(); ++j){
+        //INFO("Number of fit fractions above " << t[j] << " % = " << numFrac[j]);
+    //}
+    return numFrac;
+}
+
+
 void PolarisedSum::normaliseAmps(){
     //prepare();
     for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {

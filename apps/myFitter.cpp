@@ -507,8 +507,10 @@ int main( int argc, char* argv[] )
   std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
   std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
 
-  std::string logFile  = NamedParameter<std::string>("LogFile"   , "model.txt", "Name of the output log file");
-  std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
+  std::string logFile  = NamedParameter<std::string>("LogFile"   , "log.txt", "Name of the output log file");
+  std::string tableFile  = NamedParameter<std::string>("TableFile"   , "table.tex", "Name of the output log file");
+  std::string modelFile  = NamedParameter<std::string>("ModelFile"   , "model.txt", "Name of the output log file");
+  std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "result.root", "Name of the output plot file");
   
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
@@ -547,7 +549,8 @@ int main( int argc, char* argv[] )
 
   EventType evtType(pNames);
   EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
-  
+  double nSig = events.sumWeights();
+    
   auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
   vector<size_t> entryListMC;
   for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
@@ -609,8 +612,10 @@ int main( int argc, char* argv[] )
         fr->addChi2( chi2.chi2(), chi2.nBins() );
 
         fr->print();
-        fr->writeToOptionsFile( logFile );
-        fr->writeToRootFile( output, seed, sig.size(),sumFractions );
+        fr->writeToFile( logFile );
+        fr->printToLatexTable(tableFile);
+        fr->writeToOptionsFile( modelFile );
+        fr->writeToRootFile( output, seed, 0, sig.size(), nSig );
         output->cd();
         output->Close();
 
@@ -640,12 +645,9 @@ int main( int argc, char* argv[] )
         FitResult* fr = doFit(ll, events, eventsMC, MPS );
         auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
         fr->addFractions( fitFractions );
-
-        double sumFractions(0);
-        for( auto& f : fitFractions ){
-            if(f.name()=="Sum_B+")sumFractions = f.val();
-        }
-            
+        vector<double> thresholds{0.1,0.5,1,2,5,10,20,50};
+        vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
+      
         // Estimate the chi2 
         auto evaluator = sig.evaluator();
         auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
@@ -654,8 +656,10 @@ int main( int argc, char* argv[] )
         fr->addChi2( chi2.chi2(), chi2.nBins() );
 
         fr->print();
-        fr->writeToOptionsFile( logFile );
-        fr->writeToRootFile( output, seed, sig.numAmps(),sumFractions );
+        fr->writeToFile(logFile);
+        fr->printToLatexTable(tableFile);
+        fr->writeToOptionsFile(modelFile);
+        fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
         output->cd();
         output->Close();
 

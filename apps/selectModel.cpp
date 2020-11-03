@@ -49,10 +49,12 @@ void selectModel(){
   const int n = chain->GetEntries();
   for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
-
+    
+        if(TMath::IsNaN(nll))continue;
+      
         if(nll>max_nll)max_nll=nll;
       
-        if(status>0)continue;
+        //if(status>0)continue;
         if(nll<min_nll){ 
             min_nll=nll;
             min_i=i;
@@ -89,6 +91,8 @@ void selectModel(){
   
   for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
+        if(TMath::IsNaN(nll))continue;
+
         h_nll->Fill(nll-min_nll);
         h_chi2->Fill(chi2);
         
@@ -147,7 +151,8 @@ void selectModel(){
   c->Print("chi2.eps");
     
   chain->GetEntry(min_i);
-  cout << endl << "Best model: " << seed << endl;
+  cout << endl << "Best model: " << min_i << endl;
+  cout << "with seed: " << seed << endl;
   cout << "n2ll = " << nll << endl;
   cout << "chi2 = " << chi2 << endl;
   cout << "status = " << status << endl;

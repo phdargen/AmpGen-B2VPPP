@@ -32,7 +32,11 @@ namespace AmpGen
     void setCov( const size_t& x, const size_t& y, const double& F );
     void writeToFile( const std::string& fname );
     void writeToOptionsFile( const std::string& fname );
-    void writeToRootFile( TFile * output,  unsigned seed = 0, unsigned numAmps = 0, double sumFrac = 0 );
+    void writeToRootFile( TFile * output,  unsigned seed = 0, int verbose = 0, unsigned numAmps = 0, double Ns = 0, std::vector<double> thresholds = {}, std::vector<double> numFracAboveThresholds = {} );
+
+    std::string latexName(std::string name);
+    void printToLatexTable( const std::string& fname );
+
     void clearFitFractions();
 
     bool readFile( const std::string& fname );

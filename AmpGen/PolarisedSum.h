@@ -75,6 +75,8 @@ namespace AmpGen
       std::function<real_t(const Event&)> evaluator(const EventList_type* = nullptr) const; 
       KeyedFunctors<double(Event)> componentEvaluator(const EventList_type* = nullptr) const;     
       //void scaleCoupling(int i, double scale){ m_matrixElements[i].scaleCoupling(scale);}
+
+      std::vector<double> numFracAboveThreshold( const std::vector<double> t);
       void normaliseAmps();
       
     private: 

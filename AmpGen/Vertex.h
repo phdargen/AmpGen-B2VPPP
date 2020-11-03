@@ -120,17 +120,26 @@ namespace AmpGen
     DECLARE_VERTEX( V_VS_D );
     DECLARE_VERTEX( V_TS_P );
     DECLARE_VERTEX( V_TS_D );
-      
+
+    DECLARE_VERTEX( V_VV_S );      
     DECLARE_VERTEX( V_VV_P );
     DECLARE_VERTEX( V_VV_P1 );
     DECLARE_VERTEX( V_VV_P2 );
-    DECLARE_VERTEX( V_VV_S );
+    DECLARE_VERTEX( V_VV_D );
+    DECLARE_VERTEX( V_VV_D2 );
 
     DECLARE_VERTEX( T_VS_D );
     DECLARE_VERTEX( T_VS_P );
     DECLARE_VERTEX( T_SS_D );
     DECLARE_VERTEX( T_TS_D );
     DECLARE_VERTEX( T_TS_S );
+      
+    DECLARE_VERTEX( T_VV_S );      
+    DECLARE_VERTEX( T_VV_P );      
+    DECLARE_VERTEX( T_VV_P2 );      
+    DECLARE_VERTEX( T_VV_D );      
+    DECLARE_VERTEX( T_VV_D1 );      
+    DECLARE_VERTEX( T_VV_D2 );      
       
     DECLARE_VERTEX( S_HS_F );
     DECLARE_VERTEX( H_SS_F );

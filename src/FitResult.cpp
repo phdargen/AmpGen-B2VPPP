@@ -5,6 +5,8 @@
 #include <memory.h>
 #include <iomanip>
 #include <istream>
+#include <iostream>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -125,6 +127,7 @@ void FitResult::writeToFile( const std::string& fname )
 {
   std::ofstream outlog;
   outlog.open( fname );
+  /*
   for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
     auto param = m_mps->at(i);
     outlog << "Parameter"
@@ -133,12 +136,125 @@ void FitResult::writeToFile( const std::string& fname )
     for (size_t j = 0; j < (size_t)m_covarianceMatrix.GetNcols(); ++j ) outlog << m_covarianceMatrix[i][j] << " ";
     outlog << std::endl;
   }
+  */
   outlog << std::setprecision( 8 );
   outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
-  for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
-  for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
+  for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " +/- " << f.err()  << "\n";
+  //for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
+  for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+        auto param = m_mps->at(i);
+        if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
+        if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;
+        outlog << "Parameter "  << param->name()  << " " << param->mean() << " +/- " << param->err() <<  "\n";
+    }
+
   outlog << "End Log\n";
   outlog.close();
+}
+
+std::string FitResult::latexName(std::string name){
+    
+    TString n(name);
+
+    n.ReplaceAll("{","\\{");
+    n.ReplaceAll("}","\\}");
+    
+    n.ReplaceAll("*","^{*}");
+    n.ReplaceAll("+","^{+}");
+    n.ReplaceAll("-","^{-}");
+    n.ReplaceAll(")0",")^{0}");
+    n.ReplaceAll(",","");
+
+    n.ReplaceAll("Sum_","\\text{Sum } ");
+
+    n.ReplaceAll("psi","\\psi");
+    n.ReplaceAll("rho","\\rho");
+    n.ReplaceAll("pi","\\pi");
+    
+    n.ReplaceAll("[GounarisSakurai.Omega]","");
+    n.ReplaceAll("[GounarisSakurai]","");
+    n.ReplaceAll("[LASS]","");
+    n.ReplaceAll("[GLASS]","");
+    n.ReplaceAll("[Bugg]","");
+    n.ReplaceAll("[Kappa]","");
+    n.ReplaceAll("[Dabba]","");
+    n.ReplaceAll("[GSpline.EFF]","");
+    n.ReplaceAll("[SBW]","");
+    n.ReplaceAll("[NONRESEXP]","");
+
+    n.ReplaceAll("GounarisSakurai.Omega","");
+    n.ReplaceAll("GounarisSakurai","");
+    n.ReplaceAll("LASS","");
+    n.ReplaceAll("GLASS","");
+    n.ReplaceAll("Bugg","");
+    n.ReplaceAll("Kappa","");
+    n.ReplaceAll("Dabba","");
+    n.ReplaceAll("GSpline.EFF","");
+    n.ReplaceAll("SBW","");
+    n.ReplaceAll("NONRESEXP","");
+
+    n.ReplaceAll("(0)","_{0}");
+    n.ReplaceAll("(1)","_{1}");
+    n.ReplaceAll("(2)","_{2}");
+
+    n.ReplaceAll("(S)","_{S}");
+    n.ReplaceAll("(P)","_{P}");
+    n.ReplaceAll("(V)","_{V}");
+    n.ReplaceAll("(A)","_{A}");
+    n.ReplaceAll("(T)","_{T}");
+    n.ReplaceAll("(PT)","_{PT}");
+
+    n.ReplaceAll("_mass"," \\text{ mass [MeV]}");
+    n.ReplaceAll("_width"," \\text{ width [MeV]}");
+
+    
+    return (std::string)n;
+}
+
+void FitResult::printToLatexTable( const std::string& fname )
+{
+    std::ofstream SummaryFile;
+    SummaryFile.open(fname.c_str(),std::ofstream::trunc);
+    
+    SummaryFile << "\\begin{tabular}{l r} " << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\multicolumn{1}{c}{Decay Channel} & \\multicolumn{1}{c}{$F_{i}[\\%]$} " << " \\\\ " << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << std::fixed << std::setprecision(2);
+    for ( auto& f : m_fitFractions ){
+        SummaryFile << "$ " << latexName(f.name()) << " $ & $ " << f.val() * 100. << " \\pm " << f.err()* 100. << "$ " << " \\\\ ";
+        if(f.name().find( "Sum" ) != std::string::npos) SummaryFile << "\\hline";
+        SummaryFile << "\n";
+    }
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\end{tabular}" << "\n \n";
+
+    SummaryFile << "\\begin{tabular}{l r} " << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\multicolumn{1}{c}{Parameter} & \\multicolumn{1}{c}{Value} " << " \\\\ " << "\n";
+    SummaryFile << "\\hline" << "\n";
+
+    for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+        auto param = m_mps->at(i);
+        double scale = 1;
+        if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
+        if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;
+        if(param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos){
+            scale = 100;
+            SummaryFile << std::fixed << std::setprecision(2);            
+        }
+        else{
+            scale = 1;
+            SummaryFile << std::fixed << std::setprecision(4);            
+        }
+        SummaryFile << "$ " << latexName(param->name()) << " $ & $ " << param->mean() * scale << " \\pm " << param->err()* scale << "$ " << " \\\\ " << "\n";
+    }
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\hline" << "\n";
+    SummaryFile << "\\end{tabular}" << "\n";
 }
 
 void FitResult::writeToOptionsFile( const std::string& fname )
@@ -170,10 +286,18 @@ void FitResult::writeToOptionsFile( const std::string& fname )
     outlog.close();
 }
 
-void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned nAmps, double sumFractions){
+void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsigned nAmps, double Ns, std::vector<double> thresholds, std::vector<double> numFracAboveThresholds){
         
         double nll,chi2;
         unsigned status, nPar;
+        double res[m_fitFractions.size()*2];
+        double par[m_mps->size()*2];
+
+        double r[thresholds.size()];
+        double AIC[thresholds.size()];
+        double BIC[thresholds.size()];
+        double AIC2[thresholds.size()];
+        double BIC2[thresholds.size()];
 
         output->cd();
         TTree* outputTree = new TTree("Result","Result");
@@ -183,10 +307,40 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, unsigned nAmps, d
         outputTree->Branch("seed", &seed, "seed/I");
         outputTree->Branch("nPar", &nPar, "nPar/I");
         outputTree->Branch("nAmps", &nAmps, "nAmps/I");
-        outputTree->Branch("sumFractions", &sumFractions, "sumFractions/D");
+        outputTree->Branch("nSig", &Ns);
 
-        outputTree->Branch("seed", &seed, "seed/I");
+        for (unsigned int i = 0; i < m_fitFractions.size(); i++ ){
+            res[i] = m_fitFractions[i].val();
+            res[i+m_fitFractions.size()] = m_fitFractions[i].err();
+            outputTree->Branch(((std::string)AmpGen::programatic_name(m_fitFractions[i].name())).c_str(), &res[i]);
+            if(verbose>=1)outputTree->Branch(((std::string)AmpGen::programatic_name(m_fitFractions[i].name())+"_err").c_str(), &res[i+m_fitFractions.size()]);
+        }
     
+        for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+            auto param = m_mps->at(i);
+            if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
+            if(verbose<2)if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;
+            
+            par[i] = param->mean();
+            par[i+m_mps->size()] = param->err();
+            outputTree->Branch(((std::string)AmpGen::programatic_name(param->name())).c_str(), &par[i]);
+            if(verbose>=1)outputTree->Branch(((std::string)AmpGen::programatic_name(param->name())+"_err").c_str(), &par[i+m_fitFractions.size()]);
+        }
+    
+        for (unsigned int i = 0; i < thresholds.size(); i++ ){
+            AIC[i] = m_LL + 2 * numFracAboveThresholds[i];
+            BIC[i] = m_LL + numFracAboveThresholds[i] * log(Ns);
+            AIC2[i] = m_LL + 4 * numFracAboveThresholds[i];
+            BIC2[i] = m_LL + 2 * numFracAboveThresholds[i] * log(Ns);
+            r[i] = numFracAboveThresholds[i];
+            
+            outputTree->Branch(("AIC_" + std::to_string((int)(thresholds[i]*10))).c_str(), &AIC[i]);
+            outputTree->Branch(("AIC2_" + std::to_string((int)(thresholds[i]*10))).c_str(), &AIC2[i]);
+            outputTree->Branch(("BIC_" + std::to_string((int)(thresholds[i]*10))).c_str(), &BIC[i]);
+            outputTree->Branch(("BIC2_" + std::to_string((int)(thresholds[i]*10))).c_str(), &BIC2[i]);
+            outputTree->Branch(("r_" + std::to_string((int)(thresholds[i]*10))).c_str(), &r[i]);            
+        }    
+            
         nll = m_LL;
         chi2 = m_chi2 / dof();
         status = m_status;

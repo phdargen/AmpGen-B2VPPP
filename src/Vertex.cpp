@@ -188,6 +188,14 @@ DEFINE_VERTEX( V_VS_D )
   return ( Sv( mu, nu ) * L_2_V0( -nu, -alpha ) * V1( alpha ) ) * V2[0];
 }
 
+DEFINE_VERTEX( V_VV_S )
+{
+    Tensor Sv  = Spin1Projector( P );
+    Tensor term = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu )/GeV * V1( alpha ) * V2( beta );
+    
+    return term( -mu ) * Sv(mu, nu);
+}
+
 DEFINE_VERTEX( V_VV_P )
 {
   Tensor L = Orbital_PWave( P, Q )/GeV;
@@ -200,27 +208,46 @@ DEFINE_VERTEX( V_VV_P1 )
    Tensor Sv  = Spin1Projector( P );
    Tensor term = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu )/GeV * V1( alpha ) * V2( beta );
    Tensor phi_1 = term(-mu) * Sv(mu,nu);
+    
+   Tensor term2 =  LeviCivita()( -mu, -nu, -alpha, -beta ) * P( mu )/GeV * L(nu) * phi_1(alpha);
       
-   return LeviCivita()( -mu, -nu, -alpha, -beta ) * P( mu )/GeV * L(nu) * phi_1(alpha);
+   return Sv(mu,nu) * term2(-mu);
 }
 
 DEFINE_VERTEX( V_VV_P2 )
 {
     Tensor L = Orbital_PWave( P, Q )/GeV;
-    Tensor Sv  = Spin2Projector( P );
-    Tensor phi_2 = Sv(-mu,-nu,alpha,beta) * V1(mu) * V2(nu);
+    Tensor Sv1  = Spin1Projector( P );
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor phi_2 = Sv2(-mu,-nu,alpha,beta) * V1(mu) * V2(nu);
         
-    return L(-mu) * phi_2(mu,nu);
+    return Sv1(mu,nu) * L(alpha) * phi_2(-nu,-alpha);
 }
 
-DEFINE_VERTEX( V_VV_S )
+DEFINE_VERTEX( V_VV_D )
 {
     Tensor Sv  = Spin1Projector( P );
+    Tensor L = Orbital_DWave( P, Q )/(GeV*GeV);
+    
     Tensor term = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu )/GeV * V1( alpha ) * V2( beta );
-        
-    return term( -mu ) * Sv(mu, nu);
+    Tensor phi_1 = term(-mu) * Sv(mu,nu);
+       
+    return Sv(mu,nu) * L(-nu,-alpha) * phi_1(alpha);
 }
 
+DEFINE_VERTEX( V_VV_D2 )
+{
+    Tensor Sv1  = Spin1Projector( P );
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_DWave( P, Q )/(GeV*GeV);
+
+    Tensor phi_2 = Sv2(-mu,-nu,alpha,beta) * V1(mu) * V2(nu);
+    
+    Tensor term = L(mu,nu) * phi_2(alpha,-mu);
+    Tensor term2 =  LeviCivita()( -mu, -nu, -alpha, -beta ) * P( mu )/GeV * term(alpha,beta);
+    
+    return Sv1(mu,nu) * term2(-nu);
+}
 
 DEFINE_VERTEX( T_VS_D )
 {
@@ -246,6 +273,69 @@ DEFINE_VERTEX( T_VS_P )
 }
 
 DEFINE_VERTEX( T_SS_D ) { return Orbital_DWave( P, Q )  * V1[0] * V2[0] / ( GeV * GeV ); }
+
+DEFINE_VERTEX( T_VV_S ){ return Spin2Projector(P)(mu,nu,alpha,beta) * V1(-alpha) * V2(-beta); }
+
+DEFINE_VERTEX( T_VV_P )
+{     
+    Tensor Sv1  = Spin1Projector( P );
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_PWave( P, Q )/GeV;
+    
+    Tensor term = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu )/GeV * V1( alpha ) * V2( beta );
+    Tensor phi_1 = term(-mu) * Sv1(mu,nu);
+    
+    return Sv2(mu,nu,alpha,beta) * L(-alpha) * phi_1(-beta); 
+}
+
+DEFINE_VERTEX( T_VV_P2 )
+{     
+    // Doesnt seem to work
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_PWave( P, Q )/GeV;
+    
+    Tensor phi_2 = Sv2(-mu,-nu,-alpha,-beta) * V1(mu) * V2(nu);
+    
+    Tensor term =  LeviCivita()( -mu, -nu, -alpha, -beta ) * P( mu )/GeV * L(nu);
+    Tensor term2 = term(-alpha,-beta) * phi_2(alpha,-mu);
+    
+    return Sv2(mu,nu,alpha,beta) * term2(-alpha,-beta); 
+}
+
+DEFINE_VERTEX( T_VV_D ){ 
+    
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_DWave( P, Q )/(GeV*GeV);
+
+    return Sv2(mu,nu,alpha,beta) * L(-alpha,-beta) * dot(V1,V2); 
+}
+
+DEFINE_VERTEX( T_VV_D1 ){ 
+    // Doesnt seem to work
+    Tensor Sv1  = Spin1Projector( P );
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_DWave( P, Q )/(GeV*GeV);
+    
+    Tensor term = LeviCivita()( -mu, -nu, -alpha, -beta ) * P( nu )/GeV * V1( alpha ) * V2( beta );
+    Tensor phi_1 = term(-mu) * Sv1(mu,nu);
+
+    Tensor term2 =  LeviCivita()( -mu, -nu, -alpha, -beta ) * P( mu )/GeV * phi_1(nu);
+    Tensor term3 = term2(-alpha,-beta) * L(alpha,mu);
+    
+    return Sv2(mu,nu,alpha,beta) * term3(-alpha,-beta); 
+}
+
+DEFINE_VERTEX( T_VV_D2 ){ 
+    // Doesnt seem to work
+    Tensor Sv2  = Spin2Projector( P );
+    Tensor L = Orbital_DWave( P, Q )/(GeV*GeV);
+    
+    Tensor phi_2 = Sv2(-mu,-nu,alpha,beta) * V1(mu) * V2(nu);
+    Tensor term = L(-alpha,-beta) * phi_2(beta,mu);
+    
+    return Sv2(mu,nu,alpha,beta) * term(-alpha,-beta) ; 
+}
+
 
 DEFINE_VERTEX( S_TV_P )
 {

@@ -128,7 +128,7 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
             h->SetLineWidth(3);
       }else if(i==2){
             h->SetLineColor(kRed+1);
-            h->SetLineWidth(2);
+            h->SetLineWidth(3);
             //h->SetFillColor(kRed+1);
             //h->SetFillStyle(3353);
       }else if(i==7){
@@ -152,11 +152,19 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
             //h->SetFillStyle(1001);
       }else if(i==3){
             h->SetLineColor(kGray+1);
-            h->SetLineWidth(2);
+            h->SetLineWidth(3);
             //h->SetFillColor(kGray+3);
             //h->SetFillStyle(1001);
-      }else h->SetLineColor(i+1);
-
+      }else if(i==8){
+          h->SetLineColor(kOrange+1);
+          h->SetLineWidth(3);
+          //h->SetFillColor(kGray+3);
+          //h->SetFillStyle(1001);
+      }else {
+          h->SetLineColor(kBlack);
+          h->SetLineWidth(3);
+          h->SetLineStyle(kDashed);
+      }
       histos.push_back(h);
   }
   return histos;
@@ -298,7 +306,38 @@ void makePlots(){
     auto cut_dim_plot6 = NamedParameter<unsigned int>("cut_dim_plot6", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
     auto cut_limits_plot6 = NamedParameter<double>("cut_limits_plot6", std::vector<double>(),"cut window" ).getVector();    
     phsp_cut filter_plot6(cut_dim_plot6,cut_limits_plot6,invertCut_plot6);    
+    
+    auto invertCut_plot7 = NamedParameter<bool>("invertCut_plot7", 0,"Invert cut logic");
+    auto cut_dim_plot7 = NamedParameter<unsigned int>("cut_dim_plot7", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot7 = NamedParameter<double>("cut_limits_plot7", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot7(cut_dim_plot7,cut_limits_plot7,invertCut_plot7);    
+    
+    auto invertCut_plot8 = NamedParameter<bool>("invertCut_plot8", 0,"Invert cut logic");
+    auto cut_dim_plot8 = NamedParameter<unsigned int>("cut_dim_plot8", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot8 = NamedParameter<double>("cut_limits_plot8", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot8(cut_dim_plot8,cut_limits_plot8,invertCut_plot8);    
+    
+    auto invertCut_plot9 = NamedParameter<bool>("invertCut_plot9", 0,"Invert cut logic");
+    auto cut_dim_plot9 = NamedParameter<unsigned int>("cut_dim_plot9", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot9 = NamedParameter<double>("cut_limits_plot9", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot9(cut_dim_plot9,cut_limits_plot9,invertCut_plot9);    
+    
+    auto invertCut_plot10 = NamedParameter<bool>("invertCut_plot10", 0,"Invert cut logic");
+    auto cut_dim_plot10 = NamedParameter<unsigned int>("cut_dim_plot10", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot10 = NamedParameter<double>("cut_limits_plot10", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot10(cut_dim_plot10,cut_limits_plot10,invertCut_plot10);    
+    
+    auto invertCut_plot11 = NamedParameter<bool>("invertCut_plot11", 0,"Invert cut logic");
+    auto cut_dim_plot11 = NamedParameter<unsigned int>("cut_dim_plot11", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot11 = NamedParameter<double>("cut_limits_plot11", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot11(cut_dim_plot11,cut_limits_plot11,invertCut_plot11);    
+    
+    auto invertCut_plot12 = NamedParameter<bool>("invertCut_plot12", 0,"Invert cut logic");
+    auto cut_dim_plot12 = NamedParameter<unsigned int>("cut_dim_plot12", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot12 = NamedParameter<double>("cut_limits_plot12", std::vector<double>(),"cut window" ).getVector();    
+    phsp_cut filter_plot12(cut_dim_plot12,cut_limits_plot12,invertCut_plot12);    
 
+    
 	const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
 	TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
   weight_file->cd();
@@ -325,18 +364,29 @@ void makePlots(){
 
   vector<vector<unsigned int>> dims{m123,m13,m23,m023,m02,m03,m01,m013};
   vector<string> labels{"m_Kpipi","m_Kpi","m_pipi","m_psipipi","m_psipi","m_psipi2","m_psiK","m_psiKpi"};
-  vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(#psi(2S)#pi#pi) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K) [GeV]","m(#psi(2S)K#pi) [GeV]"};
-
+  //vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(#psi(2S)#pi#pi) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K) [GeV]","m(#psi(2S)K#pi) [GeV]"};
+  vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(J/#psi#pi#pi) [GeV]","m(J/#psi#pi^{+}) [GeV]","m(J/#psi#pi^{-}) [GeV]", "m(J/#psiK) [GeV]","m(J/#psiK#pi) [GeV]"};
   //Limits
-  vector<double> lim123{0.9,1.7};
-  vector<double> lim13{0.5,1.5};
-  vector<double> lim23{0.2,1.2};
-  vector<double> lim023{4,4.85};
-  vector<double> lim02{3.8,4.7};
-  vector<double> lim03{3.8,4.7};
-  vector<double> lim01{4.1,4.9};
-  vector<double> lim013{4.25,5.25};
 
+  vector<double> lim123{0.9,1.65};
+  vector<double> lim13{0.6,1.45};
+  vector<double> lim23{0.2,1.15};
+  vector<double> lim023{4.05,4.85};
+  vector<double> lim02{3.8,4.65};
+  vector<double> lim03{3.8,4.65};
+  vector<double> lim01{4.15,4.9};
+  vector<double> lim013{4.3,5.2};
+
+    /*
+  vector<double> lim123{0.9,2.3};
+  vector<double> lim13{0.6,2};
+  vector<double> lim23{0.2,1.8};
+  vector<double> lim023{3.5,4.85};
+  vector<double> lim02{3.,4.65};
+  vector<double> lim03{3.,4.65};
+  vector<double> lim01{3.5,4.9};
+  vector<double> lim013{3.7,5.2};
+*/
   vector<vector<double>> limits{lim123,lim13,lim23,lim023,lim02,lim03,lim01,lim013};
 
   //Amps to plot
@@ -352,6 +402,8 @@ void makePlots(){
   //Create histograms
   auto nBins = NamedParameter<Int_t>("nBins", 50, "Number of bins");
   vector<vector<TH1D*>> histo_set,histo_set_cut1,histo_set_cut2,histo_set_cut3,histo_set_cut4,histo_set_cut5,histo_set_cut6;
+  vector<vector<TH1D*>> histo_set_cut7,histo_set_cut8,histo_set_cut9,histo_set_cut10,histo_set_cut11,histo_set_cut12;
+
   for(int i=0;i<dims.size();i++){
       histo_set.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
       histo_set_cut1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
@@ -359,7 +411,13 @@ void makePlots(){
       histo_set_cut3.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
       histo_set_cut4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
       histo_set_cut5.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
-      histo_set_cut6.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));      
+      histo_set_cut6.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));    
+      histo_set_cut7.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+      histo_set_cut8.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+      histo_set_cut9.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+      histo_set_cut10.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+      histo_set_cut11.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+      histo_set_cut12.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));    
   }
   //Fill data
 	for( auto& evt : events )
@@ -371,6 +429,12 @@ void makePlots(){
       if(filter_plot4(evt))for(int j=0;j<dims.size();j++) histo_set_cut4[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
       if(filter_plot5(evt))for(int j=0;j<dims.size();j++) histo_set_cut5[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
       if(filter_plot6(evt))for(int j=0;j<dims.size();j++) histo_set_cut6[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
+      if(filter_plot7(evt))for(int j=0;j<dims.size();j++) histo_set_cut7[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+      if(filter_plot8(evt))for(int j=0;j<dims.size();j++) histo_set_cut8[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+      if(filter_plot9(evt))for(int j=0;j<dims.size();j++) histo_set_cut9[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+      if(filter_plot10(evt))for(int j=0;j<dims.size();j++) histo_set_cut10[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+      if(filter_plot11(evt))for(int j=0;j<dims.size();j++) histo_set_cut11[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
+      if(filter_plot12(evt))for(int j=0;j<dims.size();j++) histo_set_cut12[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
     }
 
   //Fill fit projections
@@ -386,6 +450,12 @@ void makePlots(){
     if(filter_plot4(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
     if(filter_plot5(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
     if(filter_plot6(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot7(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut7[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot8(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut8[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot9(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut9[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot10(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut10[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot11(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut11[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+    if(filter_plot12(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut12[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
     }
 
   //Plot
@@ -431,6 +501,14 @@ void makePlots(){
     }
     c->Print("amp_plots2.eps");
 
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->Print("amp_plots2_log.eps");
 
     c->Clear();
     c->Divide(4,2);
@@ -479,7 +557,55 @@ void makePlots(){
         plotHistos(histo_set_cut6[j],true,1);
     }
     c->Print("amp_plots_cut6.eps");
+    
 
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut7[j],true,1);
+    }
+    c->Print("amp_plots_cut7.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut8[j],true,1);
+    }
+    c->Print("amp_plots_cut8.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut9[j],true,1);
+    }
+    c->Print("amp_plots_cut9.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut10[j],true,1);
+    }
+    c->Print("amp_plots_cut10.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut11[j],true,1);
+    }
+    c->Print("amp_plots_cut11.eps");
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<8;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut12[j],true,1);
+    }
+    c->Print("amp_plots_cut12.eps");
     
 	c->Clear();
 	leg.Draw();
