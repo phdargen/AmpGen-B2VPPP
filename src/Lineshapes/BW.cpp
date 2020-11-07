@@ -24,8 +24,9 @@ DEFINE_LINESHAPE( FormFactor )
   if( lineshapeModifier == "L1" ) Lp = 1;
   if( lineshapeModifier == "L2" ) Lp = 2;
   if( lineshapeModifier == "L3" ) Lp = 3;
-  
-  Expression                              FormFactor = fpow(radius,Lp)*sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, Lp ) );
+
+  //Expression                              FormFactor = fpow(radius,Lp)*sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, Lp ) );
+  Expression                              FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, Lp ) );
   if ( lineshapeModifier == "BL" )        FormFactor = sqrt( BlattWeisskopf( q2 * radius * radius, Lp ) );
   if ( lineshapeModifier == "NFF" )       FormFactor = 1; 
   if ( lineshapeModifier == "BELLE2018" ) FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, q20 * radius * radius, Lp ) );
@@ -35,6 +36,7 @@ DEFINE_LINESHAPE( FormFactor )
     ADD_DEBUG( radius  , dbexpressions );
   }
   ADD_DEBUG( FormFactor, dbexpressions );
+    
   return FormFactor ; 
 }
 
@@ -66,7 +68,8 @@ DEFINE_LINESHAPE( BW )
   const Expression& radius   = Parameter( particleName + "_radius", props->radius() );
   const Expression q2        = make_cse( Abs(Q2( s_cse, s1, s2 ) ) ) ;
   const Expression q20       = make_cse( Abs(Q2( mass * mass, s1, s2 )) );
-  Expression                              FormFactor = fpow(radius,L)*sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
+  //Expression                              FormFactor = fpow(radius,L)*sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
+  Expression                              FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
   if ( lineshapeModifier == "BL" )        FormFactor = sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
   if ( lineshapeModifier == "BELLE2018" ) FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, q20 * radius * radius, L ) );
   if ( lineshapeModifier == "NFF")        FormFactor = 1; 
@@ -80,6 +83,9 @@ DEFINE_LINESHAPE( BW )
   ADD_DEBUG( runningWidth, dbexpressions );
   ADD_DEBUG( BW, dbexpressions );
   ADD_DEBUG( kf, dbexpressions );
+  
+    
+    
   return lineshapeModifier == "BELLE2018" ? BW : kf*BW;
 }
 

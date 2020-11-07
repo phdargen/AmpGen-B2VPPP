@@ -173,7 +173,8 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
 void plotHistos(vector<TH1D*>histos,bool plotComponents = true, int style = 0){
 
   if(style == 1){
-    histos[0]->SetMarkerSize(.1);
+    histos[0]->SetLineWidth(1);
+    histos[0]->SetMarkerSize(.5);
     histos[0]->GetYaxis()->SetTitle("");
   }
   histos[0]->SetMinimum(1);
@@ -184,7 +185,7 @@ void plotHistos(vector<TH1D*>histos,bool plotComponents = true, int style = 0){
   for (int i = 1; i < (plotComponents == true ? histos.size() : 2); i++)
   {
       histos[i]->SetMinimum(1);
-      if(style == 1)histos[i]->SetLineWidth(1);
+      if(style == 1)histos[i]->SetLineWidth(2);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
   }
@@ -492,6 +493,7 @@ void makePlots(){
   c->cd(6);
   leg.Draw();
   c->Print("amp_plots.eps");
+  c->Print("amp_plots.C");
 
     c->Clear();
     c->Divide(4,2);

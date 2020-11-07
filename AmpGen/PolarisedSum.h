@@ -76,6 +76,7 @@ namespace AmpGen
       KeyedFunctors<double(Event)> componentEvaluator(const EventList_type* = nullptr) const;     
       EventType eventType() const{ return m_eventType; }
   
+      int findAmp(std::string& name);
       std::vector<double> numFracAboveThreshold( const std::vector<double> t);
       void normaliseAmps();
 

@@ -92,8 +92,9 @@ void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
             std::vector<std::string> selectKeys;
             while( ss.good() ){
                 std::string substr;
-                getline( ss, substr, 'x' );
+                getline( ss, substr, 'X' );
                 selectKeys.push_back( substr );
+                //INFO("Found " <<substr);
             }
             if(selectKeys.size()!=2)throw "ERROR";
             for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
@@ -251,112 +252,44 @@ void perturb( MinuitParameterSet& MPS, double sigma = 1)
     }
 }
 
-// void removeRandomAmps( MinuitParameterSet& mps, TRandom3& rand, int n = 1 )
-// {
-//   const int N = count_amplitudes(mps);
-//   cout << "Removing " << n << " random amplitudes out of " << N << endl;
+void sanityChecks(MinuitParameterSet& mps){
 
-//   vector<int> removeMe;
-//   while (removeMe.size()<n){
-//     int rnd = rand.Rndm()*N+1;
-//     if(!(std::find(removeMe.begin(), removeMe.end(),rnd)!=removeMe.end()))removeMe.push_back(rnd);
-//   }
-//   vector<MinuitParameter*> removeMeParam;
+   for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "cut_dim" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
 
-//   for(int i = 0; i<removeMe.size();i++)cout << removeMe[i] << endl;
-
-//   for(int i = 0; i<n;i++){
-//     unsigned int counter = 0;
-//     for ( auto param = mps.cbegin(); param != mps.cend(); ++param ) {
-//       if ( ( *param )->name().find( "_Re" ) == std::string::npos ) continue;
-//       counter++;
-//       cout << counter << " " << ( *param )->name()  << endl; 
-//       if(counter==removeMe[i]){
-//         TString name(( *param )->name());
-//         name.ReplaceAll("_Re","_Im");
-//         removeMeParam.push_back(*param);
-//         for(auto param_im = mps.cbegin(); param_im != mps.cend(); ++param_im ){
-//           if ( ( *param_im )->name().find( name ) != std::string::npos ) removeMeParam.push_back(*param_im);
-//         }
-//       }
-//     }
-//   }
+   vector<int> checkList;    
+   for(int i=0;i<mps.size();i++){
+       if(!mps[i]->isFree())continue;
+       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos)) checkList.push_back(i);
+   }
   
-//   for(int i = 0 ; i< removeMeParam.size();i++){
-//       cout << "Removing parameter " << removeMeParam[i]->name() << endl;
-//       mps.unregister(removeMeParam[i]);
-//   }
+   for(int i= 0; i<checkList.size();i++){
+       bool found = false;
+       TString name(mps[checkList[i]]->name());
+       name.ReplaceAll("_mass","");
+       name.ReplaceAll("_width","");     
 
-// }
+       for(int j=0;j<mps.size();j++){
+           if(mps[j]->name().find(name) != std::string::npos && mps[j]->name().find( "_Re" ) != std::string::npos) found = true;
+       }  
+       
+       if(found == false){
+         cout << "Fitting " << mps[checkList[i]]->name() << " but there is no matching amplitude, set to constant" << endl;
+         mps[checkList[i]]->fix();
+       }
+   }
+}
 
-// void removeRandomAmps( MinuitParameterSet& mps, int seed, vector<string> ampList, int n =1 )
-// {
-//   const int N = count_amplitudes(mps);
-//   cout << "Removing " << n << " random amplitudes out of the list: " << endl;
-//   for(int i = 0; i<ampList.size();i++)cout << ampList[i] << endl;
-
-//   vector<int> candidateList;
-//   for(int i=0;i<mps.size();i++){
-//       cout << mps[i]->name() << endl;
-//       for(int j = 0; j<ampList.size();j++){
-//         if (mps[i]->name().find( ampList[j] ) != std::string::npos && mps[i]->name().find("_Re") != std::string::npos) candidateList.push_back(i);
-//       }
-//   }
-
-//   cout << "Found candidates " << endl;
-//   for(int i = 0; i<candidateList.size();i++)cout << candidateList[i] << endl;
-
-//   std::default_random_engine rand(seed);
-//   std::shuffle(candidateList.begin(), candidateList.end(), rand);
-
-//   cout << "Found candidates (rnd order)" << endl;
-//   for(int i = 0; i<candidateList.size();i++)cout << candidateList[i] << endl;
-  
-//   vector<MinuitParameter*> removeMeParam;
-//   n = n < candidateList.size() ? n : candidateList.size();
-//   for(int i = 0; i<n;i++){
-//         TString name(mps[candidateList[i]]->name());
-//         name.ReplaceAll("_Re","_Im");
-//         removeMeParam.push_back(mps[candidateList[i]]);
-//         for(auto param_im = mps.cbegin(); param_im != mps.cend(); ++param_im ){
-//           if ( ( *param_im )->name().find( name ) != std::string::npos ) removeMeParam.push_back(*param_im);
-//         }
-//   }
-  
-//   for(int i = 0 ; i< removeMeParam.size();i++){
-//       cout << "Removing parameter " << removeMeParam[i]->name() << endl;
-//       mps.unregister(removeMeParam[i]);
-//   }
-
-// }
-
-// void sanityChecks(MinuitParameterSet& mps){
-
-//   vector<int> checkList;
-
-//   for(int i=0;i<mps.size();i++){
-//       if(mps[i]->isFixed())continue;
-//       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos)) checkList.push_back(i);
-//   }
-  
-//   for(int i= 0; i<checkList.size();i++){
-//       bool found = false;
-//       TString name(mps[checkList[i]]->name());
-//       name.ReplaceAll("_mass","");
-//       name.ReplaceAll("_width","");     
-
-//       for(int j=0;j<mps.size();j++){
-//           if(mps[j]->name().find(name) != std::string::npos && mps[j]->name().find( "_Re" ) != std::string::npos) found = true;
-//       }  
-
-//       if(found == false){
-//         cout << "Fitting " << mps[checkList[i]]->name() << " but there is no matching amplitude, set to constant" << endl;
-//         mps[checkList[i]]->fix();
-//       }
-//   }
-
-// }
-
+void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
+    for(int i=0;i<mps.size();++i){
+        string name = mps[i]->name();
+        if(name.find( "_Re" ) != std::string::npos || name.find( "_Im" ) != std::string::npos) {            
+            vector<string>name_split = split(name,',');
+            //INFO(name_split[0]);
+            //INFO(name_split[1]);
+            if(sig.findAmp(name_split[0])==0){mps.unregister(mps[i]);i=0;}
+        }
+    }
+}
 
 struct phsp_cut {
     phsp_cut(std::vector<unsigned int> dim, std::vector<double> limits, bool invertCut = false):_dim(dim),_limits(limits),_invertCut(invertCut){}
@@ -411,14 +344,14 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
     auto threeBodyShapes     = threeBodyCalculators( MPS );
     unsigned int updateWidth = NamedParameter<unsigned int>( "UpdateWidth", 0 );
     
-    std::vector<TGraph*> rw_old;
-    for( auto& shape : threeBodyShapes ) rw_old.push_back(shape.widthGraph(1.));
-    for( auto& graph : rw_old) graph->Write();
+    //std::vector<TGraph*> rw_old;
+    //for( auto& shape : threeBodyShapes ) rw_old.push_back(shape.widthGraph(1.));
+    //for( auto& graph : rw_old) graph->Write();
     
     if ( updateWidth ) {
         for ( auto& shape : threeBodyShapes ) shape.updateRunningWidth( MPS );
     }
-    unsigned int nIterations            = NamedParameter<unsigned int>( "nIterations", 0 );
+    unsigned int nIterations            = NamedParameter<unsigned int>( "nIterationsWidth", 0 );
     std::vector<std::string> SlowParams = NamedParameter<std::string>( "Release", "" ).getVector();
     std::vector<MinuitParameter*> slowParamPtrs;
     if ( nIterations != 0 ) {
@@ -432,7 +365,7 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
             }
         }
     }
-    INFO( "Fitting PDF, iterating " << " " << nIterations + 1 << " times" );
+    INFO( "Fitting PDF, iterating width " << " " << nIterations + 1 << " times" );
     for ( unsigned int iteration = 0; iteration < nIterations + 1; ++iteration ) {
         mini.doFit();
         if ( iteration == 0 && nIterations != 0 ) {
@@ -441,17 +374,17 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
         }
     }
     
-    std::vector<TGraph*> rw_new;
-    for( auto& shape : threeBodyShapes ) rw_new.push_back(shape.widthGraph(1.));
-    for( auto& graph : rw_new) graph->Write();
+    //std::vector<TGraph*> rw_new;
+    //for( auto& shape : threeBodyShapes ) rw_new.push_back(shape.widthGraph(1.));
+    //for( auto& graph : rw_new) graph->Write();
     
+    unsigned int nReTries = NamedParameter<unsigned int>( "Fit::nReTries", 5 );
     int nTries = 1;
-    unsigned int nReTries = NamedParameter<unsigned int>( "nReTries", 5 );
     while(mini.status()>0 && nTries-1 < nReTries){
-        INFO("Fit not converged, try again with small perturbation");
-        perturb(MPS,nTries);
-        mini.doFit();
-        nTries++;
+            INFO("Fit not converged, try again with small perturbation");
+            perturb(MPS,nTries);
+            mini.doFit();
+            nTries++;
     }
     
     FitResult* fr = new FitResult(mini);
@@ -466,58 +399,30 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
     INFO( "Wall time = " << tWall / 1000. );
     INFO( "CPU  time = " << time_cpu );
     
-    /* Make the plots for the different components in the PDF, i.e. the signal and backgrounds. 
-     The structure assumed the PDF is some SumPDF<eventListType, pdfType1, pdfType2,... >. */
-    //auto      nBins     = NamedParameter<Int_t>     ("nBins"      , 50           , "Number of bins" );
-    //unsigned int counter = 1;
-    //for_each(likelihood.pdfs(), [&](auto& pdf){
-        //auto pfx = PlotOptions::Prefix("Model");
-        //auto mc_plot3 = mc.makeDefaultProjections(WeightFunction(pdf),pfx,PlotOptions::Bins(nBins) );
-        //for( auto& plot : mc_plot3 )
-        //{
-            //plot->Scale( ( data.integral() * pdf.getWeight() ) / plot->Integral() );
-            //plot->Write();
-        //}
-        //counter++;
-    //});
-    
-    /* Estimate the chi2 using an adaptive / decision tree based binning, 
-     down to a minimum bin population of 15, and add it to the output. */
-    //Chi2Estimator chi2( data, mc, likelihood, MinEvents(25) );
-    //chi2.writeBinningToFile("chi2_binning.txt");
-    //fr->addChi2( chi2.chi2(), chi2.nBins() );
-    
-    //fr->print();
     return fr;
 }
 
-int main( int argc, char* argv[] )
+int main( int argc, char* argv[])
 {
   time_t startTime = time(0);
-  /* The user specified options must be loaded at the beginning of the programme, 
-     and these can be specified either at the command line or in an options file. */   
   OptionsParser::setArgs( argc, argv );
 
-  /* Parameters that have been parsed can be accessed anywhere in the program 
-     using the NamedParameter<T> class. The name of the parameter is the first option,
-     then the default value, and then the help string that will be printed if --h is specified 
-     as an option. */
-  std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
+  std::string dataFile = NamedParameter<std::string>("DataSample","", "Name of file containing data sample to fit." );
   std::string weightData = NamedParameter<std::string>("weightData", "weight");  
-  std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
+  std::string intFile = NamedParameter<std::string>("IntegrationSample","","Name of file containing events to use for MC integration.");
   std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
 
-  std::string logFile  = NamedParameter<std::string>("LogFile"   , "log.txt", "Name of the output log file");
-  std::string tableFile  = NamedParameter<std::string>("TableFile"   , "table.tex", "Name of the output log file");
-  std::string modelFile  = NamedParameter<std::string>("ModelFile"   , "model.txt", "Name of the output log file");
-  std::string plotFile = NamedParameter<std::string>("ResultsFile"     , "result.root", "Name of the output plot file");
+  std::string logFile = NamedParameter<std::string>("LogFile", "log.txt", "Name of the output log file");
+  std::string tableFile = NamedParameter<std::string>("TableFile", "table.tex", "Name of the output log file");
+  std::string modelFile = NamedParameter<std::string>("ModelFile", "model.txt", "Name of the output log file");
+  std::string plotFile = NamedParameter<std::string>("ResultsFile", "result.root", "Name of the output plot file");
   
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   if(bNamesMC.size()==0)bNamesMC=bNames;
   auto pNames = NamedParameter<std::string>("EventType" , "", "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
   
-  size_t      nThreads = NamedParameter<size_t>     ("nCores"    , 8           , "Number of threads to use" );
+  int      nThreads = NamedParameter<int>     ("nCores"    , 8           , "Number of threads to use" );
   size_t      seed     = NamedParameter<size_t>     ("Seed"      , 0           , "Random seed used" );
   auto        nBins    = NamedParameter<Int_t>     ("nBins"      , 50           , "Number of bins" );
 
@@ -525,7 +430,7 @@ int main( int argc, char* argv[] )
   if( pNames.size() == 0 ) FATAL("Must specify event type with option " << italic_on << " EventType" << italic_off);
 
   TRandom3 rndm;
-  seed +=  atoi(argv[1]);
+  seed =  atoi(argv[1]);
   cout << "Using random seed = " << seed << endl;
   rndm.SetSeed( seed );
   gRandom = &rndm;
@@ -533,6 +438,9 @@ int main( int argc, char* argv[] )
   INFO("LogFile: " << logFile << "; Plots: " << plotFile );
   
 #ifdef _OPENMP
+  nThreads = nThreads < 0 ? min(omp_get_num_procs(),(int)thread::hardware_concurrency()) : nThreads;  
+  INFO( "Hardware_concurrency " << thread::hardware_concurrency());
+  INFO( "omp_get_num_procs " << omp_get_num_procs() );
   omp_set_num_threads( nThreads );
   INFO( "Setting " << nThreads << " fixed threads for OpenMP" );
   omp_set_dynamic( 0 );
@@ -540,12 +448,31 @@ int main( int argc, char* argv[] )
 
   MinuitParameterSet MPS;
   MPS.loadFromStream();
-  auto removeRandom = NamedParameter<int>("removeRandomAmps", 0);
-  auto removeRandomAmpsList = NamedParameter<string>("removeRandomAmpsList", std::vector<string>()).getVector();
-  //if(removeRandom>0) removeRandomAmps(MPS,seed,removeRandomAmpsList,removeRandom);
+
+  auto addAmpList = NamedParameter<string>("addAmpList","");
+  if(addAmpList != ""){
+        MinuitParameterSet* addAmp = new MinuitParameterSet();
+        addAmp->loadFromFile(addAmpList);
+        INFO("Found " << addAmp->size()/2 << " amplitudes in " << addAmpList);
+        int amp_index = atoi(argv[1])*2;
+        if(amp_index < addAmp->size()-1){ 
+            MinuitParameter* amp_re= addAmp->at(amp_index);
+            MinuitParameter* amp_im= addAmp->at( replaceAll(addAmp->at(amp_index)->name(),"_Re","_Im") );
+            if(amp_re == 0 || amp_im == 0 ){
+                ERROR("Could not add amplitude: " << replaceAll(addAmp->at(amp_index)->name(),"_Re","") );
+                return 0;
+            }
+            MPS.addOrGet( amp_re->name(), amp_re->flag(), amp_re->meanInit(), amp_re->stepInit(), amp_re->minInit(), amp_re->maxInit()  );
+            MPS.addOrGet( amp_im->name(), amp_im->flag(), amp_im->meanInit(), amp_im->stepInit(), amp_im->minInit(), amp_im->maxInit()  );
+            INFO("Added amplitude: " << replaceAll(addAmp->at(amp_index)->name(),"_Re","") );
+        }
+        else ERROR("Not enough amplitudes in list");
+        delete addAmp;
+  }  
+    
   auto randomizeStartVals = NamedParameter<bool>("randomizeStartVals", 0);
   if(randomizeStartVals) randomizeStartingPoint(MPS,rndm);
-  //sanityChecks(MPS);
+  sanityChecks(MPS);
 
   EventType evtType(pNames);
   EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
@@ -635,48 +562,73 @@ int main( int argc, char* argv[] )
         // Signal pdf
         PolarisedSum sig(evtType, MPS);
         sig.setMC( eventsMC );
+        checkAmps(sig, MPS);      
         cout << "Number of amplitudes = " << sig.numAmps() << endl;
+            
         auto ll = make_likelihood(events, sig);
         sig.prepare();
         sig.normaliseAmps();
             
-        // Do fit    
-        TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
-        FitResult* fr = doFit(ll, events, eventsMC, MPS );
-        auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
-        fr->addFractions( fitFractions );
-        vector<double> thresholds{0.1,0.5,1,2,5,10,20,50};
-        vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
-      
-        // Estimate the chi2 
-        auto evaluator = sig.evaluator();
-        auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-        Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-        //chi2.writeBinningToFile("chi2_binning.txt");
-        fr->addChi2( chi2.chi2(), chi2.nBins() );
+        // Do fit          
+        auto nFits = NamedParameter<int>("nFits", 1);  
+        double min_LL = 99999;
+    
+        for (unsigned int i = 0; i< nFits; ++i) {
 
-        fr->print();
-        fr->writeToFile(logFile);
-        fr->printToLatexTable(tableFile);
-        fr->writeToOptionsFile(modelFile);
-        fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
-        output->cd();
-        output->Close();
+            cout << "==============================================" << endl;
+            INFO("Start fit number " << i);
 
-        unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
-        if( saveWeights ){
-            EventList_type eventsPlotMC;
-            if(maxIntEvents == -1) eventsPlotMC = eventsMC;
-            else {
-                eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+            if(i>0){
+                randomizeStartingPoint(MPS,rndm);
+                sig.setMC( eventsMC );
+                sig.prepare();
+                //sig.normaliseAmps();
             }
-            sig.setMC( eventsPlotMC );
-            sig.prepare();
-            makePlotWeightFile(sig,eventsPlotMC);  
-        }
-  }
+            FitResult* fr = doFit(ll, events, eventsMC, MPS );
+            
+            if(fr->LL()>min_LL){
+                INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                continue;
+            }
+            else {
+                INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                min_LL=fr->LL();
+            }
+            auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
+            fr->addFractions( fitFractions );
+            vector<double> thresholds{0.1,0.5,1,2,5};
+            vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
+          
+            // Estimate the chi2 
+            auto evaluator = sig.evaluator();
+            auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+            Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+            //chi2.writeBinningToFile("chi2_binning.txt");
+            fr->addChi2( chi2.chi2(), chi2.nBins() );
+
+            TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+            fr->print();
+            fr->writeToFile(logFile);
+            fr->printToLatexTable(tableFile);
+            fr->writeToOptionsFile(modelFile);
+            fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+            output->cd();
+            output->Close();
+
+            unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+            if( saveWeights ){
+                EventList_type eventsPlotMC;
+                if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+                else {
+                    eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+                }
+                sig.setMC( eventsPlotMC );
+                sig.prepare();
+                makePlotWeightFile(sig,eventsPlotMC);  
+            }
+      }
+  }    
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
   cout << "==============================================" << endl;
 }
-

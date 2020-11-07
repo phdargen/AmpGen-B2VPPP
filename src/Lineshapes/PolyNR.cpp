@@ -39,7 +39,7 @@ DEFINE_GENERIC_SHAPE( PolyNR )
   return rt;
 }
 
-DEFINE_LINESHAPE( EXPNR )
+DEFINE_LINESHAPE( ExpNR )
 {
     Expression alpha     = Parameter( particleName + "_alpha", 0 );
     Expression beta    = Parameter( particleName + "_beta", 0 );

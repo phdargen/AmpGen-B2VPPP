@@ -535,7 +535,7 @@ KeyedFunctors<double(Event)> PolarisedSum::componentEvaluator(const EventList_ty
       auto ci = this->m_matrixElements[i].coefficient;
       auto cj = this->m_matrixElements[j].coefficient;
       double s = (i==j) ? 1 : 2 ;
-      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_x_" + programatic_name( mj.decayTree.decayDescriptor() );
+      auto name = programatic_name(mi.decayTree.decayDescriptor()) + "_X_" + programatic_name( mj.decayTree.decayDescriptor() );
       rt.add( [ci,cj,i,j,s, cache, this](const Event& event){  
         auto [s1,s2] = this->m_dim;
         auto R = s1 * s2; 
@@ -574,6 +574,14 @@ std::vector<double> PolarisedSum::numFracAboveThreshold( std::vector<double> t)
     return numFrac;
 }
 
+int PolarisedSum::findAmp(std::string& name){
+    int counter = 0;
+    for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
+        //INFO(m_matrixElements[i].name());
+        if( m_matrixElements[i].name().find( name ) != std::string::npos )counter ++; 
+    }
+    return counter;
+}
 
 void PolarisedSum::normaliseAmps(){
     //prepare();
