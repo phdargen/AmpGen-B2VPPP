@@ -52,23 +52,36 @@ std::vector<std::string> cmd( const std::string& command ){
     return output;
 }
 
-std::map<std::string,bool> getRunningJobs(){
+template <class iterator, class comparator>
+std::vector<iterator> max_elements( iterator begin, 
+                                   iterator end, 
+                                   const unsigned int& N,
+                                   comparator compare )
+{
+    std::vector<iterator> sorted;
+    for( auto& it = begin; it != end ; ++it) sorted.push_back(it);
+    std::sort( sorted.begin() , sorted.end() , compare );
+    std::vector<iterator> partial( sorted.begin(), sorted.begin() + N );
+    return partial;
+}
+
+std::map<std::string,bool> getRunningJobs(int clusterID){
   std::map<std::string,bool> running_jobs; 
-  auto qstat_lines = cmd("condor_q -format '%d\n' ProcId -run");
+  auto qstat_lines = cmd("condor_q " + to_string(clusterID) + " -format '%d\n' ProcId -run");
   for( auto& line : qstat_lines ) running_jobs[line] = true; 
   return running_jobs ; 
 }
 
-std::map<std::string,bool> getFailedJobs(){
+std::map<std::string,bool> getFailedJobs(int clusterID){
     std::map<std::string,bool> failed_jobs; 
-    auto qstat_lines = cmd("condor_q -format '%d\n' ProcId -hold");
+    auto qstat_lines = cmd("condor_q " +  to_string(clusterID) + " -format '%d\n' ProcId -hold");
     for( auto& line : qstat_lines ) failed_jobs[line] = true; 
     return failed_jobs ; 
 }
 
-std::map<std::string,bool> getJobs(){
+std::map<std::string,bool> getJobs(int clusterID){
     std::map<std::string,bool> jobs; 
-    auto qstat_lines = cmd("condor_q -format '%d\n' ProcId");
+    auto qstat_lines = cmd("condor_q " +  to_string(clusterID) + " -format '%d\n' ProcId");
     for( auto& line : qstat_lines ) jobs[line] = true; 
     return jobs ; 
 }
@@ -85,14 +98,54 @@ bool readFile(const std::string& fname ){
     return true;
 }
 
-model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps = 0, int verbose = 0){
+void killJobs(int clusterID){
+    cmd("condor_hold " +  to_string(clusterID) + " -constraint 'JobStatus!=4' ");    
+}
+
+string makeReducedAmpList(MinuitParameterSet* mps, vector<string> ampsToRemove, const std::string& fname){
+    
+        std::ofstream outlog;
+        //outlog << std::setprecision( 4 );
+        outlog.open( fname );
+        for (size_t i = 0; i < mps->size(); ++i ) {
+            auto param = mps->at(i);
+            //INFO(param->name());
+            if(param->isHidden() || param->name().find( "::Spline" ) != std::string::npos )continue;
+
+            bool found = false;
+            for (auto& s : ampsToRemove) if( param->name().find(s) != std::string::npos ) found = true;
+            if(found)continue;
+            
+            if(param->name().find( "_Re" ) != std::string::npos){
+                outlog << replaceAll(param->name(),"_Re", "") << "  " << (int)param->flag() << " " 
+                << param->mean() << " " << param->stepInit() << " " << param->minInit() << " " << param->maxInit() << "    " ;     
+                
+                auto param_im = mps->at(i+1);
+                outlog << (int)param_im->flag() << " " << param_im->mean() << " " << param->stepInit() << " " << param_im->minInit() << " " << param_im->maxInit() << " " ;               
+                i++;            
+            }
+//            else{
+//                outlog << param->name() << "  " << (int)param->flag() << " " 
+//                << param->mean() << " " <<  param->stepInit() << " "
+//                << param->minInit() << " " << param->maxInit() << "    " ;               
+//            }
+            outlog << std::endl;
+        }
+        outlog.close();
+        return fname;
+}
+
+vector<model> selectModel(string dir = "", MinuitParameterSet* mps = 0, int verbose = 0){
     
     string resultsFile = NamedParameter<string>("ResultsFile","result.root");
     TChain* chain = new TChain("Result");
     chain->Add((replaceAll(dir+"/"+resultsFile,".root","_*.root")).c_str());  
     
+    const int n = chain->GetEntries();
+    INFO("Analyzing " << n << " result files");
+    
     double nll,chi2,sumFractions;
-    unsigned status, nPar,nAmps, seed;
+    int status, nPar,nAmps, seed;
     chain->SetBranchAddress("nll",&nll);
     chain->SetBranchAddress("chi2",&chi2);
     chain->SetBranchAddress("status",&status);
@@ -110,7 +163,6 @@ model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps =
     int min_i_chi2 = 0;  
     int min_i_BIC = 0;  
     
-    const int n = chain->GetEntries();
     for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
         
@@ -132,6 +184,8 @@ model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps =
     h_nll->SetLineColor(kBlue);  
     TH1D * h_chi2 = new TH1D("h_chi2","h_chi2",50,0,10);  
     h_chi2->SetLineColor(kBlue);  
+
+    vector<model> models;
     
     for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
@@ -141,6 +195,9 @@ model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps =
         
         double AIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) ;
         double BIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) * log(30000) ;
+
+        model m = {.name=replaceAll(mps->at(seed*2)->name(),"_Re",""), .id = seed ,.nll=nll, .chi2=chi2};
+        models.push_back(m);
         
         if(verbose){
             cout << endl << "model " << seed << endl;
@@ -154,15 +211,15 @@ model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps =
             cout << "BIC = " << BIC << " ( " << sqrt( BIC ) << " sigma) " << endl;
         }
     }
-    
-    TCanvas* c = new TCanvas("c");    
-    h_nll->Draw("h");
-    c->Print((dir+"/"+"n2ll.eps").c_str());  
-    
-    h_chi2->Draw("h");
-    c->Print((dir+"/"+"chi2.eps").c_str());
 
     if(verbose){
+        TCanvas* c = new TCanvas("c");    
+        h_nll->Draw("h");
+        c->Print((dir+"/"+"n2ll.eps").c_str());  
+        
+        h_chi2->Draw("h");
+        c->Print((dir+"/"+"chi2.eps").c_str());
+
         chain->GetEntry(min_i_LL);
         cout << "==============================================" << endl;
         cout << endl << "Best model (LL): " << seed << endl;
@@ -182,22 +239,80 @@ model selectModel(string mode = "LL", string dir = "", MinuitParameterSet* mps =
         cout << "status = " << status << endl;
         cout << "nAmps = " << nAmps << endl;
         cout << "nPar = " << nPar << endl;
+        delete c;
     }
     
-    if(mode=="chi2") chain->GetEntry(min_i_chi2);
-    else chain->GetEntry(min_i_LL);
-    model bestModel = {.name=replaceAll(mps->at(seed*2)->name(),"_Re",""), .id = seed ,.nll=nll, .chi2=chi2};
+    delete chain;
+    delete h_nll;
+    delete h_chi2;
     
-    return bestModel;
+    return models;
 }
 
+void analyzeModelBuilder(int generation, int nFits, string project_dir){
+    LHCbStyle();
+    
+    string resultsFile = NamedParameter<string>("ResultsFile","result.root");
+    resultsFile = replaceAll(resultsFile,".root","");
+    TChain* chain = new TChain("Result");
 
+    for (int i=0; i< generation; i++ ) {
+        for (int j=0; j< nFits; j++ ) { 
+            if(std::ifstream((project_dir + "/v" + to_string(i) + "/" +resultsFile+"_"+to_string(j)+".root").c_str()).good())
+                chain->Add( (project_dir + "/v" + to_string(i) + "/" +resultsFile+"_"+to_string(j)+".root").c_str());          
+        }
+    }
+    
+    INFO("Analyzing " << chain->GetEntries() << " result files");
+    
+    double nll,chi2,sumFractions;
+    int status, nPar,nAmps, seed;
+    chain->SetBranchAddress("nll",&nll);
+    chain->SetBranchAddress("chi2",&chi2);
+    chain->SetBranchAddress("status",&status);
+    chain->SetBranchAddress("nPar",&nPar);
+    chain->SetBranchAddress("nAmps",&nAmps);
+    chain->SetBranchAddress("seed",&seed);
+    
+    TCanvas* c = new TCanvas();    
+    vector<TGraph*> graphs_chi2;
+    
+    int n = 0;
+    for (int i=0; i< generation; i++ ) {
+        
+        double x_gen[nFits];
+        double y_chi2[nFits];
+        
+        for (int j=0; j< nFits; j++ ) {        
+            if(!std::ifstream((project_dir + "/v" + to_string(i) + "/" +resultsFile+"_"+to_string(j)+".root").c_str()).good())continue;
+            n++;
+            chain->GetEntry(n);
+            x_gen[j] = (double)i+1.;
+            y_chi2[j] = chi2;          
+        }
+
+        TGraph* g_chi2 = new TGraph(nFits,x_gen,y_chi2); 
+        g_chi2->SetMinimum(0.1);
+        g_chi2->SetMaximum(5);
+        g_chi2->SetMarkerStyle(20);
+        g_chi2->SetMarkerSize(1.2);
+        g_chi2->SetMarkerColor(kBlue);
+        g_chi2->SetLineColor(kBlue);     
+        g_chi2->GetXaxis()->SetLimits(0,generation+1);
+        g_chi2->SetTitle(";Iteration ; #chi^{2}/ndf");
+        graphs_chi2.push_back(g_chi2);
+    }
+
+    graphs_chi2[0]->Draw("AP");
+    for(int i=1; i < graphs_chi2.size(); i++)graphs_chi2[i]->Draw("P");
+
+    c->Print((project_dir+"/"+"chi2_scan.eps").c_str());
+}
 
 int main(int argc, char* argv[] )
 {
   gStyle->SetOptStat(0);
-  LHCbStyle();
-  
+    
   time_t startTime = time(0);
   OptionsParser::setArgs( argc, argv );
   bool submit = NamedParameter<bool>("submit",true);
@@ -205,91 +320,116 @@ int main(int argc, char* argv[] )
   string project_dir  = NamedParameter<std::string>("Project","modelSel");
   string in_dir  = NamedParameter<std::string>("in_dir",".");    
   string starterModel  = NamedParameter<std::string>("StarterModel","core.txt");
-  auto addAmpList = NamedParameter<string>("addAmpList","addAmpList.txt");
+  string addAmpList = NamedParameter<string>("addAmpList","addAmpList.txt"); // Same as in main_options.txt !
   string modelSelectionFoM  = NamedParameter<std::string>("modelSelectionFoM","chi2");
-    
+  double delta_chi2  = NamedParameter<double>("delta_chi2",0.02);
+  double delta_nll  = NamedParameter<double>("delta_nll",9);
+
+  int fixedFitsToDo = NamedParameter<int>("fixedFitsToDo", -1);  
+  int nWorstAmpsToRemoveFromList = NamedParameter<int>("nWorstAmpsToRemoveFromList", 0);  
+
+  int generation = NamedParameter<int>("generation", 0);  
+  int maxGeneration = NamedParameter<int>("maxGeneration", 3);  
+  double maxTimePerGen  = NamedParameter<double>("maxTimePerGen",4);
+
   int status=0;
   status &= system( ("mkdir -p " + project_dir).c_str() );
   if( status != 0 ) ERROR("Building project directories failed");
   
-  int fitsToDo = NamedParameter<int>("fitsToDo", -1);  
-  MinuitParameterSet* addAmp = new MinuitParameterSet();
-  addAmp->loadFromFile(addAmpList);  
-  fitsToDo = fitsToDo < 0 ? addAmp->size()/2 : fitsToDo;
-    
-  int generation = NamedParameter<int>("generation", 0);  
-  auto maxGeneration = NamedParameter<unsigned int>("maxGeneration", 3);  
   bool improved = true;
   model bestModel = {.name="start", .id = -1,.gen=generation, .nll=99999, .chi2=99999};
     
   do{  
+      time_t startTimeGen = time(0);
       cout << endl <<  "==============================================" << endl;    
       INFO("Model builder:: Starting generation " << generation);
       
       status &= system( ("mkdir -p " + project_dir+"/v"+ to_string(generation)).c_str() );
       if( status != 0 ) ERROR("Building project directories failed");
       cmd("kinit -R");
+
+      MinuitParameterSet* addAmp = new MinuitParameterSet();
+      addAmp->loadFromFile(in_dir + "/" + addAmpList);  
+      int fitsToDo = fixedFitsToDo < 0 ? addAmp->size()/2 : fixedFitsToDo;
       
-      const std::string command = "condor_submit o=" + starterModel + " i=" + in_dir + " d=" + project_dir+"/v"+to_string(generation) + " n=" + to_string(fitsToDo) + " submitModelBuilder.sub";  
+      const std::string command = "condor_submit o=" + starterModel + " i=" + in_dir + " d=" + project_dir+"/v"+to_string(generation) 
+      + " l=" + addAmpList + " n=" + to_string(fitsToDo) + " submitModelBuilder.sub";  
+      INFO(command);
+
+      int clusterID; 
       if(submit){  
           auto status2 = cmd( command.c_str() );  
           for( auto& s : status2) {
-              INFO( s ); 
-              //vector<string>cluster_id; 
-              //if(s.find("cluster"))cluster_id = split(s,' ');
-              //INFO(cluster_id[cluster_id.size()-1]);
+              vector<string> cluster_str;
+              if(s.find("cluster") != std::string::npos){
+                  cluster_str = split(s,' ');
+                  clusterID =  atoi((cluster_str[cluster_str.size()-1]).c_str());
+              }
           }
-          auto nJobs = getJobs(); 
-          INFO(nJobs.size() << "/" << fitsToDo << " jobs submitted");
+          auto nJobs = getJobs(clusterID); 
+          INFO(nJobs.size() << "/" << fitsToDo << " jobs submitted with clusterID " << clusterID);
       }
  
       unsigned int nCompleted = 0 ;     
       unsigned int nFailed = 0 ;       
-      do {
+      if(submit)do {
           nCompleted = 0 ;     
-          nFailed = 0 ;     
           for (unsigned i=0; i< fitsToDo; i++) {
               if(readFile(project_dir+"/v"+to_string(generation)+"/log_"+to_string(i)+".txt"))nCompleted++;
           }
           if( nCompleted < fitsToDo ){
-             auto runningJobs = getRunningJobs(); 
-             auto failedJobs = getFailedJobs(); 
-             nFailed = failedJobs.size();
-              
+             auto runningJobs = getRunningJobs(clusterID); 
+             nFailed = getFailedJobs(clusterID).size() ;     
+
              cout << endl << " Time since start " << (time(0) - startTime)/60.0 << " min." << endl;
-             INFO(fitsToDo - runningJobs.size() - nCompleted - failedJobs.size() << " jobs idle");
+             INFO(fitsToDo - runningJobs.size() - nCompleted - nFailed << " jobs idle");
              INFO(runningJobs.size() << " jobs running");
              INFO(nCompleted << " jobs completed");
-             INFO(failedJobs.size() << " jobs failed");   
+             INFO(nFailed << " jobs failed");   
               
-             if(failedJobs.size()>fitsToDo/4){
+             if(nFailed>fitsToDo/4){
                  ERROR("Too many failed jobs");
                  //killAllJobs();
                  return 0;
              }
              
              sleep(300);
+              
+             if((time(0) - startTimeGen)/60./60. > maxTimePerGen){
+                 ERROR(fitsToDo - nCompleted - nFailed  << "jobs exceed time limit, will terminate them");
+                 killJobs(clusterID); 
+              }
              continue;
           }
+          else INFO("Jobs finished after " << (time(0) - startTimeGen)/60 << " mins");
       } while( nCompleted + nFailed < fitsToDo );
       
-      auto newModel = selectModel(modelSelectionFoM,project_dir+"/v"+to_string(generation), addAmp); 
-      INFO("SelectModel::Selected amplitude " << newModel.name);
-      INFO("nll =  " << newModel.nll);
-      INFO("chi2 = " << newModel.chi2);
 
-      if(newModel.chi2 + 0.05 > bestModel.chi2){
+      vector<model> newModels = selectModel(project_dir+"/v"+to_string(generation), addAmp);    
+      if(modelSelectionFoM=="chi2")sort( newModels.begin(), newModels.end(), []( auto& m1, auto& m2 ){ return m1.chi2 < m2.chi2 ; } );
+      else sort( newModels.begin(), newModels.end(), []( auto& m1, auto& m2 ){ return m1.nll < m2.nll ; } );
+
+      INFO("SelectModel::Selected amplitude " << newModels[0].name);
+      INFO("id = " << newModels[0].id);
+      INFO("nll =  " << newModels[0].nll);
+      INFO("chi2 = " << newModels[0].chi2);
+
+      if( (newModels[0].chi2 + delta_chi2 > bestModel.chi2 && modelSelectionFoM=="chi2" ) || ( newModels[0].nll + delta_nll > bestModel.nll && modelSelectionFoM=="nll")   ){
           improved=false;
           INFO("Model builder found no improvement after generation " << generation);
           INFO("old chi2 = " << bestModel.chi2);
           INFO("old nll =  " << bestModel.nll);
       }
       else {
-          bestModel = newModel; 
+          bestModel = newModels[0]; 
           bestModel.gen = generation; 
+          
           in_dir = project_dir + "/v" + to_string(bestModel.gen);
           starterModel = "model_" + to_string(bestModel.id)+".txt";
-          //addAmpList = makeReducedAmpList();
+          
+          vector<string> ampsToRemove = {bestModel.name};
+          for(unsigned i=newModels.size()- min((int)newModels.size(),nWorstAmpsToRemoveFromList); i<newModels.size();++i){ampsToRemove.push_back(newModels[i].name);}
+          makeReducedAmpList(addAmp, ampsToRemove, project_dir+"/v"+ to_string(generation) + "/" + addAmpList );
       }
       INFO("Completed generation " << generation);
       generation++;
@@ -299,7 +439,9 @@ int main(int argc, char* argv[] )
   cout << endl << "==============================================" << endl;    
   INFO("Model building completed after generation " << generation-1);
   INFO("Best model: " << project_dir + "/v" + to_string(bestModel.gen) + "/model_" + to_string(bestModel.id));  
-    
+
+  analyzeModelBuilder(generation-1,100,project_dir);
+
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
   cout << "==============================================" << endl;   

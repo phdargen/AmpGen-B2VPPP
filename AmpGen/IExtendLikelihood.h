@@ -26,6 +26,8 @@ namespace AmpGen
     double getVal() const override;
     void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
                     const MinuitParameterSet& mps ) override;
+    void configure( const std::string& configString, const MinuitParameterSet& mps );
+
     IExtendLikelihood* create() override { return new GaussianConstraint(); }
     static std::string _id;
 

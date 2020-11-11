@@ -11,29 +11,20 @@
 #include "AmpGen/Chi2Estimator.h"
 #include "AmpGen/EventList.h"
 #include "AmpGen/EventType.h"
-#include "AmpGen/CoherentSum.h"
-#include "AmpGen/IncoherentSum.h"
-#include "AmpGen/FitResult.h"
-#include "AmpGen/Minimiser.h"
-#include "AmpGen/MinuitParameterSet.h"
 #include "AmpGen/MsgService.h"
 #include "AmpGen/NamedParameter.h"
-#include "AmpGen/SumPDF.h"
 #include "AmpGen/Utilities.h"
-#include "AmpGen/Generator.h"
-#include "AmpGen/ErrorPropagator.h"
-#ifdef _OPENMP
-  #include <omp.h>
-  #include <thread>
-#endif
 #include "AmpGen/LHCbStyle.h"
 #include "AmpGen/PolarisedSum.h"
+#include "AmpGen/Kinematics.h"
+
 #include <TH1.h>
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
+#include <TLorentzVector.h>
 
 using namespace AmpGen;
 using namespace std;
@@ -50,63 +41,48 @@ struct phsp_cut {
       bool _invertCut;
 };
 
-void readPlotFile(){
+double cosTheta( const Event& evt ){
 
-  std::string plotFile = NamedParameter<std::string>("Plots"     , "plots.root", "Name of the output plot file");
-  
-  TFile* f_plots = TFile::Open( plotFile.c_str(), "OPEN" ); f_plots->cd();
-  auto s_Kpipi = (TH1D*) f_plots->Get("Data_s123");
-  auto s_pipi = (TH1D*) f_plots->Get("Data_s23");
-  auto s_psipipi = (TH1D*) f_plots->Get("Data_s023");
-  auto s_psipi = (TH1D*) f_plots->Get("Data_s02");
-  auto s_psipi2 = (TH1D*) f_plots->Get("Data_s03");
-  auto s_Kpi = (TH1D*) f_plots->Get("Data_s13");
+    TLorentzVector p0 = pFromEvent( evt, 0 ); //psi
+    
+    TLorentzVector p1 = pFromEvent( evt, 2 ); //pip
+    TLorentzVector p2 = pFromEvent( evt, 3 ); //pim
+    TLorentzVector p3 = pFromEvent( evt, 1 ); //Kp
 
-  auto s_Kpipi_fit = (TH1D*) f_plots->Get("Model_s123");
-  auto s_pipi_fit = (TH1D*) f_plots->Get("Model_s23");  
-  auto s_psipipi_fit = (TH1D*) f_plots->Get("Model_s023");
-  auto s_psipi_fit = (TH1D*) f_plots->Get("Model_s02");
-  auto s_psipi2_fit = (TH1D*) f_plots->Get("Model_s03");
-  auto s_Kpi_fit = (TH1D*) f_plots->Get("Model_s13");
+    TLorentzVector pR = p1 + p2 + p3;
+    p0.Boost( -pR.BoostVector() );
+    p1.Boost( -pR.BoostVector() );
+    p2.Boost( -pR.BoostVector() );
+    p3.Boost( -pR.BoostVector() );
+    
+    TVector3 ez = -( p0.Vect() ).Unit();
+    TVector3 n = ( p1.Vect().Cross( p2.Vect() ) ).Unit();
 
-  s_Kpipi_fit->SetLineColor(kRed);
-  s_pipi_fit->SetLineColor(kRed); 
-  s_psipipi_fit->SetLineColor(kRed);
-  s_psipi_fit->SetLineColor(kRed);
-  s_psipi2_fit->SetLineColor(kRed);
-  s_Kpi_fit->SetLineColor(kRed);
+    return ez.Dot(n);    
+}
 
-  TCanvas* c = new TCanvas("c");
-  c->Divide(3,2);
-  
-  c->cd(1);
-  s_Kpipi->DrawNormalized("e",1);
-  s_Kpipi_fit->DrawNormalized("histcsame",1);
- 
-  c->cd(2);
-  s_Kpi->DrawNormalized("e",1);
-  s_Kpi_fit->DrawNormalized("histcsame",1);
+double chi( const Event& evt ){
+    
+    //EventType B+ psi(2S)0 K+ pi+ pi- 
 
-  c->cd(3);
-  s_pipi->DrawNormalized("e",1);
-  s_pipi_fit->DrawNormalized("histcsame",1);
- 
-  c->cd(4);
-  s_psipipi->DrawNormalized("e",1);
-  s_psipipi_fit->DrawNormalized("histcsame",1);
+    TLorentzVector p0 = pFromEvent( evt, 0 ); //psi
+    TLorentzVector p1 = pFromEvent( evt, 2 ); //pip
+    TLorentzVector p2 = pFromEvent( evt, 3 ); //pim
+    TLorentzVector p3 = pFromEvent( evt, 1 ); //Kp
 
-  c->cd(5);
-  s_psipi->DrawNormalized("e",1);
-  s_psipi_fit->DrawNormalized("histcsame",1);
- 
-  c->cd(6);
-  s_psipi2->DrawNormalized("e",1);
-  s_psipi2_fit->DrawNormalized("histcsame",1);
+    TLorentzVector pR = p1 + p2 + p3;
+    p0.Boost( -pR.BoostVector() );
+    p1.Boost( -pR.BoostVector() );
+    p2.Boost( -pR.BoostVector() );
+    p3.Boost( -pR.BoostVector() );
 
-  c->Print("plots.eps");
-
-  f_plots->Close();
-
+    TVector3 ez = -( p0.Vect() ).Unit();
+    TVector3 n = ( p1.Vect().Cross( p2.Vect() ) ).Unit();
+    
+    double cosChi = - ( ( n.Cross(p1.Vect()) ).Unit() ).Dot( ( n.Cross(p0.Vect()) ).Unit() );
+    double sinChi = - ( ( n.Cross(p1.Vect()) ).Unit() ).Cross( ( n.Cross(p0.Vect()) ).Unit() ).Dot(n);
+        
+    return TMath::ATan2( sinChi, cosChi );
 }
 
 vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, int nBins, vector<double> limits, vector<string> weights){
@@ -339,10 +315,10 @@ void makePlots(){
     phsp_cut filter_plot12(cut_dim_plot12,cut_limits_plot12,invertCut_plot12);    
 
     
-	const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
-	TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
+  const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
+  TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
   weight_file->cd();
-	auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
+  auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
   if(weight_tree->GetEntries() != eventsMC.size()){
       cout << "ERROR inconsistent number of events" << endl;
       throw "ERROR";
@@ -363,12 +339,10 @@ void makePlots(){
   vector<unsigned int> m01{0,1};
   vector<unsigned int> m013{0,1,3};
 
-  vector<vector<unsigned int>> dims{m123,m13,m23,m023,m02,m03,m01,m013};
-  vector<string> labels{"m_Kpipi","m_Kpi","m_pipi","m_psipipi","m_psipi","m_psipi2","m_psiK","m_psiKpi"};
-  //vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(#psi(2S)#pi#pi) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K) [GeV]","m(#psi(2S)K#pi) [GeV]"};
-  vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(J/#psi#pi#pi) [GeV]","m(J/#psi#pi^{+}) [GeV]","m(J/#psi#pi^{-}) [GeV]", "m(J/#psiK) [GeV]","m(J/#psiK#pi) [GeV]"};
-  //Limits
-
+  vector<vector<unsigned int>> dims{m123,m13,m23,m023,m02,m03,m01,m013,{1},{2}};
+  vector<string> labels{"m_Kpipi","m_Kpi","m_pipi","m_psipipi","m_psipi","m_psipi2","m_psiK","m_psiKpi","cosTheta","chi"};
+  
+  vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(#psi(2S)#pi#pi) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K) [GeV]","m(#psi(2S)K#pi) [GeV]"};
   vector<double> lim123{0.9,1.65};
   vector<double> lim13{0.6,1.45};
   vector<double> lim23{0.2,1.15};
@@ -378,18 +352,25 @@ void makePlots(){
   vector<double> lim01{4.15,4.9};
   vector<double> lim013{4.3,5.2};
 
-    /*
-  vector<double> lim123{0.9,2.3};
-  vector<double> lim13{0.6,2};
-  vector<double> lim23{0.2,1.8};
-  vector<double> lim023{3.5,4.85};
-  vector<double> lim02{3.,4.65};
-  vector<double> lim03{3.,4.65};
-  vector<double> lim01{3.5,4.9};
-  vector<double> lim013{3.7,5.2};
-*/
+  if(pNames[1] != "psi(2S)0"){
+      titles = {"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(J/#psi#pi#pi) [GeV]","m(J/#psi#pi^{+}) [GeV]","m(J/#psi#pi^{-}) [GeV]", "m(J/#psiK) [GeV]","m(J/#psiK#pi) [GeV]"};
+      lim123 = {0.9,2.3};
+      lim13={0.6,2};
+      lim23={0.2,1.8};
+      lim023={3.5,4.85};
+      lim02={3.,4.65};
+      lim03={3.,4.65};
+      lim01={3.5,4.9};
+      lim013={3.7,5.2};
+  }
+    
   vector<vector<double>> limits{lim123,lim13,lim23,lim023,lim02,lim03,lim01,lim013};
-
+    
+  titles.push_back("cos(#theta)");
+  titles.push_back("#chi");
+  limits.push_back({-1,1});
+  limits.push_back({-3.141,3.141});
+    
   //Amps to plot
   auto legend = NamedParameter<string>("plot_legend", std::vector<string>() ).getVector();
   auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
@@ -421,44 +402,56 @@ void makePlots(){
       histo_set_cut12.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));    
   }
   //Fill data
-	for( auto& evt : events )
-	{
-	  for(int j=0;j<dims.size();j++) histo_set[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot1(evt))for(int j=0;j<dims.size();j++) histo_set_cut1[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot2(evt))for(int j=0;j<dims.size();j++) histo_set_cut2[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot3(evt))for(int j=0;j<dims.size();j++) histo_set_cut3[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot4(evt))for(int j=0;j<dims.size();j++) histo_set_cut4[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot5(evt))for(int j=0;j<dims.size();j++) histo_set_cut5[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot6(evt))for(int j=0;j<dims.size();j++) histo_set_cut6[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
-      if(filter_plot7(evt))for(int j=0;j<dims.size();j++) histo_set_cut7[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot8(evt))for(int j=0;j<dims.size();j++) histo_set_cut8[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot9(evt))for(int j=0;j<dims.size();j++) histo_set_cut9[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot10(evt))for(int j=0;j<dims.size();j++) histo_set_cut10[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot11(evt))for(int j=0;j<dims.size();j++) histo_set_cut11[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-      if(filter_plot12(evt))for(int j=0;j<dims.size();j++) histo_set_cut12[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
-    }
+  for( auto& evt : events ){
+	  for(int j=0;j<dims.size();j++){
+          double val = 0;
+          if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
+          else if(dims[j][0] == 1) val = cosTheta(evt);
+          else if(dims[j][0] == 2) val = chi(evt);
+          
+          histo_set[j][0]->Fill(val,evt.weight());
+          if(filter_plot1(evt))histo_set_cut1[j][0]->Fill(val,evt.weight());
+          if(filter_plot2(evt))histo_set_cut2[j][0]->Fill(val,evt.weight());
+          if(filter_plot3(evt))histo_set_cut3[j][0]->Fill(val,evt.weight());
+          if(filter_plot4(evt))histo_set_cut4[j][0]->Fill(val,evt.weight());
+          if(filter_plot5(evt))histo_set_cut5[j][0]->Fill(val,evt.weight());
+          if(filter_plot6(evt))histo_set_cut6[j][0]->Fill(val,evt.weight());        
+          if(filter_plot7(evt))histo_set_cut7[j][0]->Fill(val,evt.weight());
+          if(filter_plot8(evt))histo_set_cut8[j][0]->Fill(val,evt.weight());
+          if(filter_plot9(evt))histo_set_cut9[j][0]->Fill(val,evt.weight());
+          if(filter_plot10(evt)) histo_set_cut10[j][0]->Fill(val,evt.weight());
+          if(filter_plot11(evt))histo_set_cut11[j][0]->Fill(val,evt.weight());
+          if(filter_plot12(evt))histo_set_cut12[j][0]->Fill(val,evt.weight());        
+      }
+  }
 
   //Fill fit projections
-	for(int i=0; i< eventsMC.size(); i++ )
-	{
+  for(int i=0; i< eventsMC.size(); i++ ){
     Event evt(eventsMC[i]);
     weight_tree->GetEntry(i);
 
-    for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot1(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut1[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot2(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut2[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot3(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut3[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot4(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot5(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot6(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot7(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut7[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot8(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut8[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot9(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut9[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot10(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut10[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot11(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut11[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    if(filter_plot12(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut12[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-    }
+    for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++){
+        double val = 0;
+        if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
+        else if(dims[j][0] == 1) val = cosTheta(evt);
+        else if(dims[j][0] == 2) val = chi(evt);
 
+        histo_set[j][k]->Fill(val,w[k]);
+        
+        if(filter_plot1(evt))histo_set_cut1[j][k]->Fill(val,w[k]);
+        if(filter_plot2(evt))histo_set_cut2[j][k]->Fill(val,w[k]);
+        if(filter_plot3(evt))histo_set_cut3[j][k]->Fill(val,w[k]);
+        if(filter_plot4(evt))histo_set_cut4[j][k]->Fill(val,w[k]);
+        if(filter_plot5(evt))histo_set_cut5[j][k]->Fill(val,w[k]);
+        if(filter_plot6(evt))histo_set_cut6[j][k]->Fill(val,w[k]);
+        if(filter_plot7(evt))histo_set_cut7[j][k]->Fill(val,w[k]);
+        if(filter_plot8(evt))histo_set_cut8[j][k]->Fill(val,w[k]);
+        if(filter_plot9(evt))histo_set_cut9[j][k]->Fill(val,w[k]);
+        if(filter_plot10(evt))histo_set_cut10[j][k]->Fill(val,w[k]);
+        if(filter_plot11(evt))histo_set_cut11[j][k]->Fill(val,w[k]);
+        if(filter_plot12(evt))histo_set_cut12[j][k]->Fill(val,w[k]);
+     }
+  }
   //Plot
   TCanvas* c = new TCanvas();  
   TLegend leg(0.,0.,1,1,"");
@@ -512,6 +505,15 @@ void makePlots(){
     }
     c->Print("amp_plots2_log.eps");
 
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+    }
+    c->Print("amp_plots3.eps");
+
+    
     c->Clear();
     c->Divide(4,2);
     for(int j=0;j<8;j++){ 
@@ -608,10 +610,113 @@ void makePlots(){
         plotHistos(histo_set_cut12[j],true,1);
     }
     c->Print("amp_plots_cut12.eps");
+
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut1[j],true,1);
+    }
+    c->Print("amp_plots3_cut1.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut2[j],true,1);
+    }
+    c->Print("amp_plots3_cut2.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut3[j],true,1);
+    }
+    c->Print("amp_plots3_cut3.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut4[j],true,1);
+    }
+    c->Print("amp_plots3_cut4.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut5[j],true,1);
+    }
+    c->Print("amp_plots3_cut5.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut6[j],true,1);
+    }
+    c->Print("amp_plots3_cut6.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut7[j],true,1);
+    }
+    c->Print("amp_plots3_cut7.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut8[j],true,1);
+    }
+    c->Print("amp_plots3_cut8.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut9[j],true,1);
+    }
+    c->Print("amp_plots3_cut9.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut10[j],true,1);
+    }
+    c->Print("amp_plots3_cut10.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut11[j],true,1);
+    }
+    c->Print("amp_plots3_cut11.eps");
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cut12[j],true,1);
+    }
+    c->Print("amp_plot3_cut12.eps");
     
 	c->Clear();
 	leg.Draw();
 	c->Print("leg.eps");
+    
+    leg.SetNColumns(2);
+    c->Clear();
+    leg.Draw();
+    c->Print("leg2.eps");
+    
 }
 
 void makePlots3body(){
@@ -917,9 +1022,17 @@ int main( int argc, char* argv[] ){
   LHCbStyle();
 
   auto pNames = NamedParameter<std::string>("EventType" , "").getVector(); 
+  std::string outDir = NamedParameter<std::string>("outDir", ".");
 
   if(pNames.size()==4)makePlots3body();
   else makePlots();
+    
+  int status = 0;
+  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
+  if( status != 0 ) ERROR("Building OutDir directory failed");  
+  else if(outDir != "."){
+        system(("mv *.eps " + outDir + "/").c_str());
+  }
     
   return 0;
 }

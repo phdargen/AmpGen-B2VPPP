@@ -48,6 +48,18 @@ void GaussianConstraint::configure( const std::string& configString,
   }
 }
 
+void GaussianConstraint::configure( const std::string& configString, 
+                                   const MinuitParameterSet& mps )
+{
+    m_param = mps[configString];
+    if ( m_param == nullptr ) {
+        ERROR( "Parameter - " << configString << " not found in MPS" );
+    }
+
+    m_mean  = m_param->mean();
+    m_sigma = m_param->stepInit();
+}
+
 
 double ExtendedNormalisation::getVal() const
 {

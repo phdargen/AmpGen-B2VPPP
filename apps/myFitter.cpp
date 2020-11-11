@@ -31,6 +31,8 @@
 #include "AmpGen/ThreeBodyCalculators.h"
 #include "AmpGen/LHCbStyle.h"
 #include "AmpGen/PolarisedSum.h"
+#include "AmpGen/IExtendLikelihood.h"
+#include "AmpGen/Factory.h"
 
 #if ENABLE_AVX2
     #include "AmpGen/EventListSIMD.h"
@@ -259,24 +261,22 @@ void sanityChecks(MinuitParameterSet& mps){
    vector<int> checkList;    
    for(int i=0;i<mps.size();i++){
        if(!mps[i]->isFree())continue;
-       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos)) checkList.push_back(i);
-   }
-  
-   for(int i= 0; i<checkList.size();i++){
-       bool found = false;
-       TString name(mps[checkList[i]]->name());
-       name.ReplaceAll("_mass","");
-       name.ReplaceAll("_width","");     
-
-       for(int j=0;j<mps.size();j++){
-           if(mps[j]->name().find(name) != std::string::npos && mps[j]->name().find( "_Re" ) != std::string::npos) found = true;
-       }  
-       
-       if(found == false){
-         cout << "Fitting " << mps[checkList[i]]->name() << " but there is no matching amplitude, set to constant" << endl;
-         mps[checkList[i]]->fix();
-       }
-   }
+       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos)){
+           TString name(mps[i]->name());
+           name.ReplaceAll("_mass","");
+           name.ReplaceAll("_width","");     
+           
+           bool found = false;           
+           for(int j=0;j<mps.size();j++){               
+               if(  mps[j]->name().find(name) != std::string::npos && mps[j]->name().find( "_Re" ) != std::string::npos ) found=true;
+           }  
+           if(found == false){    
+               INFO("Fitting " << mps[i]->name() << " but there is no matching amplitude, remove it from MinuitParameterSet");
+               mps.unregister(mps[i]);  
+               i=0;                
+           }
+        }
+   }  
 }
 
 void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
@@ -286,7 +286,11 @@ void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
             vector<string>name_split = split(name,',');
             //INFO(name_split[0]);
             //INFO(name_split[1]);
-            if(sig.findAmp(name_split[0])==0){mps.unregister(mps[i]);i=0;}
+            if(sig.findAmp(name_split[0])==0){
+                INFO("Removing " << name);
+                mps.unregister(mps[i]);
+                i=0;
+            }
         }
     }
 }
@@ -331,6 +335,18 @@ struct rnd_cut {
       int _N;
 };
 
+void addGaussianConstraint( Minimiser& mini, MinuitParameterSet& mps )
+{
+    std::vector<std::string> llConfigs = NamedParameter<std::string>( "GaussianConstraint",std::vector<std::string>() ).getVector();
+    if(llConfigs.size()==0)return;
+    
+    for ( auto& ll_config : llConfigs ) {
+        auto ll_term = new GaussianConstraint();
+        ll_term->configure( ll_config, mps );
+        mini.addExtendedTerm( ll_term );
+    }
+}
+
 template <typename likelihoodType>
 FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_type& mc, MinuitParameterSet& MPS )
 {
@@ -340,7 +356,8 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
      that is constructed from an object that defines an operator() that returns a double 
      (i.e. the likielihood, and a set of MinuitParameters. */
     Minimiser mini( likelihood, &MPS );
-    
+    addGaussianConstraint( mini, MPS );
+
     auto threeBodyShapes     = threeBodyCalculators( MPS );
     unsigned int updateWidth = NamedParameter<unsigned int>( "UpdateWidth", 0 );
     
@@ -412,11 +429,12 @@ int main( int argc, char* argv[])
   std::string intFile = NamedParameter<std::string>("IntegrationSample","","Name of file containing events to use for MC integration.");
   std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
 
+  std::string outDir = NamedParameter<std::string>("outDir", ".");
   std::string logFile = NamedParameter<std::string>("LogFile", "log.txt", "Name of the output log file");
   std::string tableFile = NamedParameter<std::string>("TableFile", "table.tex", "Name of the output log file");
   std::string modelFile = NamedParameter<std::string>("ModelFile", "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile", "result.root", "Name of the output plot file");
-  
+      
   auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
   if(bNamesMC.size()==0)bNamesMC=bNames;
@@ -586,7 +604,7 @@ int main( int argc, char* argv[])
             }
             FitResult* fr = doFit(ll, events, eventsMC, MPS );
             
-            if(fr->LL()>min_LL){
+            if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                 INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
                 continue;
             }
@@ -603,7 +621,7 @@ int main( int argc, char* argv[])
             auto evaluator = sig.evaluator();
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
             Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-            //chi2.writeBinningToFile("chi2_binning.txt");
+            chi2.writeBinningToFile("chi2_binning.txt");
             fr->addChi2( chi2.chi2(), chi2.nBins() );
 
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
@@ -625,9 +643,23 @@ int main( int argc, char* argv[])
                 sig.setMC( eventsPlotMC );
                 sig.prepare();
                 makePlotWeightFile(sig,eventsPlotMC);  
+                //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
+                //fr->print();
             }
       }
   }    
+    
+  int status = 0;
+  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
+  if( status != 0 ) ERROR("Building OutDir directory failed");  
+  else if(outDir != "."){
+        system(("mv " + logFile + " " + outDir + "/").c_str());
+        system(("mv " + tableFile + " " + outDir + "/").c_str());
+        system(("mv " + modelFile + " " + outDir + "/").c_str());
+        system(("mv " + plotFile + " " + outDir + "/").c_str());
+  }
+
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
   cout << "==============================================" << endl;
