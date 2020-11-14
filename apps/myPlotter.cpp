@@ -88,7 +88,7 @@ double chi( const Event& evt ){
 vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, int nBins, vector<double> limits, vector<string> weights){
 
   vector<TH1D*> histos;
-  TH1D* histo = new TH1D(name.c_str(),"",nBins,limits[0],limits[1]);
+  TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBins/2 : nBins,limits[0],limits[1]);
   histo->SetMinimum(0.);
   histo->GetXaxis()->SetTitle(title.c_str());
   histo->GetYaxis()->SetTitle("Yield (norm.)");
@@ -221,6 +221,7 @@ vector<TH2D*> createHistos2D(vector<unsigned int> dim1, vector<unsigned int> dim
 
 void makePlots(){
 
+  std::string outDir = NamedParameter<std::string>("outDir", ".");
   std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
   std::string weightData = NamedParameter<std::string>("weightData", "weight");  
   std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
@@ -316,7 +317,7 @@ void makePlots(){
 
     
   const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
-  TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
+  TFile* weight_file = TFile::Open((outDir+"/"+FitWeightFileName).c_str(),"OPEN");
   weight_file->cd();
   auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
   if(weight_tree->GetEntries() != eventsMC.size()){
@@ -338,11 +339,15 @@ void makePlots(){
   vector<unsigned int> m03{0,3};
   vector<unsigned int> m01{0,1};
   vector<unsigned int> m013{0,1,3};
+  vector<unsigned int> m012{0,1,2};
+  vector<unsigned int> m12{1,2};
 
-  vector<vector<unsigned int>> dims{m123,m13,m23,m023,m02,m03,m01,m013,{1},{2}};
-  vector<string> labels{"m_Kpipi","m_Kpi","m_pipi","m_psipipi","m_psipi","m_psipi2","m_psiK","m_psiKpi","cosTheta","chi"};
+  vector<vector<unsigned int>> dims{m123,m13,m23,m023,m02,m03,m01,m013,{1},{2},m012,m12};
+  vector<string> labels{"m_Kpipi","m_Kpi","m_pipi","m_psipipi","m_psipi","m_psipi2","m_psiK","m_psiKpi","cosTheta","chi","m_psiKpi2","m_Kpi2"};
   
   vector<string> titles{"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(#psi(2S)#pi#pi) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K) [GeV]","m(#psi(2S)K#pi) [GeV]"};
+  titles = {"m(K^{#plus}#pi^{#plus}#pi^{#minus}) [GeV]","m(K^{#plus}#pi^{#minus}) [GeV]","m(#pi^{#plus}#pi^{#minus}) [GeV]","m(#psi(2S)#pi^{#plus}#pi^{#minus}) [GeV]","m(#psi(2S)#pi^{+}) [GeV]","m(#psi(2S)#pi^{-}) [GeV]", "m(#psi(2S)K^{#plus}) [GeV]","m(#psi(2S)K^{#plus}#pi^{#minus}) [GeV]"};
+
   vector<double> lim123{0.9,1.65};
   vector<double> lim13{0.6,1.45};
   vector<double> lim23{0.2,1.15};
@@ -351,9 +356,11 @@ void makePlots(){
   vector<double> lim03{3.8,4.65};
   vector<double> lim01{4.15,4.9};
   vector<double> lim013{4.3,5.2};
+  vector<double> lim012{4.3,5.2};
+  vector<double> lim12{0.6,1.45};
 
   if(pNames[1] != "psi(2S)0"){
-      titles = {"m(K#pi#pi) [GeV]","m(K#pi) [GeV]","m(#pi#pi) [GeV]","m(J/#psi#pi#pi) [GeV]","m(J/#psi#pi^{+}) [GeV]","m(J/#psi#pi^{-}) [GeV]", "m(J/#psiK) [GeV]","m(J/#psiK#pi) [GeV]"};
+      titles = {"m(K^{#plus}#pi^{#plus}#pi^{#minus}) [GeV]","m(K^{#plus}#pi^{#minus}) [GeV]","m(#pi^{#plus}#pi^{#minus}) [GeV]","m(J/#psi#pi^{#plus}#pi^{#minus}) [GeV]","m(J/#psi#pi^{+}) [GeV]","m(J/#psi#pi^{-}) [GeV]", "m(J/#psiK^{#plus}) [GeV]","m(J/#psiK^{#plus}#pi^{#minus}) [GeV]"};
       lim123 = {0.9,2.3};
       lim13={0.6,2};
       lim23={0.2,1.8};
@@ -362,6 +369,8 @@ void makePlots(){
       lim03={3.,4.65};
       lim01={3.5,4.9};
       lim013={3.7,5.2};
+      lim012={3.7,5.2};
+      lim12={0.6,2};
   }
     
   vector<vector<double>> limits{lim123,lim13,lim23,lim023,lim02,lim03,lim01,lim013};
@@ -370,7 +379,12 @@ void makePlots(){
   titles.push_back("#chi");
   limits.push_back({-1,1});
   limits.push_back({-3.141,3.141});
-    
+
+  titles.push_back("m(J/#psiK^{#plus}#pi^{#minus}) [GeV]");
+  titles.push_back("m(K^{#plus}#pi^{#minus}) [GeV]");
+  limits.push_back(lim012);
+  limits.push_back(lim12);
+
   //Amps to plot
   auto legend = NamedParameter<string>("plot_legend", std::vector<string>() ).getVector();
   auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();

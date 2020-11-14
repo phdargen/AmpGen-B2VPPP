@@ -43,7 +43,7 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
   std::vector<Moment> data( m_binning.size() );
   std::vector<Moment> mc( m_binning.size() );
 
-  INFO( "Splitting: " << dataEvents.size() << " data " << mcEvents.size() << " amongst " << m_binning.size()
+  INFO( "Splitting: " << dataEvents.size() << " data " << mcEvents.size() << " mc amongst " << m_binning.size()
       << " bins" );
   unsigned int j           = 0;
   double total_data_weight = 0;
@@ -69,7 +69,13 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
   for ( unsigned int i = 0; i < m_binning.size(); ++i ) {
     mc[i].rescale( total_data_weight / total_int_weight );
     double delta = data[i].val() - mc[i].val();
-    double tChi2 = delta * delta / ( data[i].val() + mc[i].var() );
+    double tChi2 = delta * delta / ( data[i].var() + mc[i].var() );
+    //double tChi2 = delta * delta / ( data[i].var() + mc[i].var() );
+    if(isnan(tChi2)){ERROR("chi2 nan in bin " << i << "; data = " << data[i].val() << " ; mc = " << mc[i].val()); continue;}  
+    //if(tChi2>20){
+        //INFO("bin " << i << ": chi2 = " << tChi2);
+        //INFO("data = " << data[i].val() << " ; mc = " << mc[i].val());    
+    //}
     chi2 += tChi2;
   }
   m_chi2  = chi2;

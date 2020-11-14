@@ -15,6 +15,7 @@
   #include <thread>
 #endif
 
+#include "AmpGen/Kinematics.h"
 #include "AmpGen/Chi2Estimator.h"
 #include "AmpGen/EventType.h"
 #include "AmpGen/CoherentSum.h"
@@ -33,7 +34,6 @@
 #include "AmpGen/PolarisedSum.h"
 #include "AmpGen/IExtendLikelihood.h"
 #include "AmpGen/Factory.h"
-
 #if ENABLE_AVX2
     #include "AmpGen/EventListSIMD.h"
     using EventList_type = AmpGen::EventListSIMD;
@@ -41,12 +41,14 @@
     #include "AmpGen/EventList.h"
     using EventList_type = AmpGen::EventList; 
 #endif
+#include "AmpGen/HyperPlot/HyperHistogram.h"
 
 #include <TGraph.h>
 #include <TH1.h>
 #include <TFile.h>
 #include <TRandom3.h>
 #include <TCanvas.h>
+#include <TLorentzVector.h>
 
 using namespace std;
 using namespace AmpGen;
@@ -94,7 +96,7 @@ void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
             std::vector<std::string> selectKeys;
             while( ss.good() ){
                 std::string substr;
-                getline( ss, substr, 'X' );
+                getline( ss, substr, '!' );
                 selectKeys.push_back( substr );
                 //INFO("Found " <<substr);
             }
@@ -419,6 +421,181 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
     return fr;
 }
 
+double cosTheta( const Event& evt ){
+    
+    TLorentzVector p0 = pFromEvent( evt, 0 ); //psi
+    
+    TLorentzVector p1 = pFromEvent( evt, 2 ); //pip
+    TLorentzVector p2 = pFromEvent( evt, 3 ); //pim
+    TLorentzVector p3 = pFromEvent( evt, 1 ); //Kp
+    
+    TLorentzVector pR = p1 + p2 + p3;
+    p0.Boost( -pR.BoostVector() );
+    p1.Boost( -pR.BoostVector() );
+    p2.Boost( -pR.BoostVector() );
+    p3.Boost( -pR.BoostVector() );
+    
+    TVector3 ez = -( p0.Vect() ).Unit();
+    TVector3 n = ( p1.Vect().Cross( p2.Vect() ) ).Unit();
+    
+    return ez.Dot(n);    
+}
+
+double chi( const Event& evt ){
+    
+    //EventType B+ psi(2S)0 K+ pi+ pi- 
+    
+    TLorentzVector p0 = pFromEvent( evt, 0 ); //psi
+    TLorentzVector p1 = pFromEvent( evt, 2 ); //pip
+    TLorentzVector p2 = pFromEvent( evt, 3 ); //pim
+    TLorentzVector p3 = pFromEvent( evt, 1 ); //Kp
+    
+    TLorentzVector pR = p1 + p2 + p3;
+    p0.Boost( -pR.BoostVector() );
+    p1.Boost( -pR.BoostVector() );
+    p2.Boost( -pR.BoostVector() );
+    p3.Boost( -pR.BoostVector() );
+    
+    TVector3 ez = -( p0.Vect() ).Unit();
+    TVector3 n = ( p1.Vect().Cross( p2.Vect() ) ).Unit();
+    
+    double cosChi = - ( ( n.Cross(p1.Vect()) ).Unit() ).Dot( ( n.Cross(p0.Vect()) ).Unit() );
+    double sinChi = - ( ( n.Cross(p1.Vect()) ).Unit() ).Cross( ( n.Cross(p0.Vect()) ).Unit() ).Dot(n);
+    
+    return TMath::ATan2( sinChi, cosChi );
+}
+
+
+vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const int dim = 5, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
+    
+    EventType pdg = dataEvents.eventType();
+    //EventType B+ psi(2S)0 K+ pi+ pi- 
+    vector<unsigned int> m123{1,2,3};
+    vector<unsigned int> m13{1,3};
+    vector<unsigned int> m23{2,3};
+    vector<unsigned int> m023{0,2,3};
+    vector<unsigned int> m02{0,2};
+    vector<unsigned int> m03{0,3};
+    vector<unsigned int> m01{0,1};
+    vector<unsigned int> m013{0,1,3};
+    vector<unsigned int> m012{0,1,2};
+
+    //return {evt.s( 1, 2, 3 ), evt.s( 0, 1 ), evt.s( 0, 2 ), evt.s( 2, 3 ), evt.s( 0, 1, 2 )};
+
+    HyperPointSet points( dim );
+    HyperPoint min(dim);
+    HyperPoint max(dim);
+
+    if(dim==7){
+        min = HyperPoint( pdg.minmax(m123).first, pdg.minmax(m13).first, pdg.minmax(m23).first, pdg.minmax(m023).first, pdg.minmax(m02).first, -1, -3.141 );
+        max = HyperPoint( pdg.minmax(m123).second, pdg.minmax(m13).second, pdg.minmax(m23).second, pdg.minmax(m023).second, pdg.minmax(m02).second, 1, 3.141 );
+    }
+    else if(dim==5 && mode ==0){
+        min = HyperPoint( pdg.minmax(m123).first, pdg.minmax(m13).first, pdg.minmax(m23).first, pdg.minmax(m023).first, pdg.minmax(m02).first );
+        max = HyperPoint( pdg.minmax(m123).second, pdg.minmax(m13).second, pdg.minmax(m23).second, pdg.minmax(m023).second, pdg.minmax(m02).second );        
+    }
+    else if(dim==5){
+        min = HyperPoint( pow(pdg.minmax(m123).first,2), pow(pdg.minmax(m01).first,2), pow(pdg.minmax(m02).first,2), pow(pdg.minmax(m23).first,2), pow(pdg.minmax(m012).first,2) );
+        max = HyperPoint( pow(pdg.minmax(m123).second,2), pow(pdg.minmax(m01).second,2), pow(pdg.minmax(m02).second,2), pow(pdg.minmax(m23).second,2), pow(pdg.minmax(m012).second,2) );        
+    }
+    
+    HyperCuboid limits(min, max );    
+    
+    for( auto& evt : dataEvents ){
+        HyperPoint point( dim );
+        if(mode ==0){
+            point.at(0)= sqrt(evt.s(m123));
+            point.at(1)= sqrt(evt.s(m13));
+            point.at(2)= sqrt(evt.s(m23));
+            point.at(3)= sqrt(evt.s(m023));
+            point.at(4)= sqrt(evt.s(m02));
+        }
+        else{
+            point.at(0)= evt.s(m123);
+            point.at(1)= evt.s(m01);
+            point.at(2)= evt.s(m02);
+            point.at(3)= evt.s(m23);
+            point.at(4)= evt.s(m012);
+        }
+        if(dim==7){
+            point.at(5)= cosTheta(evt);
+            point.at(6)= chi(evt);            
+        }
+        point.addWeight(evt.weight());
+        points.push_back(point);
+    }
+
+    HyperPointSet pointsMC( dim);
+    for( auto& evt : mcEvents ){
+        HyperPoint point( dim );
+        if(mode ==0){
+            point.at(0)= sqrt(evt.s(m123));
+            point.at(1)= sqrt(evt.s(m13));
+            point.at(2)= sqrt(evt.s(m23));
+            point.at(3)= sqrt(evt.s(m023));
+            point.at(4)= sqrt(evt.s(m02));
+        }
+        else{
+            point.at(0)= evt.s(m123);
+            point.at(1)= evt.s(m01);
+            point.at(2)= evt.s(m02);
+            point.at(3)= evt.s(m23);
+            point.at(4)= evt.s(m012);
+        }
+        if(dim==7){
+            point.at(5)= cosTheta(evt);
+            point.at(6)= chi(evt);            
+        }
+        point.addWeight(fcn( evt ) * evt.weight() / evt.genPdf());
+        pointsMC.push_back(point);
+    }
+
+    HyperHistogram dataHist(limits, points, 
+                            /*** Name of the binning algorithm you want to use     */
+                            HyperBinningAlgorithms::SMART_MULTI,
+                            /***  The minimum number of events allowed in each bin */
+                            /***  from the HyperPointSet provided (points1)        */
+                            AlgOption::MinBinContent      (minEventsPerBin),                    
+                            /*** This minimum bin width allowed. Can also pass a   */
+                            /*** HyperPoint if you would like different min bin    */
+                            /*** widths for each dimension                         */
+                            AlgOption::MinBinWidth        (minBinWidth),                                                 
+                            /*** If you want to use the sum of weights rather than */
+                            /*** the number of events, set this to true.           */    
+                            AlgOption::UseWeights         (true),                         
+                            /*** Some algorithms use a random number generator. Set*/
+                            /*** the seed here                                     */
+                            AlgOption::RandomSeed         (1),                         
+                            /*** What dimesnion would you like to split first? Only*/
+                            /*** applies to certain algortihms                     */
+                            AlgOption::StartDimension     (0)
+                            /*** What dimesnions would you like to bin in?         */
+                            //AlgOption::BinningDimensions  (binningDims),                      
+                            /*** Setting this option will make the agorithm draw   */
+                            /*** the binning scheme at each iteration              */
+                            //AlgOption::DrawAlgorithm("Algorithm")                 
+                            );
+        //    dataHist.save("histData.root");
+    //     HyperHistogram binningHist("histData.root",5);    
+    //     HyperHistogram dataHist( binningHist.getBinning() );
+    //     dataHist.fill(points); 
+    
+    HyperHistogram mcHist( dataHist.getBinning() );
+    mcHist.fill(pointsMC); 
+    mcHist.normalise(dataHist.integral());
+    
+    double chi2 = dataHist.chi2(mcHist);
+    int nBins   = dataHist.getNBins();    
+    cout << "chi2 = " << (double)chi2/(nBins-1.) << endl;
+    
+    vector<double> vals;
+    vals.push_back(chi2);
+    vals.push_back((double)nBins);
+    
+    return vals;
+}
+
+
 int main( int argc, char* argv[])
 {
   time_t startTime = time(0);
@@ -621,7 +798,10 @@ int main( int argc, char* argv[])
             auto evaluator = sig.evaluator();
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
             Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-            chi2.writeBinningToFile("chi2_binning.txt");
+            //vector<double> chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0. );
+            //chi2Hyper = getChi2(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
+            //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
+            //chi2.writeBinningToFile("chi2_binning.txt");
             fr->addChi2( chi2.chi2(), chi2.nBins() );
 
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
@@ -658,6 +838,8 @@ int main( int argc, char* argv[])
         system(("mv " + tableFile + " " + outDir + "/").c_str());
         system(("mv " + modelFile + " " + outDir + "/").c_str());
         system(("mv " + plotFile + " " + outDir + "/").c_str());
+        const string FitWeightFileName = NamedParameter<string>("FitWeightFileName", "Fit_weights.root");  
+        system(("mv " + FitWeightFileName + " " + outDir + "/").c_str());
   }
 
   cout << "==============================================" << endl;

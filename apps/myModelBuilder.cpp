@@ -354,10 +354,10 @@ int main(int argc, char* argv[] )
       
       const std::string command = "condor_submit o=" + starterModel + " i=" + in_dir + " d=" + project_dir+"/v"+to_string(generation) 
       + " l=" + addAmpList + " n=" + to_string(fitsToDo) + " submitModelBuilder.sub";  
-      INFO(command);
-
+      
       int clusterID; 
       if(submit){  
+          INFO(command);
           auto status2 = cmd( command.c_str() );  
           for( auto& s : status2) {
               vector<string> cluster_str;
