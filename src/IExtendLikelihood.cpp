@@ -55,6 +55,9 @@ void GaussianConstraint::configure( const std::string& configString,
     if ( m_param == nullptr ) {
         ERROR( "Parameter - " << configString << " not found in MPS" );
     }
+    else {
+        INFO("Adding gaussian constraint for parameter " << configString << " with mean=" <<  m_param->mean() << " and sigma=" << m_param->stepInit());
+    }
 
     m_mean  = m_param->mean();
     m_sigma = m_param->stepInit();

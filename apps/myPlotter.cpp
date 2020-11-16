@@ -41,6 +41,15 @@ struct phsp_cut {
       bool _invertCut;
 };
 
+double helicityCos(const Event& evt, int i, int j, vector<int> kl){
+    
+    TLorentzVector pi = pFromEvent( evt, i ); 
+    TLorentzVector pj = pFromEvent( evt, j ); 
+    TLorentzVector PR = pFromEvent( evt, kl[0] ) + pFromEvent( evt, kl[1] );
+    
+    return dotProduct(pi, pj, PR) / sqrt( dotProduct( pi, pi, PR ) * dotProduct( pj, pj, PR ) );    
+}
+
 double cosTheta( const Event& evt ){
 
     TLorentzVector p0 = pFromEvent( evt, 0 ); //psi
@@ -735,6 +744,7 @@ void makePlots(){
 
 void makePlots3body(){
     
+    std::string outDir = NamedParameter<std::string>("outDir", ".");
     std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
     std::string weightData = NamedParameter<std::string>("weightData", "weight");  
     std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
@@ -799,7 +809,7 @@ void makePlots3body(){
     phsp_cut filter_plot6(cut_dim_plot6,cut_limits_plot6,invertCut_plot6);    
     
     const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName","Fit_weights.root");  
-    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"OPEN");
+    TFile* weight_file = TFile::Open((outDir+"/"+FitWeightFileName).c_str(),"OPEN");
     weight_file->cd();
     auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
     if(weight_tree->GetEntries() != eventsMC.size()){
@@ -817,15 +827,16 @@ void makePlots3body(){
     vector<unsigned int> m02{0,2};
     vector<unsigned int> m01{0,1};
     
-    vector<vector<unsigned int>> dims{m12,m02,m01};
-    vector<string> labels{"m_Kspi","m_Dpi","m_DKs"};
-    vector<string> titles{"m(K_{s}#pi) [GeV]","m(D#pi) [GeV]","m(DK_{s}) [GeV]"};
+    vector<vector<unsigned int>> dims{m12,m02,m01,{1},{2},{3}};
+    vector<string> labels{"m_Kspi","m_Dpi","m_DKs","cos_Kspi","cos_Dpi","cos_DKs"};
+    vector<string> titles{"m(K^{0}_{s}#pi^{#plus}) [GeV]","m(D^{#minus}#pi^{#plus}) [GeV]","m(D^{#minus}K^{0}_{s}) [GeV]","cos(#theta_{K^{0}_{s}#pi^{#plus}})","cos(#theta_{D^{#minus}#pi^{#plus}})","cos(#theta_{D^{#minus}K^{0}_{s}})"
+    };
     
     //Limits
     vector<double> lim12{0.5,3.5};
     vector<double> lim02{1.9,5};
     vector<double> lim01{2.1,5.25};
-    vector<vector<double>> limits{lim12,lim02,lim01};
+    vector<vector<double>> limits{lim12,lim02,lim01,{-1,1},{-1,1},{-1,1}};
     
     //Amps to plot
     auto legend = NamedParameter<string>("plot_legend", std::vector<string>() ).getVector();
@@ -855,16 +866,25 @@ void makePlots3body(){
     //Fill data
     for( auto& evt : events )
     {
-        for(int j=0;j<dims.size();j++) histo_set[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot1(evt))for(int j=0;j<dims.size();j++) histo_set_cut1[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot2(evt))for(int j=0;j<dims.size();j++) histo_set_cut2[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot3(evt))for(int j=0;j<dims.size();j++) histo_set_cut3[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot4(evt))for(int j=0;j<dims.size();j++) histo_set_cut4[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot5(evt))for(int j=0;j<dims.size();j++) histo_set_cut5[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());
-        if(filter_plot6(evt))for(int j=0;j<dims.size();j++) histo_set_cut6[j][0]->Fill(sqrt(evt.s(dims[j])),evt.weight());        
+        for(int j=0;j<dims.size();j++){
+            // EventType B0 D- K0S0 pi+ 
+            double val = 0;
+            if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
+            else if(dims[j][0] == 1) val = helicityCos(evt,1,0,{1,2}); 
+            else if(dims[j][0] == 2) val = helicityCos(evt,2,1,{0,2}); 
+            else if(dims[j][0] == 3) val = helicityCos(evt,1,2,{0,1}); 
 
-        int n = 0;
-        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ histo2D_set[n][0]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),evt.weight()); n++;}
+            histo_set[j][0]->Fill(val,evt.weight());
+            if(filter_plot1(evt)) histo_set_cut1[j][0]->Fill(val,evt.weight());
+            if(filter_plot2(evt))histo_set_cut2[j][0]->Fill(val,evt.weight());
+            if(filter_plot3(evt))histo_set_cut3[j][0]->Fill(val,evt.weight());
+            if(filter_plot4(evt))histo_set_cut4[j][0]->Fill(val,evt.weight());
+            if(filter_plot5(evt))histo_set_cut5[j][0]->Fill(val,evt.weight());
+            if(filter_plot6(evt))histo_set_cut6[j][0]->Fill(val,evt.weight());        
+
+//            int n = 0;
+//            for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ histo2D_set[n][0]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),evt.weight()); n++;}
+            }
     }
     
     //Fill fit projections
@@ -873,21 +893,31 @@ void makePlots3body(){
         Event evt(eventsMC[i]);
         weight_tree->GetEntry(i);
         
-        for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot1(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut1[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot2(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut2[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot3(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut3[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot4(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot5(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
-        if(filter_plot6(evt))for(int j=0;j<dims.size();j++)for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(sqrt(evt.s(dims[j])),w[k]);
+        for(int j=0;j<dims.size();j++){
+            // EventType B0 D- K0S0 pi+ 
+            double val = 0;
+            if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
+            else if(dims[j][0] == 1) val = helicityCos(evt,1,0,{1,2}); 
+            else if(dims[j][0] == 2) val = helicityCos(evt,2,1,{0,2}); 
+            else if(dims[j][0] == 3) val = helicityCos(evt,1,2,{0,1}); 
 
-        int n = 0;
-        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){
-          for(int k=1; k<weights.size();k++){
-            histo2D_set[n][k]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),w[k]);
-          }
-          n++;
-          }
+            for(int k=1; k<weights.size();k++) histo_set[j][k]->Fill(val,w[k]);
+            if(filter_plot1(evt))for(int k=1; k<weights.size();k++) histo_set_cut1[j][k]->Fill(val,w[k]);
+            if(filter_plot2(evt))for(int k=1; k<weights.size();k++) histo_set_cut2[j][k]->Fill(val,w[k]);
+            if(filter_plot3(evt))for(int k=1; k<weights.size();k++) histo_set_cut3[j][k]->Fill(val,w[k]);
+            if(filter_plot4(evt))for(int k=1; k<weights.size();k++) histo_set_cut4[j][k]->Fill(val,w[k]);
+            if(filter_plot5(evt))for(int k=1; k<weights.size();k++) histo_set_cut5[j][k]->Fill(val,w[k]);
+            if(filter_plot6(evt))for(int k=1; k<weights.size();k++) histo_set_cut6[j][k]->Fill(val,w[k]);
+
+    //        int n = 0;
+    //        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){
+    //          for(int k=1; k<weights.size();k++){
+    //            histo2D_set[n][k]->Fill(sqrt(evt.s(dims[i])),sqrt(evt.s(dims[j])),w[k]);
+    //          }
+    //          n++;
+    //          }
+
+        }    
     }
     
     //Plot
@@ -926,6 +956,22 @@ void makePlots3body(){
     c->Print("amp_plots.eps");
 
     c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
+            c->cd(j+1);
+            plotHistos(histo_set[j],true,1);
+    }
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
+    c->Print("amp_plots2.eps");
+        
+    c->Clear();
     c->Divide(2,2);
     for(int j=0;j<3;j++){ 
         c->cd(j+1);
@@ -939,64 +985,116 @@ void makePlots3body(){
     
 
     c->Clear();
-    c->Divide(2,2);
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set[j],true,1);
+    }
     for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
+    c->Print("amp_plots2.eps");
+
+    
+    c->Clear();
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut1[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut1[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut1.eps");
 
     c->Clear();
-    c->Divide(2,2);
-    for(int j=0;j<3;j++){ 
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut2[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut2[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut2.eps");
 
-
     c->Clear();
-    c->Divide(2,2);
-    for(int j=0;j<3;j++){ 
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut3[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut3[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut3.eps");
 
     c->Clear();
-    c->Divide(2,2);
-    for(int j=0;j<3;j++){ 
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut4[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut4[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut4.eps");
 
     c->Clear();
-    c->Divide(2,2);
-    for(int j=0;j<3;j++){ 
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut5[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut5[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut5.eps");
 
     c->Clear();
-    c->Divide(2,2);
-    for(int j=0;j<3;j++){ 
+    c->Divide(4,2);
+    for(int j=0;j<4;j++){ 
         c->cd(j+1);
         plotHistos(histo_set_cut6[j],true,1);
     }
-    c->cd(4);
-    leg.Draw();
+    for(int j=0;j<3;j++){ 
+        c->cd(j+5);
+        plotHistos(histo_set_cut6[j],true,1);
+        gPad->SetLogy(1);
+    }
+    c->cd(8);
+    gPad->SetLogy(0);
+    leg.Draw();    
     c->Print("amp_plots_cut6.eps");
 
     
@@ -1004,27 +1102,27 @@ void makePlots3body(){
     leg.Draw();
     c->Print("leg.eps");
 
-    c->Clear();
-    int n = 0;
-    for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ 
-      histo2D_set[n][0]->Draw("colz");
-      c->Print(("dalitz_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
-      histo2D_set[n][0]->Draw();
-      c->Print(("dalitzScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
-
-      histo2D_set[n][1]->Draw("colz");
-      c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
-      histo2D_set[n][1]->Draw();
-      c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
-
-      for(int k=2; k<weights.size();k++){
-        histo2D_set[n][k]->Draw("colz");
-        c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
-        histo2D_set[n][k]->Draw();
-        c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
-      }
-      n++; 
-    }
+//    c->Clear();
+//    int n = 0;
+//    for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){ 
+//      histo2D_set[n][0]->Draw("colz");
+//      c->Print(("dalitz_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+//      histo2D_set[n][0]->Draw();
+//      c->Print(("dalitzScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+//
+//      histo2D_set[n][1]->Draw("colz");
+//      c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+//      histo2D_set[n][1]->Draw();
+//      c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+".eps").c_str());
+//
+//      for(int k=2; k<weights.size();k++){
+//        histo2D_set[n][k]->Draw("colz");
+//        c->Print(("dalitzFit_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
+//        histo2D_set[n][k]->Draw();
+//        c->Print(("dalitzFitScatter_"+to_string(i)+"_"+to_string(j)+"_amp"+to_string(k)+".eps").c_str());
+//      }
+//      n++; 
+//    }
 }
 
 

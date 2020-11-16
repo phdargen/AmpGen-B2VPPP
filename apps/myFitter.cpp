@@ -224,7 +224,9 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
     if ( param->isFree() == 0 ) continue;
     if ( SplineOnly && param->name().find( "::Spline" ) == std::string::npos ) continue;
     if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos ||
-    param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos ){        
+    param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos
+        || param->name().find( "_alpha" ) != std::string::npos
+        || param->name().find( "_beta" ) != std::string::npos){        
         double min = param->minInit();
         double max = param->maxInit();
         //if(param->name().find( "_Re" ) != std::string::npos){
@@ -263,10 +265,12 @@ void sanityChecks(MinuitParameterSet& mps){
    vector<int> checkList;    
    for(int i=0;i<mps.size();i++){
        if(!mps[i]->isFree())continue;
-       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos)){
+       if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos || mps[i]->name().find( "_alpha" ) != std::string::npos || mps[i]->name().find( "_beta" ) != std::string::npos ) ){
            TString name(mps[i]->name());
            name.ReplaceAll("_mass","");
            name.ReplaceAll("_width","");     
+           name.ReplaceAll("_alpha","");     
+           name.ReplaceAll("_beta","");     
            
            bool found = false;           
            for(int j=0;j<mps.size();j++){               
