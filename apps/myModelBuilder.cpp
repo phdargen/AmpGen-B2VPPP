@@ -322,14 +322,14 @@ int main(int argc, char* argv[] )
   string starterModel  = NamedParameter<std::string>("StarterModel","core.txt");
   string addAmpList = NamedParameter<string>("addAmpList","addAmpList.txt"); // Same as in main_options.txt !
   string modelSelectionFoM  = NamedParameter<std::string>("modelSelectionFoM","chi2");
-  double delta_chi2  = NamedParameter<double>("delta_chi2",0.02);
+  double delta_chi2  = NamedParameter<double>("delta_chi2",0.0);
   double delta_nll  = NamedParameter<double>("delta_nll",9);
 
   int fixedFitsToDo = NamedParameter<int>("fixedFitsToDo", -1);  
   int nWorstAmpsToRemoveFromList = NamedParameter<int>("nWorstAmpsToRemoveFromList", 0);  
 
   int generation = NamedParameter<int>("generation", 0);  
-  int maxGeneration = NamedParameter<int>("maxGeneration", 3);  
+  int maxGeneration = NamedParameter<int>("maxGeneration", 15);  
   double maxTimePerGen  = NamedParameter<double>("maxTimePerGen",4);
 
   int status=0;

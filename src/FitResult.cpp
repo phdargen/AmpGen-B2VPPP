@@ -2,6 +2,8 @@
 #include <TMatrixT.h>
 #include <TMatrixTSym.h>
 #include <TMatrixTUtils.h>
+#include <TGraph.h>
+#include <TCanvas.h>
 #include <memory.h>
 #include <iomanip>
 #include <istream>
@@ -81,6 +83,7 @@ bool FitResult::readFile( const std::string& fname )
     ERROR("File not properly closed: " << *lines.rbegin() );
     return false; 
   }
+  INFO("Reading fit results from file " << fname);   
   std::vector<std::string> parameterLines;
   for( auto& line : lines ){
     const std::string name = split( line, ' ' )[0];
@@ -94,6 +97,7 @@ bool FitResult::readFile( const std::string& fname )
   for (size_t i = 0; i < nParameters; ++i ) {
     auto tokens             = split( parameterLines[i], ' ' );
     m_covMapping[tokens[1]] = i;
+    INFO(tokens[1]);
     m_mps->add( new MinuitParameter( tokens[1], parse<Flag>(tokens[2]), stod( tokens[3] ), stod( tokens[4] ), 0, 0 ) );
     for (size_t j = 0; j < nParameters; ++j ) m_covarianceMatrix( i, j ) = stod( tokens[5 + j] );
   }
@@ -123,7 +127,7 @@ void FitResult::addToObservables( const std::string& line )
 
 void FitResult::addObservable( const std::string& name, const double& F ) { m_observables[name] = F; }
 
-void FitResult::writeToFile( const std::string& fname )
+void FitResult::writeToFileMod( const std::string& fname )
 {
   std::ofstream outlog;
   outlog.open( fname );
@@ -152,6 +156,26 @@ void FitResult::writeToFile( const std::string& fname )
   outlog.close();
 }
 
+void FitResult::writeToFile( const std::string& fname )
+{
+    std::ofstream outlog;
+    outlog.open( fname );
+    for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
+        auto param = m_mps->at(i);
+        outlog << "Parameter"
+        << " " << param->name() << " " << to_string<Flag>(param->flag()) << " " << param->mean() << " "
+        << ( param->isFree() ? m_mps->at(i)->err() : 0 ) << " ";
+        for (size_t j = 0; j < (size_t)m_covarianceMatrix.GetNcols(); ++j ) outlog << m_covarianceMatrix[i][j] << " ";
+        outlog << std::endl;
+    }
+    outlog << std::setprecision( 8 );
+    outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
+    for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
+    for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
+    outlog << "End Log\n";
+    outlog.close();
+}
+
 std::string FitResult::latexName(std::string name){
     
     TString n(name);
@@ -164,10 +188,12 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("-","^{-}");
     n.ReplaceAll(")0",")^{0}");
     n.ReplaceAll(",","");
+    n.ReplaceAll(";","");
 
     n.ReplaceAll("Sum_","\\text{Sum } ");
 
-    n.ReplaceAll("psi","\\psi");
+    n.ReplaceAll("J/psi0","J/\\psi");
+    n.ReplaceAll("psi(2S)0","\\psi(2S)");
     n.ReplaceAll("rho","\\rho");
     n.ReplaceAll("pi","\\pi");
     
@@ -179,8 +205,10 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("[Kappa]","");
     n.ReplaceAll("[Dabba]","");
     n.ReplaceAll("[GSpline.EFF]","");
+    n.ReplaceAll("[GSpline]","");
     n.ReplaceAll("[SBW]","");
     n.ReplaceAll("[NONRESEXP]","");
+    n.ReplaceAll("[Flatte]","");
 
     n.ReplaceAll("GounarisSakurai.Omega","");
     n.ReplaceAll("GounarisSakurai","");
@@ -243,7 +271,7 @@ void FitResult::printToLatexTable( const std::string& fname )
         if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
         if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;
         if(param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos){
-            scale = 100;
+            scale = 1000;
             SummaryFile << std::fixed << std::setprecision(2);            
         }
         else{
@@ -349,6 +377,58 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsi
         outputTree->Fill();
         outputTree->Write();
 }
+
+void FitResult::plotSpline( const std::string& name, const std::string& outDir ) {
+    
+    double min, max, nBins( 0 );
+    auto spline_params = NamedParameter<double>( name + "::Spline").getVector();
+    if( spline_params.size() == 3 ){
+        nBins = int( spline_params[0] );
+        min   =         spline_params[1] ; 
+        max   =         spline_params[2];
+    }
+    else if( spline_params.size() == 4 ){
+        nBins = size_t( spline_params[0] );
+        min   =       spline_params[1] * spline_params[1] ; 
+        max   =       spline_params[2] * spline_params[2];
+    }
+    else {
+        nBins = NamedParameter<int>( name + "::Spline::N"  , 0. );
+        min   = NamedParameter<double>( name + "::Spline::Min", 0. );
+        max   = NamedParameter<double>( name + "::Spline::Max", 0. );
+    }
+    
+    TGraph* g_amp = new TGraph();
+    TGraph* g_phase = new TGraph();
+    TGraph* g_argand = new TGraph();
+
+    double st = (max-min)/double(nBins-1);
+    double amp,phase;
+
+    for ( int c = 0; c < nBins; ++c ) {
+            double s = min + double( c ) * st;
+            
+            for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+                auto param = m_mps->at(i);
+                if(param->name().find( name + "::Spline::") != std::string::npos){      
+                            if(param->name().find( "Re::" + std::to_string(c) ) != std::string::npos) amp = param->mean();
+                            else if(param->name().find( "Im::" + std::to_string(c) ) != std::string::npos) phase = param->mean();
+                }
+            }
+            g_amp->SetPoint( g_amp->GetN(), sqrt(s), amp );
+            g_phase->SetPoint( g_phase->GetN(), sqrt(s), phase );
+            g_argand->SetPoint( g_argand->GetN(), amp, phase );        
+    }
+    
+    TCanvas* c = new TCanvas();
+    g_amp->Draw("AC*");
+    c->Print((outDir+"/"+name+"_amp.eps").c_str());
+    g_phase->Draw("AC*");
+    c->Print((outDir+"/"+name+"_phase.eps").c_str());
+    g_argand->Draw("AC*");
+    c->Print((outDir+"/"+name+"_argand.eps").c_str());
+}
+
 
 void FitResult::print() const
 {

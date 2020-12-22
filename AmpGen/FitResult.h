@@ -31,9 +31,12 @@ namespace AmpGen
     void addFraction( const std::string& name, const double& frac, const double& err );
     void setCov( const size_t& x, const size_t& y, const double& F );
     void writeToFile( const std::string& fname );
+    void writeToFileMod( const std::string& fname );
     void writeToOptionsFile( const std::string& fname );
     void writeToRootFile( TFile * output,  unsigned seed = 0, int verbose = 0, unsigned numAmps = 0, double Ns = 0, std::vector<double> thresholds = {}, std::vector<double> numFracAboveThresholds = {} );
 
+    void plotSpline(const std::string& name, const std::string& outDir = ".");
+      
     std::string latexName(std::string name);
     void printToLatexTable( const std::string& fname );
 

@@ -48,6 +48,11 @@ Expression AmpGen::getSpline( const std::string& name, const Expression& x, cons
     min   =         spline_params[1] ; 
     max   =         spline_params[2];
   }
+  else if( spline_params.size() == 4 ){
+        nBins = size_t( spline_params[0] );
+        min   =       spline_params[1] * spline_params[1] ; 
+        max   =       spline_params[2] * spline_params[2];
+  }
   else {
     nBins = NamedParameter<double>( name + "::Spline::N"  , 0. );
     min   = NamedParameter<double>( name + "::Spline::Min", 0. );

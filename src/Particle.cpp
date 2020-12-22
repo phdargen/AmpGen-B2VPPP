@@ -511,8 +511,8 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
     }
     if( m_spinBasis == spinBasis::Dirac ){
       Expression N = make_cse(1./(m*(pE + m)));
-      if( polState ==  1 ) return -Tensor({1.+ z *pX*N,  1i +  z*pY*N,  z*pZ*N    ,  z*m })/sqrt(2);
-      if( polState == -1 ) return  Tensor({1.+ zb*pX*N, -1i + zb*pY*N, zb*pZ*N    , zb*m })/sqrt(2);
+      if( polState ==  1 ) return -Tensor({1.+ z *pX*N,  1i +  z*pY*N,  z*pZ*N    ,  z/m })/sqrt(2);
+      if( polState == -1 ) return  Tensor({1.+ zb*pX*N, -1i + zb*pY*N, zb*pZ*N    , zb/m })/sqrt(2);
       if( polState ==  0 ) return  Tensor({pX*pZ*N    ,       pY*pZ*N, 1 + pZ*pZ*N, pZ/m });
     } 
   }
@@ -547,6 +547,7 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
   return Tensor( std::vector<double>( {1.} ), Tensor::dim(0) );
 }
 
+/*
 std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) const
 {
   if( m_daughters.size() == 0 ) return {0, 0};
@@ -559,21 +560,22 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
   const int s1 = daughter( 0 )->props()->twoSpin()/2;
   const int s2 = daughter( 1 )->props()->twoSpin()/2;
         
-  // int min                                  = std::abs( S - s1 - s2 );
-  // if ( std::abs( S + s1 - s2 ) < min ) min = std::abs( S + s1 - s2 );
-  // if ( std::abs( S - s1 + s2 ) < min ) min = std::abs( S - s1 + s2 );
-  // int max                                  = S + s1 + s2;
+   int min                                  = std::abs( S - s1 - s2 );
+   if ( std::abs( S + s1 - s2 ) < min ) min = std::abs( S + s1 - s2 );
+   if ( std::abs( S - s1 + s2 ) < min ) min = std::abs( S - s1 + s2 );
+   int max                                  = S + s1 + s2;
     
-  int min_s12 = std::abs( s1 - s2 );
-  int max_s12 = std::abs( s1 + s2 );
+  //int min_s12 = std::abs( s1 - s2 );
+  //int max_s12 = std::abs( s1 + s2 );
         
-  int min = std::abs( S - min_s12 );
-  int max = std::abs( S + max_s12 );
+  //int min = std::abs( S - min_s12 );
+  //int max = std::abs( S + max_s12 );
         
-  for(int i=min_s12;i<=max_s12;i++){
-                if(std::abs( S - i )< min)  min = std::abs( S - i );
-                if(std::abs( S + i )> max)  max = std::abs( S + i );
-  }
+//  for(int i=min_s12;i<=max_s12;i++){
+//                if(std::abs( S - i )< min)  min = std::abs( S - i );
+//                if(std::abs( S + i )> max)  max = std::abs( S + i );
+//  }
+//    
   DEBUG( "Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S << " s1= " << s1 << " s2= " << s2 );
   if ( conserveParity == false ) return {min, max}; 
   int l = min;
@@ -586,6 +588,38 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
   lLimit.second = l;
   return lLimit;
 }
+*/
+
+std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) const
+{
+    if( m_daughters.size() == 0 ) return {0, 0};
+    if( m_daughters.size() == 1 ) return {0, 0};
+    if( m_daughters.size() != 2 ) {
+        ERROR( "L not well defined for nDaughters == " << m_daughters.size() );
+        return {999, 998};
+    }
+    const int S  = m_props->twoSpin();
+    const int s1 = daughter(0)->props()->twoSpin();
+    const int s2 = daughter(1)->props()->twoSpin();
+    int min = std::abs( S - s1 - s2 );
+    min     = std::min(min, std::abs( S + s1 - s2 ));
+    min     = std::min(min, std::abs( S - s1 + s2 ));
+    int max = S + s1 + s2;
+    min /= 2;
+    max /= 2;
+    DEBUG( "Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S << " s1= " << s1 << " s2= " << s2 );
+    if ( conserveParity == false ) return {min, max}; 
+    int l = min;
+    for ( ; l < max + 1; ++l ) if( conservesParity(l) ) break;
+    if ( l == max + 1 ) return {999, 999};
+    std::pair<size_t, size_t> lLimit = {l, l};
+    l = max;
+    for ( ; l != min - 1; --l )
+        if ( conservesParity( l ) ) break;
+    lLimit.second = l;
+    return lLimit;
+}
+
 
 std::vector<std::pair<double,double>> Particle::spinOrbitCouplings( const bool& conserveParity ) const 
 {   

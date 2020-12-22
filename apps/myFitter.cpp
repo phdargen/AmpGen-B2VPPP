@@ -59,7 +59,11 @@ namespace AmpGen {
 }  
 
 void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
-    const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
+    
+    string outDir = NamedParameter<std::string>("outDir", ".");    
+    string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
+    FitWeightFileName = outDir + "/" + FitWeightFileName;
+
     TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
     weight_file->cd();
     TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
@@ -262,7 +266,35 @@ void sanityChecks(MinuitParameterSet& mps){
 
    for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "cut_dim" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
 
-   vector<int> checkList;    
+   for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos)if(mps[i]->name().find( "::Spline::" ) == std::string::npos){ mps.unregister( mps.at(i)); i=0; }
+    
+   string head = NamedParameter<std::string>("Head","");
+   int nBins = 0;
+   if(head!=""){
+       auto spline_params = NamedParameter<double>( head + "::Spline").getVector();
+       nBins = int( spline_params[0] );
+    }
+    for(int i=0;i<mps.size();i++){
+               bool found = false;                          
+               
+               auto param = mps[i];
+               if(!param->isFree())continue;
+               if(param->name().find( "::Spline::") != std::string::npos){   
+                   if(param->name().find( head + "::Spline::") != std::string::npos) found = true;
+                   TString name(param->name());
+                   name.ReplaceAll(head + "::Spline::Re::","");
+                   name.ReplaceAll(head + "::Spline::Im::","");
+                   if(atoi(name)>=nBins)found = false;
+               }
+               else found = true;
+               
+               if(found == false){    
+                   INFO("Fitting " << mps[i]->name() << " but there is no matching amplitude, remove it from MinuitParameterSet");
+                   mps.unregister(mps[i]);  
+                   i=0;                
+               }
+   }
+    
    for(int i=0;i<mps.size();i++){
        if(!mps[i]->isFree())continue;
        if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos || mps[i]->name().find( "_alpha" ) != std::string::npos || mps[i]->name().find( "_beta" ) != std::string::npos ) ){
@@ -469,7 +501,6 @@ double chi( const Event& evt ){
     return TMath::ATan2( sinChi, cosChi );
 }
 
-
 vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const int dim = 5, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
     
     EventType pdg = dataEvents.eventType();
@@ -615,11 +646,22 @@ int main( int argc, char* argv[])
   std::string tableFile = NamedParameter<std::string>("TableFile", "table.tex", "Name of the output log file");
   std::string modelFile = NamedParameter<std::string>("ModelFile", "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile", "result.root", "Name of the output plot file");
-      
-  auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
-  auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
+  
+  int status = 0;
+  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
+  if( status != 0 ) ERROR("Building OutDir directory failed");      
+  logFile = outDir + "/" + logFile;
+  tableFile = outDir + "/" + tableFile;
+  modelFile = outDir + "/" + modelFile;
+  plotFile = outDir + "/" + plotFile;
+    
+  auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()).getVector();
+  auto bExtraNames = NamedParameter<std::string>("ExtraBranches", std::vector<std::string>()).getVector();
+  auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>()).getVector();
+  auto bExtraNamesMC = NamedParameter<std::string>("ExtraBranchesMC", std::vector<std::string>()).getVector();
   if(bNamesMC.size()==0)bNamesMC=bNames;
-  auto pNames = NamedParameter<std::string>("EventType" , "", "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
+  if(bExtraNamesMC.size()==0)bExtraNamesMC=bExtraNames;
+  auto pNames = NamedParameter<std::string>("EventType" , "").getVector(); 
   
   int      nThreads = NamedParameter<int>     ("nCores"    , 8           , "Number of threads to use" );
   size_t      seed     = NamedParameter<size_t>     ("Seed"      , 0           , "Random seed used" );
@@ -672,17 +714,40 @@ int main( int argc, char* argv[])
   auto randomizeStartVals = NamedParameter<bool>("randomizeStartVals", 0);
   if(randomizeStartVals) randomizeStartingPoint(MPS,rndm);
   sanityChecks(MPS);
+    
+  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+  auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
+  auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
+  auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+  auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
+  phsp_cut filter(cut_dim,cut_limits,invertCut);
 
   EventType evtType(pNames);
-  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
-  double nSig = events.sumWeights();
-    
+  vector<size_t> entryList,entryListMC,entryListPlotMC;
   auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
-  vector<size_t> entryListMC;
-  for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
-  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+  if(useFilter==1){
+      EventList_type dummyEvents(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
+      EventList_type dummyEventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+    
+      if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") dummyEvents.transform( scale_transform );      
+      if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") dummyEventsMC.transform( scale_transform );
+      
+      for(int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]))entryList.push_back(i);
+      for(int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])){
+          if(entryListMC.size()<maxIntEvents)entryListMC.push_back(i);
+          entryListPlotMC.push_back(i);
+       }
+  }
+  else for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
+    
+  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
+//    EventList_type events(dataFile, evtType, Branches(bNames), ExtraBranches(bExtraNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
+    
+  double nSig = events.sumWeights();
+//  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+    EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
 
-  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+    
   if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
     INFO("Changing data units from MeV -> GeV");
     events.transform( scale_transform );
@@ -692,19 +757,6 @@ int main( int argc, char* argv[])
     eventsMC.transform( scale_transform );
   }
   
-  auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
-  auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
-  auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
-  auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
-
-  //phsp_cut filter(cut_dim,cut_limits,invertCut);
-  //if(useFilter==1)events.filter(filter);
-  //if(useFilter==1)eventsMC.filter(filter);
-
-  //auto integratorEventFraction = NamedParameter<double>("integratorEventFraction", 1);
-  //rnd_cut filter_rnd(integratorEventFraction,false,eventsMC.size());
-  //if(integratorEventFraction < 1)eventsMC.filter(filter_rnd);
-
   auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
   if(pdfType==pdfTypes::CoherentSum){
         PolarisedSum sig(evtType, MPS);
@@ -797,16 +849,20 @@ int main( int argc, char* argv[])
             fr->addFractions( fitFractions );
             vector<double> thresholds{0.1,0.5,1,2,5};
             vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
+            
+            // Plot spline 
+            string head = NamedParameter<std::string>("Head","");
+            if(head!="")fr->plotSpline(head,outDir);
           
             // Estimate the chi2 
             auto evaluator = sig.evaluator();
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-            Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+            //Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
             //vector<double> chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0. );
             //chi2Hyper = getChi2(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
             //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
             //chi2.writeBinningToFile("chi2_binning.txt");
-            fr->addChi2( chi2.chi2(), chi2.nBins() );
+            //fr->addChi2( chi2.chi2(), chi2.nBins() );
 
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->print();
@@ -822,7 +878,7 @@ int main( int argc, char* argv[])
                 EventList_type eventsPlotMC;
                 if(maxIntEvents == -1) eventsPlotMC = eventsMC;
                 else {
-                    eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+                    eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListPlotMC));
                 }
                 sig.setMC( eventsPlotMC );
                 sig.prepare();
@@ -834,17 +890,17 @@ int main( int argc, char* argv[])
       }
   }    
     
-  int status = 0;
-  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
-  if( status != 0 ) ERROR("Building OutDir directory failed");  
-  else if(outDir != "."){
-        system(("mv " + logFile + " " + outDir + "/").c_str());
-        system(("mv " + tableFile + " " + outDir + "/").c_str());
-        system(("mv " + modelFile + " " + outDir + "/").c_str());
-        system(("mv " + plotFile + " " + outDir + "/").c_str());
-        const string FitWeightFileName = NamedParameter<string>("FitWeightFileName", "Fit_weights.root");  
-        system(("mv " + FitWeightFileName + " " + outDir + "/").c_str());
-  }
+//  int status = 0;
+//  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
+//  if( status != 0 ) ERROR("Building OutDir directory failed");  
+//  else if(outDir != "."){
+//        system(("mv " + logFile + " " + outDir + "/").c_str());
+//        system(("mv " + tableFile + " " + outDir + "/").c_str());
+//        system(("mv " + modelFile + " " + outDir + "/").c_str());
+//        system(("mv " + plotFile + " " + outDir + "/").c_str());
+//        const string FitWeightFileName = NamedParameter<string>("FitWeightFileName", "Fit_weights.root");  
+//        system(("mv " + FitWeightFileName + " " + outDir + "/").c_str());
+//  }
 
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
