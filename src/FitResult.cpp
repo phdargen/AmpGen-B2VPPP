@@ -3,6 +3,7 @@
 #include <TMatrixTSym.h>
 #include <TMatrixTUtils.h>
 #include <TGraph.h>
+#include <TGraphErrors.h>
 #include <TCanvas.h>
 #include <memory.h>
 #include <iomanip>
@@ -398,12 +399,12 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
         max   = NamedParameter<double>( name + "::Spline::Max", 0. );
     }
     
-    TGraph* g_amp = new TGraph();
-    TGraph* g_phase = new TGraph();
-    TGraph* g_argand = new TGraph();
+    TGraphErrors* g_amp = new TGraphErrors();
+    TGraphErrors* g_phase = new TGraphErrors();
+    TGraphErrors* g_argand = new TGraphErrors();
 
     double st = (max-min)/double(nBins-1);
-    double amp,phase;
+    double amp,phase,amp_err,phase_err;
 
     for ( int c = 0; c < nBins; ++c ) {
             double s = min + double( c ) * st;
@@ -411,21 +412,38 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
             for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
                 auto param = m_mps->at(i);
                 if(param->name().find( name + "::Spline::") != std::string::npos){      
-                            if(param->name().find( "Re::" + std::to_string(c) ) != std::string::npos) amp = param->mean();
-                            else if(param->name().find( "Im::" + std::to_string(c) ) != std::string::npos) phase = param->mean();
+                    if(param->name().find( "Re::" + std::to_string(c) ) != std::string::npos){
+                        amp = param->mean();
+                        amp_err = param->err();
+                    }
+                    else if(param->name().find( "Im::" + std::to_string(c) ) != std::string::npos){
+                        phase = param->mean();
+                        phase_err = param->err();
+                    }
                 }
             }
-            g_amp->SetPoint( g_amp->GetN(), sqrt(s), amp );
-            g_phase->SetPoint( g_phase->GetN(), sqrt(s), phase );
-            g_argand->SetPoint( g_argand->GetN(), amp, phase );        
+            g_amp->SetPoint( c, sqrt(s), amp );
+            g_phase->SetPoint( c, sqrt(s), phase );
+        
+            g_amp->SetPointError( c, 0, amp_err );
+            g_phase->SetPointError( c, 0, phase_err );
+        
+            g_argand->SetPoint( c, amp * cos(phase), amp * sin(phase)  );
+            g_argand->SetPointError( c, sqrt( pow(amp_err * cos(phase),2) + pow(amp*sin(phase)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase),2) + pow(amp*cos(phase)*phase_err/180.*M_PI, 2) )   );
     }
     
     TCanvas* c = new TCanvas();
-    g_amp->Draw("AC*");
+    g_amp->SetMarkerColor(4);
+    g_amp->SetMarkerStyle(20);
+    g_amp->Draw("APC");
     c->Print((outDir+"/"+name+"_amp.eps").c_str());
-    g_phase->Draw("AC*");
+    g_phase->SetMarkerColor(4);
+    g_phase->SetMarkerStyle(20);
+    g_phase->Draw("APC");
     c->Print((outDir+"/"+name+"_phase.eps").c_str());
-    g_argand->Draw("AC*");
+    g_argand->SetMarkerColor(4);
+    g_argand->SetMarkerStyle(20);
+    g_argand->Draw("APC");
     c->Print((outDir+"/"+name+"_argand.eps").c_str());
 }
 

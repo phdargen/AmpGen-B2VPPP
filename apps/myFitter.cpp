@@ -501,6 +501,55 @@ double chi( const Event& evt ){
     return TMath::ATan2( sinChi, cosChi );
 }
 
+inline double cosThetaMuAngle(const Event& evt){
+
+    //EventType B+ K+ pi+ pi- mu+ mu-
+    TLorentzVector p0 = pFromEvent( evt, 0 );
+    TLorentzVector p1 = pFromEvent( evt, 1 );
+    TLorentzVector p2 = pFromEvent( evt, 2 );
+    TLorentzVector p3 = pFromEvent( evt, 3 );
+    TLorentzVector p4 = pFromEvent( evt, 4 );
+    
+    TLorentzVector pR = p3 + p4;
+    p0.Boost( -pR.BoostVector() );
+    p1.Boost( -pR.BoostVector() );
+    p2.Boost( -pR.BoostVector() );
+    p3.Boost( -pR.BoostVector() );
+    p4.Boost( -pR.BoostVector() );
+    
+    TVector3 pKs = (p0+p1+p2).Vect().Unit();
+    
+    return -(pKs).Dot(p3.Vect().Unit());
+}
+
+inline double chiMuAngle(const Event& evt){
+    
+    //EventType B+ K+ pi+ pi- mu+ mu-
+    TLorentzVector p0 = pFromEvent( evt, 0 );
+    TLorentzVector p1 = pFromEvent( evt, 1 );
+    TLorentzVector p2 = pFromEvent( evt, 2 );
+    TLorentzVector p3 = pFromEvent( evt, 3 );
+    TLorentzVector p4 = pFromEvent( evt, 4 );
+    
+    TLorentzVector pB = p0 + p1 + p2 + p3 + p4;
+    p0.Boost( -pB.BoostVector() );
+    p1.Boost( -pB.BoostVector() );
+    p2.Boost( -pB.BoostVector() );
+    p3.Boost( -pB.BoostVector() );
+    p4.Boost( -pB.BoostVector() );
+    
+    TVector3 pKs = (p0+p1+p2).Vect().Unit();
+    TVector3 pPsi = (p3+p4).Vect().Unit();
+    
+    TVector3 aK = p0.Vect() - p0.Vect().Dot(pKs) * pKs;
+    TVector3 aMu = p3.Vect() - p3.Vect().Dot(pPsi) * pPsi;
+    
+    double cos = aK.Dot(aMu);
+    double sin = pPsi.Cross(aK).Dot(aMu);
+    
+    return TMath::ATan2( sin, cos );
+}
+
 vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const int dim = 5, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
     
     EventType pdg = dataEvents.eventType();
@@ -554,7 +603,7 @@ vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& m
         }
         if(dim==7){
             point.at(5)= cosTheta(evt);
-            point.at(6)= chi(evt);            
+            point.at(6)= chi(evt);
         }
         point.addWeight(evt.weight());
         points.push_back(point);
@@ -629,6 +678,133 @@ vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& m
     
     return vals;
 }
+
+
+vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
+    
+    EventType pdg = dataEvents.eventType();
+ 
+    vector<unsigned int> m012{0,1,2};
+    vector<unsigned int> m02{0,2};
+    vector<unsigned int> m12{1,2};
+    vector<unsigned int> m3412{3,4,1,2};
+    vector<unsigned int> m341{3,4,1};
+    vector<unsigned int> m342{3,4,2};
+    vector<unsigned int> m340{3,4,0};
+    vector<unsigned int> m3402{3,4,0,2};
+    vector<unsigned int> m3401{3,4,0,1};
+    vector<unsigned int> m01{0,1};
+    vector<unsigned int> m34{3,4};
+    
+    HyperPointSet points( dim );
+    HyperPoint min(dim);
+    HyperPoint max(dim);
+
+    if(dim==7){
+        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first, -1, -3.141 );
+        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second, 1, 3.141 );
+    }
+    else if(dim==5 && mode ==0){
+        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first );
+        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second );
+    }
+    else if(dim==5){
+        min = HyperPoint( pow(pdg.minmax(m012).first,2), pow(pdg.minmax(m02).first,2), pow(pdg.minmax(m12).first,2), pow(pdg.minmax(m3412).first,2), pow(pdg.minmax(m341).first,2) );
+        max = HyperPoint( pow(pdg.minmax(m012).second,2), pow(pdg.minmax(m02).second,2), pow(pdg.minmax(m12).second,2), pow(pdg.minmax(m3412).second,2), pow(pdg.minmax(m341).second,2) );
+    }
+    
+    HyperCuboid limits(min, max );
+    
+    for( auto& evt : dataEvents ){
+        HyperPoint point( dim );
+        if(mode ==0){
+            point.at(0)= sqrt(evt.s(m012));
+            point.at(1)= sqrt(evt.s(m02));
+            point.at(2)= sqrt(evt.s(m12));
+            point.at(3)= sqrt(evt.s(m3412));
+            point.at(4)= sqrt(evt.s(m341));
+        }
+        else{
+            point.at(0)= evt.s(m012);
+            point.at(1)= evt.s(m02);
+            point.at(2)= evt.s(m12);
+            point.at(3)= evt.s(m3412);
+            point.at(4)= evt.s(m341);
+        }
+        if(dim==7){
+            point.at(5)= cosThetaMuAngle(evt);
+            point.at(6)= chiMuAngle(evt);
+        }
+        point.addWeight(evt.weight());
+        points.push_back(point);
+    }
+
+    HyperPointSet pointsMC( dim);
+    for( auto& evt : mcEvents ){
+        HyperPoint point( dim );
+        if(mode ==0){
+            point.at(0)= sqrt(evt.s(m012));
+            point.at(1)= sqrt(evt.s(m02));
+            point.at(2)= sqrt(evt.s(m12));
+            point.at(3)= sqrt(evt.s(m3412));
+            point.at(4)= sqrt(evt.s(m341));
+        }
+        else{
+            point.at(0)= evt.s(m012);
+            point.at(1)= evt.s(m02);
+            point.at(2)= evt.s(m12);
+            point.at(3)= evt.s(m3412);
+            point.at(4)= evt.s(m341);
+        }
+        if(dim==7){
+            point.at(5)= cosThetaMuAngle(evt);
+            point.at(6)= chiMuAngle(evt);
+        }
+        point.addWeight(fcn( evt ) * evt.weight() / evt.genPdf());
+        pointsMC.push_back(point);
+    }
+
+    HyperHistogram dataHist(limits, points,
+                            /*** Name of the binning algorithm you want to use     */
+                            HyperBinningAlgorithms::SMART_MULTI,
+                            /***  The minimum number of events allowed in each bin */
+                            /***  from the HyperPointSet provided (points1)        */
+                            AlgOption::MinBinContent      (minEventsPerBin),
+                            /*** This minimum bin width allowed. Can also pass a   */
+                            /*** HyperPoint if you would like different min bin    */
+                            /*** widths for each dimension                         */
+                            AlgOption::MinBinWidth        (minBinWidth),
+                            /*** If you want to use the sum of weights rather than */
+                            /*** the number of events, set this to true.           */
+                            AlgOption::UseWeights         (true),
+                            /*** Some algorithms use a random number generator. Set*/
+                            /*** the seed here                                     */
+                            AlgOption::RandomSeed         (1),
+                            /*** What dimesnion would you like to split first? Only*/
+                            /*** applies to certain algortihms                     */
+                            AlgOption::StartDimension     (0)
+                            /*** What dimesnions would you like to bin in?         */
+                            //AlgOption::BinningDimensions  (binningDims),
+                            /*** Setting this option will make the agorithm draw   */
+                            /*** the binning scheme at each iteration              */
+                            //AlgOption::DrawAlgorithm("Algorithm")
+                            );
+    
+    HyperHistogram mcHist( dataHist.getBinning() );
+    mcHist.fill(pointsMC);
+    mcHist.normalise(dataHist.integral());
+    
+    double chi2 = dataHist.chi2(mcHist);
+    int nBins   = dataHist.getNBins();
+    cout << "chi2 = " << (double)chi2/(nBins-1.) << endl;
+    
+    vector<double> vals;
+    vals.push_back(chi2);
+    vals.push_back((double)nBins);
+    
+    return vals;
+}
+
 
 
 int main( int argc, char* argv[])
@@ -858,11 +1034,12 @@ int main( int argc, char* argv[])
             auto evaluator = sig.evaluator();
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
             //Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-            //vector<double> chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0. );
-            //chi2Hyper = getChi2(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
+            vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
+            chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 5, MinEventsChi2, 0. );
             //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
             //chi2.writeBinningToFile("chi2_binning.txt");
             //fr->addChi2( chi2.chi2(), chi2.nBins() );
+            fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
 
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->print();

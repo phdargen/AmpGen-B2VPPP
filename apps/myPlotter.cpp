@@ -1792,12 +1792,10 @@ int main( int argc, char* argv[] ){
 
   auto pNames = NamedParameter<std::string>("EventType" , "").getVector(); 
   std::string outDir = NamedParameter<std::string>("outDir", ".");
-
-    makePlotsMuMu();
-    
-//  if(pNames.size()==4)makePlots3body();
-//  if(pNames.size()==6)makePlotsMuMu();  
-//  else makePlots();
+  
+  if(pNames.size()==4)makePlots3body();
+  if(pNames.size()==6)makePlotsMuMu();
+  else makePlots();
     
   return 0;
 }
