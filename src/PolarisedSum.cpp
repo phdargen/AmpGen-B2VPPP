@@ -583,9 +583,14 @@ int PolarisedSum::findAmp(std::string& name){
     return counter;
 }
 
-void PolarisedSum::normaliseAmps(){
+void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude){
     //prepare();
     for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
+
+        bool norm = true;
+        for(auto& me : exclude )if(m_matrixElements[i].name().find( me ) != std::string::npos)norm=false;
+        if(!norm)continue;
+        
         m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
         //m_matrixElements[i].workToDo= true;
         //m_matrixElements[i].prepare();

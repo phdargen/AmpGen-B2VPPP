@@ -988,7 +988,7 @@ void makePlotsMuMu(){
     vector<double> lim3402{4.3,5.2};
     vector<double> lim3401{4.3,5.2};
     vector<double> lim01{0.6,1.45};
-    vector<double> lim34{3,4};
+    vector<double> lim34{3.67,3.69};
     
     if(decayMuMu != "psi(2S)0"){
         titles = {"#it{m(K^{#plus}#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(K^{#plus}#pi^{#minus})} [GeV]","#it{m(#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(J/#psi#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(J/#psi#pi^{+})} [GeV]","#it{m(J/#psi#pi^{#minus})} [GeV]", "#it{m(J/#psiK^{#plus})} [GeV]","#it{m(J/#psiK^{#plus}#pi^{#minus})} [GeV]"};

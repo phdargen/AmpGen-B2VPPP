@@ -291,23 +291,49 @@ void FitResult::writeToOptionsFile( const std::string& fname )
     std::ofstream outlog;
     outlog << std::setprecision( 4 );
     outlog.open( fname );
+    double scale_error = 1.;
     for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
         auto param = m_mps->at(i);
         if(param->isHidden() || param->name().find( "::Spline" ) != std::string::npos )continue;
+        //if(!param->isFree())continue;
+
         if(param->name().find( "_Re" ) != std::string::npos){
             outlog << replaceAll(param->name(),"_Re", "") << "  " << (int)param->flag() << " " 
-                   << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+                   << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/scale_error : 0 ) << " "
                    << param->minInit() << " ";
             if(abs(param->mean()-param->maxInit())<10*param->stepInit()) outlog << param->maxInit()*2 << "    " ;       
             else outlog << param->maxInit() << "    " ;               
             auto param_im = m_mps->at(i+1);
-            outlog << (int)param_im->flag() << " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+            if(param->name().find( replaceAll(param_im->name(),"_Im", "")) == std::string::npos)ERROR("Found no matching imaginary part for " << param->name() << "; have " << param_im->name());
+
+            outlog << (int)param_im->flag() << " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i+1)->err()/scale_error : 0 ) << " "
             << param_im->minInit() << " " << param_im->maxInit() << " " ;               
             i++;            
         }
+        else if(param->name().find( "_Im" ) != std::string::npos){
+            auto param_re = m_mps->at(i+1);
+            if(param->name().find( replaceAll(param_re->name(),"_Re", "")) == std::string::npos)ERROR("Found no matching real part for " << param->name() << "; have " << param_re->name());
+            
+            outlog << replaceAll(param_re->name(),"_Re", "") << "  " << (int)param_re->flag() << " "
+                   << param_re->mean() << " " << ( param_re->isFree() ? m_mps->at(i+1)->err()/scale_error : 0 ) << " "
+                   << param_re->minInit() << " ";
+            if(abs(param_re->mean()-param_re->maxInit())<10*param_re->stepInit()) outlog << param_re->maxInit()*2 << "    " ;
+            else outlog << param_re->maxInit() << "    " ;
+            
+            outlog << (int)param->flag() << " " << param->mean() << " " << (param->isFree() ? m_mps->at(i)->err()/scale_error : 0 ) << " "
+            << param->minInit() << " " << param->maxInit() << " " ;
+            
+            
+            i++;
+        }
+        else if(param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos){
+            outlog << param->name() << "  " << (int)param->flag() << " "
+            << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->stepInit() : 0) << " "
+            << param->minInit() << " " << param->maxInit() << "    " ;
+        }
         else{
             outlog << param->name() << "  " << (int)param->flag() << " " 
-            << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/5 : 0 ) << " "
+            << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->stepInit() : 0) << " "
             << param->minInit() << " " << param->maxInit() << "    " ;               
         }
         outlog << std::endl;
@@ -345,7 +371,7 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsi
             if(verbose>=1)outputTree->Branch(((std::string)AmpGen::programatic_name(m_fitFractions[i].name())+"_err").c_str(), &res[i+m_fitFractions.size()]);
         }
     
-        for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+        for (size_t i = 0; i < (size_t)m_mps->size(); i++ ) {
             auto param = m_mps->at(i);
             if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
             if(verbose<2)if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;

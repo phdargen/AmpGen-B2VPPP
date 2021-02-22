@@ -227,10 +227,11 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
   for (auto& param : MPS) {
     if ( param->isFree() == 0 ) continue;
     if ( SplineOnly && param->name().find( "::Spline" ) == std::string::npos ) continue;
+    /*
     if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos ||
     param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos
         || param->name().find( "_alpha" ) != std::string::npos
-        || param->name().find( "_beta" ) != std::string::npos){        
+        || param->name().find( "_beta" ) != std::string::npos){         */
         double min = param->minInit();
         double max = param->maxInit();
         //if(param->name().find( "_Re" ) != std::string::npos){
@@ -248,7 +249,7 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
         param->setInit(new_val);
         param->setCurrentFitVal(new_val);
         INFO( param->name() << " = " << param->mean() );
-    }
+    //}
   }
 }
 
@@ -320,6 +321,7 @@ void sanityChecks(MinuitParameterSet& mps){
 void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
     for(int i=0;i<mps.size();++i){
         string name = mps[i]->name();
+        if(name.find( "::pole::" ) != std::string::npos)continue;
         if(name.find( "_Re" ) != std::string::npos || name.find( "_Im" ) != std::string::npos) {            
             vector<string>name_split = split(name,',');
             //INFO(name_split[0]);
@@ -379,9 +381,16 @@ void addGaussianConstraint( Minimiser& mini, MinuitParameterSet& mps )
     if(llConfigs.size()==0)return;
     
     for ( auto& ll_config : llConfigs ) {
-        auto ll_term = new GaussianConstraint();
-        ll_term->configure( ll_config, mps );
-        mini.addExtendedTerm( ll_term );
+        
+        for(int i=0;i<mps.size();++i){
+            string name = mps[i]->name();
+            if(name == ll_config){
+                auto ll_term = new GaussianConstraint();
+                ll_term->configure( ll_config, mps );
+                mini.addExtendedTerm( ll_term );
+                continue;
+            }
+        }
     }
 }
 
@@ -816,6 +825,7 @@ int main( int argc, char* argv[])
   std::string weightData = NamedParameter<std::string>("weightData", "weight");  
   std::string intFile = NamedParameter<std::string>("IntegrationSample","","Name of file containing events to use for MC integration.");
   std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
+  std::string phspFile = NamedParameter<std::string>("phspFile","","phspFile");
 
   std::string outDir = NamedParameter<std::string>("outDir", ".");
   std::string logFile = NamedParameter<std::string>("LogFile", "log.txt", "Name of the output log file");
@@ -823,6 +833,9 @@ int main( int argc, char* argv[])
   std::string modelFile = NamedParameter<std::string>("ModelFile", "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile", "result.root", "Name of the output plot file");
   
+  auto normAmps = NamedParameter<bool>("normAmps", 1);
+  auto excludeNorm = NamedParameter<std::string>("excludeNorm", std::vector<std::string>()).getVector();
+
   int status = 0;
   if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
   if( status != 0 ) ERROR("Building OutDir directory failed");      
@@ -889,7 +902,7 @@ int main( int argc, char* argv[])
     
   auto randomizeStartVals = NamedParameter<bool>("randomizeStartVals", 0);
   if(randomizeStartVals) randomizeStartingPoint(MPS,rndm);
-  sanityChecks(MPS);
+  //sanityChecks(MPS);
     
   auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
@@ -920,9 +933,8 @@ int main( int argc, char* argv[])
 //    EventList_type events(dataFile, evtType, Branches(bNames), ExtraBranches(bExtraNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
     
   double nSig = events.sumWeights();
-//  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
-    EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
-
+  //EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
     
   if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
     INFO("Changing data units from MeV -> GeV");
@@ -989,12 +1001,29 @@ int main( int argc, char* argv[])
         // Signal pdf
         PolarisedSum sig(evtType, MPS);
         sig.setMC( eventsMC );
-        checkAmps(sig, MPS);      
+        checkAmps(sig, MPS);
+        sanityChecks(MPS);
         cout << "Number of amplitudes = " << sig.numAmps() << endl;
             
         auto ll = make_likelihood(events, sig);
         sig.prepare();
-        sig.normaliseAmps();
+      
+        if(normAmps){
+            if(phspFile == ""){
+                sig.normaliseAmps(excludeNorm);
+            }
+            else{
+                auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
+                std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
+                EventList_type eventsPhspMC = EventList_type(phspFile, evtType, GetGenPdf(true),Branches(bNamesPhsp), WeightBranch(weightPhsp));
+                sig.setMC( eventsPhspMC );
+                sig.prepare();
+                sig.normaliseAmps(excludeNorm);
+
+                sig.setMC( eventsMC );
+                sig.prepare();
+            }
+        }
             
         // Do fit          
         auto nFits = NamedParameter<int>("nFits", 1);  
@@ -1009,7 +1038,7 @@ int main( int argc, char* argv[])
                 randomizeStartingPoint(MPS,rndm);
                 sig.setMC( eventsMC );
                 sig.prepare();
-                //sig.normaliseAmps();
+                //sig.normaliseAmps(excludeNorm);
             }
             FitResult* fr = doFit(ll, events, eventsMC, MPS );
             
@@ -1033,14 +1062,18 @@ int main( int argc, char* argv[])
             // Estimate the chi2 
             auto evaluator = sig.evaluator();
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
-            //Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-            vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
-            chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 5, MinEventsChi2, 0. );
-            //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
-            //chi2.writeBinningToFile("chi2_binning.txt");
-            //fr->addChi2( chi2.chi2(), chi2.nBins() );
-            fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
-
+            if(pNames.size()==6){
+                vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
+                //chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 5, MinEventsChi2, 0. );
+                fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
+            }
+            else{
+                Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
+                //chi2.writeBinningToFile("chi2_binning.txt");
+                fr->addChi2( chi2.chi2(), chi2.nBins() );
+            }
+            
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->print();
             fr->writeToFile(logFile);

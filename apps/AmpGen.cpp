@@ -42,7 +42,7 @@
 using namespace AmpGen;
 
 namespace AmpGen { 
-  make_enum(pdfTypes, CoherentSum, PolarisedSum, FixedLib)
+  make_enum(pdfTypes, CoherentSum, PolarisedSum, FixedLib, Phsp)
   make_enum(phspTypes, PhaseSpace, RecursivePhaseSpace, TreePhaseSpace)
 }  
 
@@ -264,6 +264,9 @@ int main( int argc, char** argv )
   else if ( pdfType == pdfTypes::FixedLib ){
     FixedLibPDF pdf(lib);
     generateEvents( accepted, pdf, phspType, nEvents, blockSize, &rand, false );
+  }
+  else if ( pdfType == pdfTypes::Phsp ){
+    Generator<>( eventType, &rand ).fillEventListPhaseSpace( accepted, nEvents );
   }
   else {
     FATAL("Did not recognise configuration: " << pdfType );
