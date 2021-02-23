@@ -118,7 +118,7 @@ TreePhaseSpace::Vertex::Vertex(const Particle& particle, const double& min, cons
     , max(max)
     , s(bwMass*bwMass)
 {
-  INFO( particle << " [" << min << ", " << max << "]");
+  //INFO( particle << " [" << min << ", " << max << "]");
   if( particle.isStable() ) type = Type::Stable; 
   else if( particle.isQuasiStable() ) type = Type::QuasiStable; 
   else if( particle.lineshape().find("BW") != std::string::npos ){
@@ -128,6 +128,7 @@ TreePhaseSpace::Vertex::Vertex(const Particle& particle, const double& min, cons
   }
   else type = Type::Flat;
   if( index != 999 ) indices = {index};
+  print();
 }
 
 double TreePhaseSpace::Vertex::p() const 

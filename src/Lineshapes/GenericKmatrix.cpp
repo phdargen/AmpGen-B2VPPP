@@ -85,8 +85,9 @@ DEFINE_LINESHAPE(GenericKmatrix)
             Particle p( channels[channel-1] );
             //Taken from https://arxiv.org/pdf/0909.2171v1.pdf Eqs. (41), (45)
             Expression k2 = norm(phsps[channel-1]) *s/4.;
-            //Expression k20 = norm( phaseSpace(mass*mass, p, p.L() )   ) *s0/4.;
+            Expression k20 = norm( phaseSpace(mass*mass, p, p.L() )   ) *s0/4.;
             Bl = sqrt( fpow(k2/(1+k2),p.L()) );
+            Bl = Bl / sqrt( fpow(k20/(1+k20),p.L()) );
             if(pole==1)Bls.push_back(Bl);
       }
         
@@ -156,10 +157,10 @@ DEFINE_LINESHAPE(GenericKmatrix)
       for(unsigned alpha = 0; alpha < nPoles; ++alpha){
         Expression beta = 0;
         for(unsigned q = 0 ; q < nChannels; ++q){
-          beta += a[q] * poleConfigs[alpha].couplings[q];
+          beta += a[q] * poleConfigs[alpha].coupling(q);
           phi[k] += a[q] * non_resonant[{k,q}];
         }
-        P[k] += (beta * poleConfigs[alpha].couplings[k])/poleConfigs[alpha].pole(s) + phi[k] * (1.+s_0)/(s-s_0);
+        P[k] += (beta * poleConfigs[alpha].coupling(k))/poleConfigs[alpha].pole(s) + phi[k] * (1.+s_0)/(s-s_0);
       }
       F_0 += propagator[{cTerm,k}] * P[k];
     }
@@ -189,7 +190,7 @@ DEFINE_LINESHAPE(GenericKmatrix)
       
       for(unsigned k = 0 ; k < nChannels; ++k){
         for(unsigned alpha = 0; alpha < nPoles; ++alpha){
-            P[k] += (a[{alpha,k}] * poleConfigs[alpha].couplings[k])/poleConfigs[alpha].pole(s);
+            P[k] += (a[{alpha,k}] * poleConfigs[alpha].coupling(k))/poleConfigs[alpha].pole(s);
         }
         P[k] += b[k];
         F_0 += propagator[{cTerm,k}] * P[k];
@@ -223,7 +224,7 @@ DEFINE_LINESHAPE(GenericKmatrix)
       for(unsigned k = 0 ; k < nChannels; ++k){
         // R_i
         for(unsigned alpha = 0; alpha < nPoles; ++alpha){
-            P[k] += (a[{alpha,k}] * poleConfigs[alpha].couplings[k])/poleConfigs[alpha].pole(s);
+            P[k] += (a[{alpha,k}] * poleConfigs[alpha].coupling(k))/poleConfigs[alpha].pole(s);
         }
         // (1 + tau K_ij) D_j
         for(unsigned l = 0 ; l < nChannels; ++l){

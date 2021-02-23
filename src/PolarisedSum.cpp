@@ -583,7 +583,7 @@ int PolarisedSum::findAmp(std::string& name){
     return counter;
 }
 
-void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude){
+void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude, const std::vector<std::string> combine){
     //prepare();
     for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
 
@@ -591,7 +591,16 @@ void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude){
         for(auto& me : exclude )if(m_matrixElements[i].name().find( me ) != std::string::npos)norm=false;
         if(!norm)continue;
         
-        m_matrixElements[i].scaleCoupling(1./sqrt(this->norm(i,i).real()));
+        double scale = sqrt(this->norm(i,i).real());
+        for ( unsigned int j = 0; j < m_matrixElements.size(); ++j ){
+            if(i==j)continue;
+            for(auto& me : combine )
+                if(m_matrixElements[i].name().find( me ) != std::string::npos && m_matrixElements[j].name().find( me ) != std::string::npos){
+                    scale += sqrt(this->norm(j,j).real());
+                }
+        }
+            
+        m_matrixElements[i].scaleCoupling(1./scale);
         //m_matrixElements[i].workToDo= true;
         //m_matrixElements[i].prepare();
     }

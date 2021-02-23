@@ -835,6 +835,7 @@ int main( int argc, char* argv[])
   
   auto normAmps = NamedParameter<bool>("normAmps", 1);
   auto excludeNorm = NamedParameter<std::string>("excludeNorm", std::vector<std::string>()).getVector();
+  auto combineNorm = NamedParameter<std::string>("combineNorm", std::vector<std::string>()).getVector();
 
   int status = 0;
   if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
@@ -1010,7 +1011,7 @@ int main( int argc, char* argv[])
       
         if(normAmps){
             if(phspFile == ""){
-                sig.normaliseAmps(excludeNorm);
+                sig.normaliseAmps(excludeNorm,combineNorm);
             }
             else{
                 auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();

@@ -78,7 +78,7 @@ namespace AmpGen
   
       int findAmp(std::string& name);
       std::vector<double> numFracAboveThreshold( const std::vector<double> t);
-      void normaliseAmps(const std::vector<std::string> exclude = {});
+      void normaliseAmps(const std::vector<std::string> exclude = {}, const std::vector<std::string> combine = {});
 
   private: 
       size_t                        m_nCalls      = {0};
