@@ -205,7 +205,7 @@ void ThreeBodyCalculator::updateRunningWidth( MinuitParameterSet& mps, const dou
     double I                   = getWidth(s);
     const std::string knotName = m_name + "::Spline::Gamma::" + std::to_string( c );
     if ( mps.find( knotName ) != nullptr ) mps[knotName]->setCurrentFitVal( I );
-    INFO( knotName << " = " << I );
+      INFO( knotName << " = " << I << " ; " << mps.find( knotName ) );
   }
 }
 

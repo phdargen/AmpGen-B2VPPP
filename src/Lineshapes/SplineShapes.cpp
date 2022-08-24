@@ -87,7 +87,7 @@ DEFINE_LINESHAPE( MIPWA )
   ADD_DEBUG( imag, dbexpressions );
   ADD_DEBUG( s, dbexpressions );
   Expression J = Constant(0,1);
-  return lineshapeModifier != "Polar" ? ( real + J*imag ) : real * ( Cos( M_PI / 180 * imag ) + J*Sin(M_PI / 180 * imag ) );
+  return lineshapeModifier != "Polar" ? ( real + J*imag ) : real * ( Cos( M_PI / 180. * imag ) + J*Sin(M_PI / 180. * imag ) );
 }
 
 DEFINE_LINESHAPE( InelasticSpline )

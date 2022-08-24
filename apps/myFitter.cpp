@@ -217,7 +217,10 @@ std::vector<ThreeBodyCalculator> threeBodyCalculators( MinuitParameterSet& mps )
           min   = NamedParameter<double>( v + "::Spline::Min", 0. );
           max   = NamedParameter<double>( v + "::Spline::Max", 0. );
       }
-      calculators.emplace_back( v, mps,nBins,min,max);      
+      calculators.emplace_back( v, mps,nBins,min,max);
+      INFO(v);
+      INFO(nBins << " " << min << " " << max  << endl);
+
   }
   return calculators;
 }
@@ -267,7 +270,7 @@ void sanityChecks(MinuitParameterSet& mps){
 
    for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "cut_dim" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
 
-   for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos)if(mps[i]->name().find( "::Spline::" ) == std::string::npos){ mps.unregister( mps.at(i)); i=0; }
+   //for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos)if(mps[i]->name().find( "::Spline::" ) == std::string::npos){ mps.unregister( mps.at(i)); i=0; }
     
    string head = NamedParameter<std::string>("Head","");
    int nBins = 0;
