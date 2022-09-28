@@ -58,7 +58,7 @@ namespace AmpGen {
   make_enum(phspTypes, PhaseSpace, RecursivePhaseSpace, TreePhaseSpace)
 }  
 
-void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
+void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC, const LinearErrorPropagator& ep, TRandom3& rand){
     
     string outDir = NamedParameter<std::string>("outDir", ".");    
     string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
@@ -78,7 +78,8 @@ void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
     vector<vector<unsigned>> indices;
 
     auto weightFunction = sig.componentEvaluator();
-    
+    auto evaluator = sig.evaluator();
+
     for(int i = 0; i < plot_amps.size(); i++){
         cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
 
@@ -115,13 +116,46 @@ void makePlotWeightFile(PolarisedSum& sig, const EventList_type& eventsPlotMC){
         }
         indices.push_back(index);
     }
+    
+    unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
+    auto gep = GaussErrorPropagator( ep.cov(), ep.params(), &rand );
+    vector<double> weightsErr(nPermErrorBands,0.);
+    vector<vector<double>> weightsErrVec; 
 
+    if( nPermErrorBands > 0 ){
+        for(int i = 0; i < nPermErrorBands; i++){
+            auto branch = weight_tree->Branch( ("weightErr_"+to_string(i)).c_str(),&weightsErr[i]);     
+            branches.push_back(branch);
+        }
+        for(int i = 0; i < nPermErrorBands; i++){
+            vector<double> weightsErrTmp;
+            for( const auto& evt : eventsPlotMC ){
+                weightsErrTmp.push_back( evt.weight() * sig.getValNoCache(evt) / evt.genPdf() ) ; 
+            }
+            
+            weightsErrVec.push_back(weightsErrTmp);
+            gep.perturb();
+            sig.reset(true);   
+            sig.prepare();
+        }
+        gep.reset();
+        sig.reset(true);   
+        sig.prepare();
+    }
+
+    unsigned counter = 0;
     for( const auto& evt : eventsPlotMC ){
         auto weightFun = weightFunction(evt);
         for(int i = 0; i < plot_amps.size(); i++){
             weights[i] = 0;
             for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += evt.weight() * weightFun[indices[i][j]] / evt.genPdf() ; 
         }
+
+        for(int i = 0; i < nPermErrorBands; i++){
+            weightsErr[i] = weightsErrVec[i][counter];
+        }
+        counter++;
+        
         weight_tree->Fill();
     }
 
@@ -229,12 +263,12 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
 {
   for (auto& param : MPS) {
     if ( param->isFree() == 0 ) continue;
+    if ( param->name().find( "cut_dim" ) != std::string::npos) continue;
     if ( SplineOnly && param->name().find( "::Spline" ) == std::string::npos ) continue;
-    /*
-    if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos ||
-    param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos
-        || param->name().find( "_alpha" ) != std::string::npos
-        || param->name().find( "_beta" ) != std::string::npos){         */
+    
+    if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos 
+        || param->name().find( "_mass" )  != std::string::npos  || param->name().find( "_width" ) != std::string::npos
+        || param->name().find( "_alpha" ) != std::string::npos  || param->name().find( "_beta" ) != std::string::npos){         
         double min = param->minInit();
         double max = param->maxInit();
         //if(param->name().find( "_Re" ) != std::string::npos){
@@ -252,7 +286,7 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
         param->setInit(new_val);
         param->setCurrentFitVal(new_val);
         INFO( param->name() << " = " << param->mean() );
-    //}
+    }
   }
 }
 
@@ -998,7 +1032,7 @@ int main( int argc, char* argv[])
             }
             sig.setMC( eventsPlotMC );
             sig.prepare();
-            makePlotWeightFile(sig,eventsPlotMC);  
+            makePlotWeightFile(sig,eventsPlotMC,fr->getErrorPropagator(),rndm);  
         }
   } 
   else if(pdfType==pdfTypes::PolarisedSum){  
@@ -1054,7 +1088,9 @@ int main( int argc, char* argv[])
                 INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
                 min_LL=fr->LL();
             }
-            auto fitFractions = sig.fitFractions( fr->getErrorPropagator() );   
+            
+            auto ep = fr->getErrorPropagator();
+            auto fitFractions = sig.fitFractions( ep );   
             fr->addFractions( fitFractions );
             vector<double> thresholds{0.1,0.5,1,2,5};
             vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
@@ -1096,11 +1132,12 @@ int main( int argc, char* argv[])
                 }
                 sig.setMC( eventsPlotMC );
                 sig.prepare();
-                makePlotWeightFile(sig,eventsPlotMC);  
+                makePlotWeightFile(sig,eventsPlotMC, ep, rndm);  
                 //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
                 //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
                 //fr->print();
             }
+            
       }
   }    
     

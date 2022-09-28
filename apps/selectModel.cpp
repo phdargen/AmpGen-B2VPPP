@@ -25,26 +25,32 @@ void selectModel(){
 
   std::string resultsFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
   
+  string outDir = resultsFile;
+  outDir = replaceAll(outDir,"result.root","");
+  
   TChain* chain = new TChain("Result");
   chain->Add((replaceAll(resultsFile,".root","_*.root")).c_str());  
  
-  double nll,chi2,sumFractions;
+  double nll,chi2,sumFractions, nSig;
   unsigned status, nPar,nAmps, seed;
     
   chain->SetBranchAddress("nll",&nll);
   chain->SetBranchAddress("chi2",&chi2);
-  chain->SetBranchAddress("sumFractions",&sumFractions);
+  chain->SetBranchAddress("Sum_Bp",&sumFractions);
   chain->SetBranchAddress("status",&status);
   chain->SetBranchAddress("nPar",&nPar);
   chain->SetBranchAddress("nAmps",&nAmps);
+  chain->SetBranchAddress("nSig",&nSig);
   chain->SetBranchAddress("seed",&seed);
         
   chain->GetEntry(0);
   double min_nll = nll; 
   double max_nll = nll; 
   double min_chi2 = chi2;   
+  double max_chi2 = chi2;   
   int min_i = 0;  
   int min_nPar = nPar;  
+  int min_chi2_i = 0;  
     
   const int n = chain->GetEntries();
   for (int i = 0; i<n; i++) {
@@ -53,14 +59,18 @@ void selectModel(){
         if(TMath::IsNaN(nll))continue;
       
         if(nll>max_nll)max_nll=nll;
-      
+        if(chi2>max_chi2)max_chi2=chi2;
+
         //if(status>0)continue;
         if(nll<min_nll){ 
             min_nll=nll;
             min_i=i;
             min_nPar = nPar;
         }
-        if(chi2<min_chi2)min_chi2=chi2;      
+        if(chi2<min_chi2){
+            min_chi2=chi2;    
+            min_chi2_i=i;
+        }
   }
     
   TH1D * h_nll = new TH1D("h_nll","h_nll",40,-0.5,min(max_nll-min_nll,3000.5));  
@@ -76,12 +86,12 @@ void selectModel(){
   h_nll3->SetLineColor(kYellow);  
   h_nll4->SetLineColor(kOrange);  
 
-  TH1D * h_chi2 = new TH1D("h_chi2","h_chi2",50,0,10);  
-  TH1D * h_chi20 = new TH1D("h_chi20","h_chi20",50,0,10);  
-  TH1D * h_chi21 = new TH1D("h_chi21","h_chi21",50,0,10);  
-  TH1D * h_chi22 = new TH1D("h_chi22","h_chi22",50,0,10);  
-  TH1D * h_chi23 = new TH1D("h_chi23","h_chi23",50,0,10);  
-  TH1D * h_chi24 = new TH1D("h_chi24","h_chi24",50,0,10);  
+  TH1D * h_chi2 = new TH1D("h_chi2","h_chi2",50,0,max_chi2*1.1);  
+  TH1D * h_chi20 = new TH1D("h_chi20","h_chi20",50,0,max_chi2*1.1);  
+  TH1D * h_chi21 = new TH1D("h_chi21","h_chi21",50,0,max_chi2*1.1);  
+  TH1D * h_chi22 = new TH1D("h_chi22","h_chi22",50,0,max_chi2*1.1);  
+  TH1D * h_chi23 = new TH1D("h_chi23","h_chi23",50,0,max_chi2*1.1);  
+  TH1D * h_chi24 = new TH1D("h_chi24","h_chi24",50,0,max_chi2*1.1);  
 
   h_chi20->SetLineColor(kRed);  
   h_chi21->SetLineColor(kBlue);  
@@ -97,7 +107,7 @@ void selectModel(){
         h_chi2->Fill(chi2);
         
         double AIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) ;
-        double BIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) * log(30000) ;
+        double BIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) * log(nSig) ;
       
         cout << endl << "model " << i << endl;
         cout << "n2ll = " << nll-min_nll << endl;
@@ -105,9 +115,10 @@ void selectModel(){
         cout << "status = " << status << endl;
         cout << "nAmps = " << nAmps << endl;
         cout << "nPar = " << nPar << endl;
+        cout << "Sum of fractions = " << sumFractions << endl;
         cout << "AIC = " << AIC << " ( " << sqrt( AIC ) << " sigma) " << endl;
         cout << "BIC = " << BIC << " ( " << sqrt( BIC ) << " sigma) " << endl;
-        //cout << "sigma = " << TMath::ErfcInverse(TMath::Prob(nll-min_nll,max(1.,abs((double)min_nPar-(double)nPar)))) * sqrt(2) << endl << endl;       
+        cout << "sigma = " << TMath::ErfcInverse(TMath::Prob(nll-min_nll,max(1.,abs((double)min_nPar-(double)nPar)))) * sqrt(2) << endl << endl;       
       
       if(status==0){
             h_nll0->Fill(nll-min_nll);
@@ -140,7 +151,7 @@ void selectModel(){
   h_nll2->Draw("hsame");
   h_nll3->Draw("hsame");
   h_nll4->Draw("hsame");
-  c->Print("n2ll.eps");  
+  c->Print((outDir+"n2ll.pdf").c_str());  
 
   h_chi2->Draw("h");
   h_chi20->Draw("hsame");
@@ -148,17 +159,25 @@ void selectModel(){
   h_chi22->Draw("hsame");
   h_chi23->Draw("hsame");
   h_chi24->Draw("hsame");
-  c->Print("chi2.eps");
+  c->Print((outDir+"chi2.pdf").c_str());
     
   chain->GetEntry(min_i);
-  cout << endl << "Best model: " << min_i << endl;
+  cout << endl << "Best nll model: " << min_i << endl;
   cout << "with seed: " << seed << endl;
   cout << "n2ll = " << nll << endl;
   cout << "chi2 = " << chi2 << endl;
   cout << "status = " << status << endl;
   cout << "nAmps = " << nAmps << endl;
   cout << "nPar = " << nPar << endl;
-
+    
+  chain->GetEntry(min_chi2_i);
+  cout << endl << "Best chi2 model: " << min_chi2_i << endl;
+  cout << "with seed: " << seed << endl;
+  cout << "n2ll = " << nll << endl;
+  cout << "chi2 = " << chi2 << endl;
+  cout << "status = " << status << endl;
+  cout << "nAmps = " << nAmps << endl;
+  cout << "nPar = " << nPar << endl;
 }
 
 
