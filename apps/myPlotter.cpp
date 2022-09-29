@@ -171,7 +171,7 @@ inline double chiMuAngle(const Event& evt){
 vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, int nBins, vector<double> limits, vector<string> weights){
 
   vector<TH1D*> histos;
-  TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBins/2 : nBins,limits[0],limits[1]);
+  TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBins : nBins*2,limits[0],limits[1]);
   histo->SetMinimum(0.);
   histo->GetXaxis()->SetTitle(title.c_str());
   histo->GetYaxis()->SetTitle("Yield (norm.)");
@@ -184,7 +184,7 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
 
       if(i==1){
             h->SetLineColor(kBlue);
-            h->SetLineWidth(3);
+            h->SetLineWidth(2);
       }else if(i==2){
             h->SetLineColor(kRed+1);
             h->SetLineWidth(3);
@@ -246,11 +246,11 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   histos[0]->SetMinimum(1);
   if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
   histos[0]->DrawNormalized("",1);
-    
+  
   //Compute err bands for fit
   unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
   if(nPermErrorBands>0 && plotErrorBands){
-          
+                
         for(int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
             
             TStatistic stat;
@@ -285,6 +285,7 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   for (int i = 1; i < (plotComponents == true ? histos.size()-nPermErrorBands : 2); i++)
   {
       histos[i]->SetMinimum(1);
+      //if(smooth>0)histos[i]->Smooth(smooth);
       if(style == 1)histos[i]->SetLineWidth(2);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
@@ -1237,6 +1238,41 @@ void makePlotsMuMu(){
     //        c->Print(("data_"+labels[j]+".eps").c_str());
     //    }
     
+    // Apply smoothing?
+    unsigned int smooth   = NamedParameter<unsigned int>("smoothFitProj",0);  
+    for (int i=0 ; i < histo_set[0].size(); i++){
+                for(int j=0;j<dims.size();j++){
+                    if(i>0 && smooth> 0){
+                        histo_set[j][i]->Smooth(smooth);
+                        histo_set_cut1[j][i]->Smooth(smooth);
+                        histo_set_cut2[j][i]->Smooth(smooth);
+                        histo_set_cut3[j][i]->Smooth(smooth);
+                        histo_set_cut4[j][i]->Smooth(smooth);
+                        histo_set_cut5[j][i]->Smooth(smooth);
+                        histo_set_cut6[j][i]->Smooth(smooth);
+                        histo_set_cut7[j][i]->Smooth(smooth);
+                        histo_set_cut8[j][i]->Smooth(smooth);
+                        histo_set_cut8[j][i]->Smooth(smooth);
+                        histo_set_cut10[j][i]->Smooth(smooth);
+                        histo_set_cut11[j][i]->Smooth(smooth);
+                        histo_set_cut12[j][i]->Smooth(smooth);
+                    }
+                    histo_set[j][i]->Rebin(2);
+                    histo_set_cut1[j][i]->Rebin(2);
+                    histo_set_cut2[j][i]->Rebin(2);
+                    histo_set_cut3[j][i]->Rebin(2);
+                    histo_set_cut4[j][i]->Rebin(2);
+                    histo_set_cut5[j][i]->Rebin(2);
+                    histo_set_cut6[j][i]->Rebin(2);
+                    histo_set_cut7[j][i]->Rebin(2);
+                    histo_set_cut8[j][i]->Rebin(2);
+                    histo_set_cut9[j][i]->Rebin(2);
+                    histo_set_cut10[j][i]->Rebin(2);
+                    histo_set_cut11[j][i]->Rebin(2);
+                    histo_set_cut12[j][i]->Rebin(2);
+                }
+    }
+      
     for(int j=0;j<dims.size();j++){ 
         plotHistos(histo_set[j], true, 0, true);
         c->Print((outDir+"/"+labels[j]+".pdf").c_str());

@@ -294,6 +294,9 @@ void perturb( MinuitParameterSet& MPS, double sigma = 1)
 {
     for ( auto& param : MPS ) {
         if ( !param->isFree() ) continue;
+        if ( param->name().find( "cut_dim" ) != std::string::npos) continue;
+        if ( param->name().find( "_Re" ) == std::string::npos && param->name().find( "_Im" ) == std::string::npos ) continue;
+            
         double new_val = gRandom->Gaus( param->mean(), param->err()* sigma);
         param->setInit(new_val);
         param->setCurrentFitVal( new_val );
@@ -483,7 +486,7 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
     int nTries = 1;
     while(mini.status()>0 && nTries-1 < nReTries){
             INFO("Fit not converged, try again with small perturbation");
-            perturb(MPS,nTries);
+            perturb(MPS, nTries);
             mini.doFit();
             nTries++;
     }
@@ -938,8 +941,9 @@ int main( int argc, char* argv[])
         delete addAmp;
   }  
     
-  auto randomizeStartVals = NamedParameter<bool>("randomizeStartVals", 0);
-  if(randomizeStartVals) randomizeStartingPoint(MPS,rndm);
+  auto randomizeStartVals = NamedParameter<int>("randomizeStartVals", 0);
+  if(randomizeStartVals==1) randomizeStartingPoint(MPS,rndm);
+  if(randomizeStartVals>1) perturb(MPS,randomizeStartVals-1);
   //sanityChecks(MPS);
     
   auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
