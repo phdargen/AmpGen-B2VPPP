@@ -249,13 +249,18 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   
   //Compute err bands for fit
   unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
-  if(nPermErrorBands>0 && plotErrorBands){
+  if(nPermErrorBands>3 && plotErrorBands){
+      
+        for (int i=histos.size()-1 ; i >= histos.size()-nPermErrorBands; i--){
+                histos[i]->Scale(1./histos[i]->Integral());
+        }
                 
         for(int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
             
             TStatistic stat;
             double min = TMath::Limits<Double_t>::Max();
             double max = 0;
+            
             for (int i=histos.size()-1 ; i >= histos.size()-nPermErrorBands; i--) {
                 stat.Fill(histos[i]->GetBinContent(b)) ;
                 min = (histos[i]->GetBinContent(b) < min) ? histos[i]->GetBinContent(b) : min;
@@ -266,8 +271,12 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
             histos[histos.size()-1]->SetBinError(b,  stat.GetMean() > 0 ? stat.GetRMS() : 0.);
             
             histos[histos.size()-2]->SetBinContent(b, stat.GetMean());
-            histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? (max-min)/2. : 0.);
-
+            histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. : 0.);
+            
+            //histos[histos.size()-2]->SetBinContent(b, stat.GetMean()+abs(max-stat.GetMean())/2.);
+            //histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-stat.GetMean())/2. : 0.);
+            //histos[histos.size()-3]->SetBinContent(b, stat.GetMean()-abs(stat.GetMean()-min)/2.);
+            //histos[histos.size()-3]->SetBinError(b,  stat.GetMean() > 0 ? abs(stat.GetMean()-min)/2. : 0.);
         }
     
         histos[histos.size()-1]->SetMarkerSize(0.);
@@ -279,13 +288,17 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         histos[histos.size()-2]->SetFillColor(kBlue-2);
         histos[histos.size()-2]->SetFillColorAlpha(kBlue-2, 0.45);
         histos[histos.size()-2]->DrawNormalized("e5same",1);
+      
+        //histos[histos.size()-3]->SetMarkerSize(0.);
+        //histos[histos.size()-3]->SetFillColor(kBlue-2);
+        //histos[histos.size()-3]->SetFillColorAlpha(kBlue-2, 0.45);
+        //histos[histos.size()-3]->DrawNormalized("e5same",1);
   }  
 
   //for (int i = (plotComponents == true ? histos.size()-1 : 1); i > 0; i--)
   for (int i = 1; i < (plotComponents == true ? histos.size()-nPermErrorBands : 2); i++)
   {
       histos[i]->SetMinimum(1);
-      //if(smooth>0)histos[i]->Smooth(smooth);
       if(style == 1)histos[i]->SetLineWidth(2);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
@@ -1107,7 +1120,8 @@ void makePlotsMuMu(){
     auto nBins = NamedParameter<Int_t>("nBins", 50, "Number of bins");
     vector<vector<TH1D*>> histo_set,histo_set_cut1,histo_set_cut2,histo_set_cut3,histo_set_cut4,histo_set_cut5,histo_set_cut6;
     vector<vector<TH1D*>> histo_set_cut7,histo_set_cut8,histo_set_cut9,histo_set_cut10,histo_set_cut11,histo_set_cut12;
-    
+    vector<vector<TH1D*>> histo_set_cutCombo1,histo_set_cutCombo2,histo_set_cutCombo3,histo_set_cutCombo4;
+
     for(int i=0;i<dims.size();i++){
         histo_set.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
@@ -1122,7 +1136,10 @@ void makePlotsMuMu(){
         histo_set_cut10.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut11.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
         histo_set_cut12.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
-
+        histo_set_cutCombo1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
+        histo_set_cutCombo2.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
+        histo_set_cutCombo3.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
+        histo_set_cutCombo4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
     }
     //Fill data
     for( auto& evt : events ){
@@ -1146,7 +1163,12 @@ void makePlotsMuMu(){
             if(filter_plot9(evt))histo_set_cut9[j][0]->Fill(val,evt.weight());
             if(filter_plot10(evt)) histo_set_cut10[j][0]->Fill(val,evt.weight());
             if(filter_plot11(evt))histo_set_cut11[j][0]->Fill(val,evt.weight());
-            if(filter_plot12(evt))histo_set_cut12[j][0]->Fill(val,evt.weight());      
+            if(filter_plot12(evt))histo_set_cut12[j][0]->Fill(val,evt.weight());   
+            
+            if(filter_plot1(evt) && filter_plot6(evt))  histo_set_cutCombo1[j][0]->Fill(val,evt.weight());   
+            if(filter_plot2(evt) && filter_plot5(evt))  histo_set_cutCombo2[j][0]->Fill(val,evt.weight());   
+            if(filter_plot3(evt) && filter_plot5(evt))  histo_set_cutCombo3[j][0]->Fill(val,evt.weight());   
+            if(filter_plot4(evt) && filter_plot5(evt))  histo_set_cutCombo4[j][0]->Fill(val,evt.weight());   
         }
     }
     
@@ -1177,6 +1199,11 @@ void makePlotsMuMu(){
                 if(filter_plot10(eventsMC[i]))histo_set_cut10[j][k]->Fill(val,w[k]);
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k]->Fill(val,w[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k]->Fill(val,w[k]);
+                
+                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k]->Fill(val,w[k]);   
+                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k]->Fill(val,w[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k]->Fill(val,w[k]);   
+                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k]->Fill(val,w[k]);   
             }
             
             for(int k = 0; k < nPermErrorBands; k++){
@@ -1193,6 +1220,11 @@ void makePlotsMuMu(){
                 if(filter_plot10(eventsMC[i]))histo_set_cut10[j][k+weights.size()]->Fill(val,wErr[k]);
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+weights.size()]->Fill(val,wErr[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+weights.size()]->Fill(val,wErr[k]);
+                
+                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+weights.size()]->Fill(val,wErr[k]);   
+                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+weights.size()]->Fill(val,wErr[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+weights.size()]->Fill(val,wErr[k]);   
+                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+weights.size()]->Fill(val,wErr[k]);   
             }
             
         }
@@ -1256,6 +1288,10 @@ void makePlotsMuMu(){
                         histo_set_cut10[j][i]->Smooth(smooth);
                         histo_set_cut11[j][i]->Smooth(smooth);
                         histo_set_cut12[j][i]->Smooth(smooth);
+                        histo_set_cutCombo1[j][i]->Smooth(smooth);
+                        histo_set_cutCombo2[j][i]->Smooth(smooth);
+                        histo_set_cutCombo3[j][i]->Smooth(smooth);
+                        histo_set_cutCombo4[j][i]->Smooth(smooth);
                     }
                     histo_set[j][i]->Rebin(2);
                     histo_set_cut1[j][i]->Rebin(2);
@@ -1270,6 +1306,10 @@ void makePlotsMuMu(){
                     histo_set_cut10[j][i]->Rebin(2);
                     histo_set_cut11[j][i]->Rebin(2);
                     histo_set_cut12[j][i]->Rebin(2);
+                    histo_set_cutCombo1[j][i]->Rebin(2);
+                    histo_set_cutCombo2[j][i]->Rebin(2);
+                    histo_set_cutCombo3[j][i]->Rebin(2);
+                    histo_set_cutCombo4[j][i]->Rebin(2);
                 }
     }
       
@@ -1518,6 +1558,40 @@ void makePlotsMuMu(){
         plotHistos(histo_set_cut12[j],true,1);
     }
     c->Print((outDir+"/"+"amp_plot3_cut12.pdf").c_str());
+    
+    
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cutCombo1[j],true,1);
+    }
+    c->Print((outDir+"/"+"amp_plot3_cutCombo1.pdf").c_str());
+
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cutCombo2[j],true,1);
+    }
+    c->Print((outDir+"/"+"amp_plot3_cutCombo2.pdf").c_str());
+
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cutCombo3[j],true,1);
+    }
+    c->Print((outDir+"/"+"amp_plot3_cutCombo3.pdf").c_str());
+
+    c->Clear();
+    c->Divide(5,2);
+    for(int j=0;j<10;j++){ 
+        c->cd(j+1);
+        plotHistos(histo_set_cutCombo4[j],true,1);
+    }
+    c->Print((outDir+"/"+"amp_plot3_cutCombo4.pdf").c_str());
+    
     
     c->SetCanvasSize(500, 500);
     c->Clear();

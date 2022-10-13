@@ -54,7 +54,7 @@ using namespace std;
 using namespace AmpGen;
 
 namespace AmpGen { 
-  make_enum(pdfTypes, CoherentSum, PolarisedSum, FixedLib)
+  make_enum(pdfTypes, CoherentSum, PolarisedSum, IncoherentSum, FixedLib)
   make_enum(phspTypes, PhaseSpace, RecursivePhaseSpace, TreePhaseSpace)
 }  
 
@@ -233,6 +233,75 @@ void makePlotWeightFile(CoherentSum& sig, const EventList_type& eventsPlotMC){
     std::cout << "Fit weights saved" << std::endl;    
 }
 
+void makePlotWeightFile(IncoherentSum& sig, const EventList_type& eventsPlotMC){
+    const std::string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");  
+    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
+    weight_file->cd();
+    TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
+    
+    auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
+    plot_amps.push_back("");
+    plot_weights.push_back("weight");
+    
+    vector<double> weights(plot_amps.size(),0.);
+    vector<TBranch*> branches; 
+    vector<vector<unsigned>> indices;
+
+    auto weightFunction = sig.componentEvaluator();
+    
+    for(int i = 0; i < plot_amps.size(); i++){
+        cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
+
+        auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
+        branches.push_back(branch);
+        
+        stringstream ss( plot_amps[i] );
+        std::vector<std::string> selectAmps;
+        while( ss.good() ){
+            std::string substr;
+            getline( ss, substr, '_' );
+            selectAmps.push_back( AmpGen::programatic_name(substr) );
+        }
+        
+        vector<unsigned> index;
+        unsigned counter = 0;
+        for( auto& key : weightFunction.keys ){
+            stringstream ss( key );
+            std::vector<std::string> selectKeys;
+            while( ss.good() ){
+                std::string substr;
+                getline( ss, substr, 'x' );
+                selectKeys.push_back( substr );
+            }
+            if(selectKeys.size()!=2)throw "ERROR";
+            for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
+                if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
+                    index.push_back(counter);
+                    //if(selectAmp != "")INFO("Found " << key);
+                }
+            }
+            counter++;
+        }
+        indices.push_back(index);
+    }
+
+    for( const auto& evt : eventsPlotMC ){
+        auto weightFun = weightFunction(evt);
+        for(int i = 0; i < plot_amps.size(); i++){
+            weights[i] = 0;
+            for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += evt.weight() * weightFun[indices[i][j]] / evt.genPdf() ; 
+        }
+        weight_tree->Fill();
+    }
+
+    weight_tree->Write();
+    weight_file->Write();
+    weight_file->Close();
+    std::cout << "Fit weights saved" << std::endl;    
+}
+
+
 std::vector<ThreeBodyCalculator> threeBodyCalculators( MinuitParameterSet& mps )
 {
   std::vector<std::string> threeBodiesToIntegrate = NamedParameter<std::string>( "ThreeBodiesToIntegrate" ).getVector();
@@ -267,8 +336,10 @@ void randomizeStartingPoint( MinuitParameterSet& MPS, TRandom3& rand, bool Splin
     if ( SplineOnly && param->name().find( "::Spline" ) == std::string::npos ) continue;
     
     if (param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos 
-        || param->name().find( "_mass" )  != std::string::npos  || param->name().find( "_width" ) != std::string::npos
-        || param->name().find( "_alpha" ) != std::string::npos  || param->name().find( "_beta" ) != std::string::npos){         
+        //|| param->name().find( "_mass" )  != std::string::npos  || param->name().find( "_width" ) != std::string::npos
+        //|| param->name().find( "_alpha" ) != std::string::npos  || param->name().find( "_beta" ) != std::string::npos
+    ){         
+        
         double min = param->minInit();
         double max = param->maxInit();
         //if(param->name().find( "_Re" ) != std::string::npos){
@@ -300,6 +371,19 @@ void perturb( MinuitParameterSet& MPS, double sigma = 1)
         double new_val = gRandom->Gaus( param->mean(), param->err()* sigma);
         param->setInit(new_val);
         param->setCurrentFitVal( new_val );
+    }
+}
+
+void scan( MinuitParameterSet& MPS, string name, double min, double max, int step, int nSteps)
+{
+    for ( auto& param : MPS ) {
+        if ( param->name().find( name ) == std::string::npos ) continue;
+            
+        double new_val = min + (max-min)*(double)step/(double)nSteps;
+        param->setInit(new_val);
+        param->setCurrentFitVal( new_val );
+        param->fix();
+        cout << "Scaning over " << name << ": set val to " << new_val << endl; 
     }
 }
 
@@ -728,7 +812,6 @@ vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& m
     return vals;
 }
 
-
 vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
     
     EventType pdg = dataEvents.eventType();
@@ -941,11 +1024,15 @@ int main( int argc, char* argv[])
         delete addAmp;
   }  
     
+  //Randomize start values   
   auto randomizeStartVals = NamedParameter<int>("randomizeStartVals", 0);
   if(randomizeStartVals==1) randomizeStartingPoint(MPS,rndm);
   if(randomizeStartVals>1) perturb(MPS,randomizeStartVals-1);
-  //sanityChecks(MPS);
-    
+
+  //Scan parameter
+  auto scanParam = NamedParameter<std::string>("scanParam", std::vector<std::string>()).getVector(); // name, min, max, nSteps
+  if(scanParam.size()==4)scan( MPS, scanParam[0], std::stod(scanParam[1]), std::stod(scanParam[2]), seed, std::stoi(scanParam[3]) );
+        
   auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
@@ -1142,9 +1229,90 @@ int main( int argc, char* argv[])
                 //fr->print();
             }
             
-      }
-  }    
-    
+        }
+      
+    }
+      
+  else if(pdfType==pdfTypes::IncoherentSum){  
+          
+          // Signal pdf
+          IncoherentSum sig(evtType, MPS, "");
+          sig.setMC( eventsMC );
+          //checkAmps(sig, MPS);
+          //sanityChecks(MPS);
+          //cout << "Number of amplitudes = " << sig.numAmps() << endl;
+              
+          auto ll = make_likelihood(events, sig);
+          sig.prepare();
+        
+              
+          // Do fit          
+          auto nFits = NamedParameter<int>("nFits", 1);  
+          double min_LL = 99999;
+      
+          for (unsigned int i = 0; i< nFits; ++i) {
+
+              cout << "==============================================" << endl;
+              INFO("Start fit number " << i);
+
+              if(i>0){
+                  randomizeStartingPoint(MPS,rndm);
+                  sig.setMC( eventsMC );
+                  //sig.prepare();
+              }
+              FitResult* fr = doFit(ll, events, eventsMC, MPS );
+              
+              if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
+                  INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                  continue;
+              }
+              else {
+                  INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                  min_LL=fr->LL();
+              }
+              
+              auto ep = fr->getErrorPropagator();
+              auto fitFractions = sig.fitFractions( ep );   
+              fr->addFractions( fitFractions );
+                          
+              // Estimate the chi2 
+              auto evaluator = sig.evaluator();
+              auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+              if(pNames.size()==6){
+                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 7, MinEventsChi2, 0. );
+                  fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
+              }
+              else{
+                  Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                  fr->addChi2( chi2.chi2(), chi2.nBins() );
+              }
+              
+              TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+              fr->print();
+              fr->writeToFile(logFile);
+              fr->printToLatexTable(tableFile);
+              fr->writeToOptionsFile(modelFile);
+              fr->writeToRootFile( output, seed, 0, 0, nSig, {0}, {0} );
+              output->cd();
+              output->Close();
+
+              unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+              if( saveWeights ){
+                  EventList_type eventsPlotMC;
+                  if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+                  else {
+                      eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListPlotMC));
+                  }
+                  sig.setMC( eventsPlotMC );
+                  //sig.prepare();
+                  makePlotWeightFile(sig,eventsPlotMC);  
+              }
+              
+        }
+
+    }
+      
+      
 //  int status = 0;
 //  if(outDir != ".") status &= system( ("mkdir -p " + outDir).c_str() );
 //  if( status != 0 ) ERROR("Building OutDir directory failed");  
