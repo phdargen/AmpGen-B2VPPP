@@ -239,59 +239,13 @@ void makePlotWeightFile(IncoherentSum& sig, const EventList_type& eventsPlotMC){
     weight_file->cd();
     TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
     
-    auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
-    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
-    plot_amps.push_back("");
-    plot_weights.push_back("weight");
+    double weight;    
+    auto branch = weight_tree->Branch( "weight", &weight);
+
+    auto weightFunction = sig.evaluator();
     
-    vector<double> weights(plot_amps.size(),0.);
-    vector<TBranch*> branches; 
-    vector<vector<unsigned>> indices;
-
-    auto weightFunction = sig.componentEvaluator();
-    
-    for(int i = 0; i < plot_amps.size(); i++){
-        cout << "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] << endl;
-
-        auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
-        branches.push_back(branch);
-        
-        stringstream ss( plot_amps[i] );
-        std::vector<std::string> selectAmps;
-        while( ss.good() ){
-            std::string substr;
-            getline( ss, substr, '_' );
-            selectAmps.push_back( AmpGen::programatic_name(substr) );
-        }
-        
-        vector<unsigned> index;
-        unsigned counter = 0;
-        for( auto& key : weightFunction.keys ){
-            stringstream ss( key );
-            std::vector<std::string> selectKeys;
-            while( ss.good() ){
-                std::string substr;
-                getline( ss, substr, 'x' );
-                selectKeys.push_back( substr );
-            }
-            if(selectKeys.size()!=2)throw "ERROR";
-            for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
-                if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
-                    index.push_back(counter);
-                    //if(selectAmp != "")INFO("Found " << key);
-                }
-            }
-            counter++;
-        }
-        indices.push_back(index);
-    }
-
     for( const auto& evt : eventsPlotMC ){
-        auto weightFun = weightFunction(evt);
-        for(int i = 0; i < plot_amps.size(); i++){
-            weights[i] = 0;
-            for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += evt.weight() * weightFun[indices[i][j]] / evt.genPdf() ; 
-        }
+        weight = evt.weight() * weightFunction(evt) / evt.genPdf() ; 
         weight_tree->Fill();
     }
 
@@ -945,7 +899,8 @@ int main( int argc, char* argv[])
   OptionsParser::setArgs( argc, argv );
 
   std::string dataFile = NamedParameter<std::string>("DataSample","", "Name of file containing data sample to fit." );
-  std::string weightData = NamedParameter<std::string>("weightData", "weight");  
+  std::string weightData = NamedParameter<std::string>("weightData", "");  
+  if(weightData==" " || weightData=="noWeight")  weightData="";
   std::string intFile = NamedParameter<std::string>("IntegrationSample","","Name of file containing events to use for MC integration.");
   std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
   std::string phspFile = NamedParameter<std::string>("phspFile","","phspFile");
@@ -972,8 +927,8 @@ int main( int argc, char* argv[])
   auto bExtraNames = NamedParameter<std::string>("ExtraBranches", std::vector<std::string>()).getVector();
   auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>()).getVector();
   auto bExtraNamesMC = NamedParameter<std::string>("ExtraBranchesMC", std::vector<std::string>()).getVector();
-  if(bNamesMC.size()==0)bNamesMC=bNames;
-  if(bExtraNamesMC.size()==0)bExtraNamesMC=bExtraNames;
+  //if(bNamesMC.size()==0)bNamesMC=bNames;
+  //if(bExtraNamesMC.size()==0)bExtraNamesMC=bExtraNames;
   auto pNames = NamedParameter<std::string>("EventType" , "").getVector(); 
   
   int      nThreads = NamedParameter<int>     ("nCores"    , 8           , "Number of threads to use" );
@@ -1236,15 +1191,15 @@ int main( int argc, char* argv[])
   else if(pdfType==pdfTypes::IncoherentSum){  
           
           // Signal pdf
-          IncoherentSum sig(evtType, MPS, "");
+          IncoherentSum sig(evtType, MPS, "Inco");
           sig.setMC( eventsMC );
           //checkAmps(sig, MPS);
-          //sanityChecks(MPS);
+          sanityChecks(MPS);
           //cout << "Number of amplitudes = " << sig.numAmps() << endl;
               
           auto ll = make_likelihood(events, sig);
           sig.prepare();
-        
+          //sig.normaliseAmps();
               
           // Do fit          
           auto nFits = NamedParameter<int>("nFits", 1);  
@@ -1264,7 +1219,7 @@ int main( int argc, char* argv[])
               
               if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                   INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
-                  continue;
+                  //continue;
               }
               else {
                   INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);

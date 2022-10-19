@@ -371,7 +371,8 @@ void makePlots(){
 
     std::string outDir = NamedParameter<std::string>("outDir", ".");
     std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
-    std::string weightData = NamedParameter<std::string>("weightData", "weight");  
+    std::string weightData = NamedParameter<std::string>("weightData", "");  
+    if(weightData==" " || weightData=="noWeight")  weightData="";
     std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
     std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
     auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
@@ -924,12 +925,13 @@ void makePlotsMuMu(){
     std::string outDir = NamedParameter<std::string>("outDir", ".");
     std::string dataFile = NamedParameter<std::string>("DataSample", ""          , "Name of file containing data sample to fit." );
     std::string weightData = NamedParameter<std::string>("weightData", "weight");  
+    if(weightData==" " || weightData=="noWeight")  weightData="";
     std::string intFile  = NamedParameter<std::string>("IntegrationSample",""    , "Name of file containing events to use for MC integration.");
     std::string weightMC = NamedParameter<std::string>("weightMC", "weight");
     auto bNames = NamedParameter<std::string>("Branches", std::vector<std::string>()
                                               ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
     auto bNamesMC = NamedParameter<std::string>("BranchesMC", std::vector<std::string>() ,"List of branch names, assumed to be \033[3m daughter1_px ... daughter1_E, daughter2_px ... \033[0m" ).getVector();
-    if(bNamesMC.size()==0)bNamesMC=bNames;
+   // if(bNamesMC.size()==0)bNamesMC=bNames;
     auto pNames = NamedParameter<std::string>("EventType" , ""    
                                               , "EventType to fit, in the format: \033[3m parent daughter1 daughter2 ... \033[0m" ).getVector(); 
     
@@ -1065,7 +1067,7 @@ void makePlotsMuMu(){
     vector<double> lim3402{4.3,5.2};
     vector<double> lim3401{4.3,5.2};
     vector<double> lim01{0.6,1.45};
-    vector<double> lim34{3.68609-0.002,3.68609+0.002};
+    vector<double> lim34{3.68609-0.002*10,3.68609+0.002*10};
     
     if(decayMuMu != "psi(2S)0"){
         titles = {"#it{m(K^{#plus}#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(K^{#plus}#pi^{#minus})} [GeV]","#it{m(#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(J/#psi#pi^{#plus}#pi^{#minus})} [GeV]","#it{m(J/#psi#pi^{+})} [GeV]","#it{m(J/#psi#pi^{#minus})} [GeV]", "#it{m(J/#psiK^{#plus})} [GeV]","#it{m(J/#psiK^{#plus}#pi^{#minus})} [GeV]"};
@@ -1142,13 +1144,16 @@ void makePlotsMuMu(){
         histo_set_cutCombo4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
     }
     //Fill data
+    auto kstar_hcos = HelicityCosine({3},{0,1,2},{3,4}); 
+    
+    cout << "Fill data hists ..." << endl;
     for( auto& evt : events ){
         for(int j=0;j<dims.size();j++){
             double val = 0;
             if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
             else if(dims[j][0] == 1) val = cosThetaMuAngle(evt);
             else if(dims[j][0] == 2) val = chiMuAngle(evt);
-            else if(dims[j][0] == 3) val = cosHel(evt,2,0);
+            else if(dims[j][0] == 3) val = -kstar_hcos(evt); //cosHel(evt,2,0);
 
             //evt.print();
             histo_set[j][0]->Fill(val,evt.weight());
@@ -1173,6 +1178,7 @@ void makePlotsMuMu(){
     }
     
     //Fill fit projections
+    cout << "Fill fits hists ..." << endl;
     for(int i=0; i< eventsMC.size(); i++ ){
         weight_tree->GetEntry(i);
         
@@ -1182,7 +1188,7 @@ void makePlotsMuMu(){
             if(dims[j].size()>1) val = sqrt(eventsMC[i].s(dims[j]));
             else if(dims[j][0] == 1) val = cosThetaMuAngle(eventsMC[i]);
             else if(dims[j][0] == 2) val = chiMuAngle(eventsMC[i]);
-            else if(dims[j][0] == 3) val = cosHel(eventsMC[i],2,0);
+            else if(dims[j][0] == 3) val = -kstar_hcos(eventsMC[i]); //cosHel(eventsMC[i],2,0);
             
             for(int k=1; k<weights.size();k++){
 
@@ -1231,6 +1237,7 @@ void makePlotsMuMu(){
     }
     
     //Plot
+    cout << "Create plots ..." << endl;
     TCanvas* c = new TCanvas();      
     TLegend leg(0.,0.,1.0,1,"");
     leg.SetLineStyle(0);

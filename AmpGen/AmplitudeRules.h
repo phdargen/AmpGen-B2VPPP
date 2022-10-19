@@ -75,7 +75,7 @@ namespace AmpGen
   {
     public:
       AmplitudeRules() = default; 
-      AmplitudeRules( const MinuitParameterSet& mps );
+      AmplitudeRules( const MinuitParameterSet& mps, const std::string& prefix="" );
       std::vector<Coupling> rulesForDecay(const std::string& head, const std::string& prefix="");
       bool hasDecay( const std::string& head );
       const std::map<std::string, std::vector<Coupling>>& rules() const;

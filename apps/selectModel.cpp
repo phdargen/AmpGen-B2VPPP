@@ -14,6 +14,7 @@
 #include <TFile.h>
 #include <TChain.h>
 #include <TMath.h>
+#include <TGraph.h>
 #include <TRandom3.h>
 #include <TCanvas.h>
 #include <TLegend.h>
@@ -21,10 +22,42 @@
 using namespace std;
 using namespace AmpGen;
 
+void bubble_sort(double* arr, double* arr2, double* arr3, double* arr4, size_t len)
+{
+    double temp, temp2, temp3, temp4;
+    for (int i = 0; i < len; i++)
+        {
+            for (int j = 0; j + 1 < len - i; j++)
+            {
+                // Swaping the elements if first one
+                // is greater than second one.
+                if (arr[j] > arr[j + 1])
+                {
+                    temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+
+                    temp2 = arr2[j];
+                    arr2[j] = arr2[j + 1];
+                    arr2[j + 1] = temp2;
+                    
+                    temp3 = arr3[j];
+                    arr3[j] = arr3[j + 1];
+                    arr3[j + 1] = temp3;
+
+                    temp4 = arr4[j];
+                    arr4[j] = arr4[j + 1];
+                    arr4[j + 1] = temp4;
+                }
+            }
+        }
+}
+
 void selectModel(){
 
   std::string resultsFile = NamedParameter<std::string>("ResultsFile"     , "results.root", "Name of the output plot file");
-  
+  auto scanParam = NamedParameter<std::string>("scanParam", std::vector<std::string>()).getVector(); // name, min, max, nSteps
+
   string outDir = resultsFile;
   outDir = replaceAll(outDir,"result.root","");
   
@@ -98,6 +131,11 @@ void selectModel(){
   h_chi22->SetLineColor(kGreen);  
   h_chi23->SetLineColor(kYellow);  
   h_chi24->SetLineColor(kOrange);  
+    
+  double nll_vals[n];
+  double sig_vals[n];
+  double chi2_vals[n]; 
+  double seed_vals[n]; 
   
   for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
@@ -105,11 +143,18 @@ void selectModel(){
 
         h_nll->Fill(nll-min_nll);
         h_chi2->Fill(chi2);
-        
+      
+        nll_vals[i]=nll-min_nll;
+        sig_vals[i]= TMath::ErfcInverse(TMath::Prob(nll-min_nll,max(1.,abs((double)min_nPar-(double)nPar)))) * sqrt(2);
+        chi2_vals[i]=chi2;
+        if(scanParam.size()==4)seed_vals[i]= std::stod(scanParam[1]) + ( std::stod(scanParam[2])-std::stod(scanParam[1]) ) * (double)seed/(double)std::stoi(scanParam[3]);
+        else seed_vals[i]= seed;
+
         double AIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) ;
         double BIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) * log(nSig) ;
       
-        cout << endl << "model " << i << endl;
+        cout << "seed " << seed << endl;
+        if(scanParam.size()==4) cout << "seed val " << seed_vals[i] << endl;
         cout << "n2ll = " << nll-min_nll << endl;
         cout << "chi2 = " << chi2 << endl;
         cout << "status = " << status << endl;
@@ -141,7 +186,7 @@ void selectModel(){
           h_chi24->Fill(chi2);            
       }
   }
-    
+        
   TCanvas* c = new TCanvas("c");
   //c->Divide(3,2);
 
@@ -162,8 +207,9 @@ void selectModel(){
   c->Print((outDir+"chi2.pdf").c_str());
     
   chain->GetEntry(min_i);
-  cout << endl << "Best nll model: " << min_i << endl;
+  cout << endl << "Best nll model: " << endl;
   cout << "with seed: " << seed << endl;
+  if(scanParam.size()==4) cout << "seed val " << seed_vals[min_i] << endl;
   cout << "n2ll = " << nll << endl;
   cout << "chi2 = " << chi2 << endl;
   cout << "status = " << status << endl;
@@ -171,13 +217,48 @@ void selectModel(){
   cout << "nPar = " << nPar << endl;
     
   chain->GetEntry(min_chi2_i);
-  cout << endl << "Best chi2 model: " << min_chi2_i << endl;
+  cout << endl << "Best chi2 model: " << endl;
   cout << "with seed: " << seed << endl;
+  if(scanParam.size()==4) cout << "seed val " << seed_vals[min_chi2_i] << endl;
   cout << "n2ll = " << nll << endl;
   cout << "chi2 = " << chi2 << endl;
   cout << "status = " << status << endl;
   cout << "nAmps = " << nAmps << endl;
   cout << "nPar = " << nPar << endl;
+    
+  bubble_sort(seed_vals,nll_vals,sig_vals,chi2_vals,n);
+
+  TGraph* g_nll = new TGraph(n,seed_vals,nll_vals);
+  TGraph* g_chi2 = new TGraph(n,seed_vals,chi2_vals);
+  TGraph* g_sig = new TGraph(n,seed_vals,sig_vals);
+
+  if(scanParam.size()==4)g_nll->GetXaxis()->SetTitle(scanParam[0].c_str());  
+  else g_nll->GetXaxis()->SetTitle("seed"); 
+  g_nll->GetYaxis()->SetTitle("n2ll"); 
+  g_nll->SetMarkerColor(kRed);
+  g_nll->SetMarkerSize(1);
+    
+  if(scanParam.size()==4)g_sig->GetXaxis()->SetTitle(scanParam[0].c_str());  
+  else g_sig->GetXaxis()->SetTitle("seed"); 
+  g_sig->GetYaxis()->SetTitle("#sigma_{n2ll}"); 
+  g_sig->SetMarkerColor(kRed);
+  g_sig->SetMarkerSize(1);
+
+  if(scanParam.size()==4)g_chi2->GetXaxis()->SetTitle(scanParam[0].c_str());  
+  else g_chi2->GetXaxis()->SetTitle("seed"); 
+  g_chi2->GetYaxis()->SetTitle("chi2"); 
+  g_chi2->SetMarkerColor(kRed);
+  g_chi2->SetMarkerSize(1.);
+    
+  g_nll->Draw("AC*");
+  c->Print((outDir+"n2ll_seed.pdf").c_str());  
+    
+  g_sig->Draw("AC*");
+  c->Print((outDir+"sigma_seed.pdf").c_str());  
+
+  g_chi2->Draw("AC*");
+  c->Print((outDir+"chi2_seed.pdf").c_str());  
+    
 }
 
 

@@ -32,6 +32,7 @@ Coupling::Coupling(MinuitParameter* re, MinuitParameter* im) :
   else {
     ERROR("Ill-formed decay descriptor: " << m_name );
   }
+  
   m_particle = Particle(m_name);
   coordinateType coord = NamedParameter<coordinateType>("CouplingConstant::Coordinates", coordinateType::cartesian);
   angType degOrRad     = NamedParameter<angType>("CouplingConstant::AngularUnits"      , angType::rad);
@@ -54,7 +55,7 @@ Coupling::Coupling(MinuitExpression* expression) :
   m_expr(expression),
   m_particle(m_name){}
 
-AmplitudeRules::AmplitudeRules( const MinuitParameterSet& mps )
+AmplitudeRules::AmplitudeRules( const MinuitParameterSet& mps, const std::string&  prefix )
 {
   for ( auto& it_re : mps ) {
     auto& name = it_re->name(); 
@@ -65,7 +66,9 @@ AmplitudeRules::AmplitudeRules( const MinuitParameterSet& mps )
         ERROR("Cannot find matching imaginary part / phase for: " <<  it_re->name() );
         continue; 
       }
-      if( ! Particle::isValidDecayDescriptor( name.substr(0, name.find("_Re") ) ) ) continue; 
+      auto decayDescriptor = name.substr(0, name.find("_Re"));
+      if(prefix != "") decayDescriptor = replaceAll( decayDescriptor, prefix, "");
+      if( ! Particle::isValidDecayDescriptor(decayDescriptor) ) continue; 
       Coupling p(it_re, it_im);
       m_rules[p.head()].emplace_back(p);
     }
@@ -154,7 +157,7 @@ void TotalCoupling::print() const
 
 std::vector<std::pair<Particle, TotalCoupling>> AmplitudeRules::getMatchingRules(const EventType& type, const std::string& prefix )
 {
-  auto rules        = rulesForDecay( type.mother() );
+  auto rules        = rulesForDecay( type.mother(), prefix );
   std::vector<std::pair<Particle, TotalCoupling>> rt; 
   for ( auto& rule : rules ) {
     if ( rule.prefix() != prefix ) continue;
