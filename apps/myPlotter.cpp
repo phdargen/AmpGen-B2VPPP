@@ -210,7 +210,7 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
             //h->SetFillColor(kGray+3);
             //h->SetFillStyle(1001);
       }else if(i==3){
-            h->SetLineColor(kGray+1);
+            h->SetLineColor(kOrange-7);
             h->SetLineWidth(3);
             //h->SetFillColor(kGray+3);
             //h->SetFillStyle(1001);
@@ -218,6 +218,11 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
           h->SetLineColor(kOrange+1);
           h->SetLineWidth(3);
           //h->SetFillColor(kGray+3);
+          //h->SetFillStyle(1001);
+      }else if(i==weights.size()-1){
+          h->SetLineColor(kGray);
+          h->SetLineWidth(3);
+          h->SetFillColor(kGray);
           //h->SetFillStyle(1001);
       }else {
           h->SetLineColor(kBlack);
@@ -296,7 +301,8 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   }  
 
   //for (int i = (plotComponents == true ? histos.size()-1 : 1); i > 0; i--)
-  for (int i = 1; i < (plotComponents == true ? histos.size()-nPermErrorBands : 2); i++)
+  //for (int i = 1; i < (plotComponents == true ? histos.size()-nPermErrorBands : 2); i++)
+  for (int i = (plotComponents == true ? histos.size()-nPermErrorBands-1 : 1); i >= 1 ; i--)
   {
       histos[i]->SetMinimum(1);
       if(style == 1)histos[i]->SetLineWidth(2);
@@ -1102,12 +1108,22 @@ void makePlotsMuMu(){
     titles.push_back("cos(#theta_K*)");
     limits.push_back({-1,1});
     
-    //Amps to plot
+    // Plot fit
     auto legend = NamedParameter<string>("plot_legend", std::vector<string>() ).getVector();
-    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
-    
     vector<string> weights{"data","weight"};
+
+    // Amps to plot    
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
     for (int i = 0; i < plot_weights.size(); i++)weights.push_back(plot_weights[i]);
+
+    // Plot bkg?
+    auto f_bkg = NamedParameter<double>("f_bkg", std::vector<double>(),"f_bkg" ).getVector();
+    if(f_bkg.size()>1 )if(f_bkg[1] != 0.0){
+        //weights.push_back("weight_sig");
+        weights.push_back("weight_bkg");
+        //legend.push_back("Signal");
+        legend.push_back("Background");
+    }
     
     vector<double> w(weights.size());    
     for(int i=1; i<weights.size();i++)weight_tree->SetBranchAddress(weights[i].c_str(),&w[i]);
@@ -1115,7 +1131,7 @@ void makePlotsMuMu(){
     //Err bands 
     unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
     vector<double> wErr(nPermErrorBands);    
-    vector<string> weightsErr{"data","weight"};
+    //vector<string> weightsErr{"data","weight"};
     for(int i = 0; i < nPermErrorBands; i++) weight_tree->SetBranchAddress( ("weightErr_"+to_string(i)).c_str(),&wErr[i]);  
 
     //Create histograms
@@ -1153,7 +1169,7 @@ void makePlotsMuMu(){
             if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
             else if(dims[j][0] == 1) val = cosThetaMuAngle(evt);
             else if(dims[j][0] == 2) val = chiMuAngle(evt);
-            else if(dims[j][0] == 3) val = -kstar_hcos(evt); //cosHel(evt,2,0);
+            else if(dims[j][0] == 3) val =  cosHel(evt,2,0); // -kstar_hcos(evt);
 
             //evt.print();
             histo_set[j][0]->Fill(val,evt.weight());
@@ -1188,7 +1204,7 @@ void makePlotsMuMu(){
             if(dims[j].size()>1) val = sqrt(eventsMC[i].s(dims[j]));
             else if(dims[j][0] == 1) val = cosThetaMuAngle(eventsMC[i]);
             else if(dims[j][0] == 2) val = chiMuAngle(eventsMC[i]);
-            else if(dims[j][0] == 3) val = -kstar_hcos(eventsMC[i]); //cosHel(eventsMC[i],2,0);
+            else if(dims[j][0] == 3) val = cosHel(eventsMC[i],2,0); // -kstar_hcos(eventsMC[i]);
             
             for(int k=1; k<weights.size();k++){
 

@@ -52,6 +52,8 @@ CoherentSum::CoherentSum( const EventType& type, const MinuitParameterSet& mps, 
   m_matrixElements.resize( amplitudes.size() );
   m_normalisations.resize( m_matrixElements.size(), m_matrixElements.size() ); 
   size_t      nThreads = NamedParameter<size_t>     ("nCores"    , std::thread::hardware_concurrency(), "Number of threads to use" );
+  nThreads = nThreads < 0 ? std::min(omp_get_num_procs(),(int)std::thread::hardware_concurrency()) : nThreads;  
+
   ThreadPool tp(nThreads);
   for(size_t i = 0; i < m_matrixElements.size(); ++i){
     tp.enqueue( [i,this,&mps,&amplitudes]{
