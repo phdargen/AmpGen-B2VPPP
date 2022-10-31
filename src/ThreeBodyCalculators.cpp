@@ -145,7 +145,9 @@ Expression ThreeBodyCalculator::PartialWidth::spinAverageMatrixElement(
     auto perm = particle.identicalDaughterOrderings();
     for ( auto& p : perm ) {
       particle.setOrdering(p);
-      particle.setLineshape( "FormFactor" );
+      if( particle.lineshape().find("EFF") != std::string::npos or particle.lineshape().find("ExpFF") != std::string::npos )
+          particle.setLineshape( "ExpFF" );
+      else particle.setLineshape("FormFactor");      
       Expression prop = make_cse( c.to_expression() ) * make_cse( particle.propagator( msym ) );
       if ( msym != nullptr ) msym->emplace_back( s.name() + "_g", c.to_expression() );
       if ( msym != nullptr ) msym->emplace_back( s.name() + "_p", particle.propagator() );
@@ -175,17 +177,20 @@ ThreeBodyCalculator::ThreeBodyCalculator( const std::string& head, MinuitParamet
   auto rulesForThisParticle = rules.rulesForDecay( head );
   for ( auto& pAmp : rulesForThisParticle ) {
     auto type = pAmp.eventType();
+ 
     if ( std::find( finalStates.begin(), finalStates.end(), type ) != finalStates.end() ) continue;
+        
     bool stateToBeExpanded = false;
     for ( auto& fs : type.finalStates() ) {
       if ( rules.hasDecay( fs ) ) stateToBeExpanded = true;
     }
+      
     if ( stateToBeExpanded ) continue;
-    INFO( "Final state to sum = " << type );
     finalStates.push_back( type );
   }
   for ( auto& type : finalStates ) m_widths.emplace_back( type, mps );
   if( nKnots != 999) setAxis( nKnots, min, max ); 
+  else INFO( "Axis not set  " << nKnots );
 }
 
 void ThreeBodyCalculator::setAxis( const size_t& nKnots, const double& min, const double& max )
@@ -199,13 +204,13 @@ void ThreeBodyCalculator::setAxis( const size_t& nKnots, const double& min, cons
 void ThreeBodyCalculator::updateRunningWidth( MinuitParameterSet& mps, const double& mNorm )
 {
   prepare();
-  setNorm( mNorm == 0 ? mps[m_name + "_mass"]->mean() : mNorm ); 
+  setNorm( mNorm == 0 ? mps[m_name + "_mass"]->mean() * mps[m_name + "_mass"]->mean() : mNorm ); 
   for ( size_t c = 0; c < m_nKnots; ++c ) {
     double s                   = m_min + double(c) * m_step;
     double I                   = getWidth(s);
     const std::string knotName = m_name + "::Spline::Gamma::" + std::to_string( c );
     if ( mps.find( knotName ) != nullptr ) mps[knotName]->setCurrentFitVal( I );
-      INFO( knotName << " = " << I << " ; " << mps.find( knotName ) );
+    INFO( knotName << ": s = " << s << " I = " << I );
   }
 }
 
@@ -229,16 +234,19 @@ TGraph* ThreeBodyCalculator::widthGraph( const double& mNorm )
 
 ThreeBodyCalculator::PartialWidth::PartialWidth( const EventType& evt, MinuitParameterSet& mps )
   : fcs( evt, mps, "" )
-  , integrator(1, evt.mass(0)*evt.mass(0), evt.mass(1)*evt.mass(1) , evt.mass(2)*evt.mass(2) )
+  , integrator(evt.motherMass()*evt.motherMass(), evt.mass(0)*evt.mass(0), evt.mass(1)*evt.mass(1) , evt.mass(2)*evt.mass(2) )
   , type(evt)
 {
+  INFO( evt << " " << fcs.matrixElements().size() ); 
   DebugSymbols msym;
   std::vector<std::pair<Particle,TotalCoupling>> unpacked; 
-  for( auto& p : fcs.matrixElements() ) unpacked.emplace_back( p.decayTree, p.coupling );
-
+  for( auto& p : fcs.matrixElements() ) {
+      unpacked.emplace_back( p.decayTree, p.coupling );
+  }
   Expression matrixElementTotal = spinAverageMatrixElement(unpacked, &msym );
   std::string name              = "";
   auto evtFormat = evt.getEventFormat();
+    
   for ( auto& p : unpacked ) {
     name += p.first.decayDescriptor();
     partialWidths.emplace_back( spinAverageMatrixElement( {p}, &msym ), p.first.decayDescriptor(), &mps, evtFormat);
@@ -262,6 +270,10 @@ void ThreeBodyCalculator::setNorm( const double& mNorm )
 {
   m_norm = 1;
   m_norm = getWidth(mNorm);
+  if(m_norm <= 0){
+      WARNING("m_norm not positive " << m_norm);  
+      m_norm = 1;
+  }
 }
 
 void ThreeBodyCalculator::makePlots(const double& mass, const size_t& x, const size_t& y)

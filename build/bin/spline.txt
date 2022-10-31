@@ -1,0 +1,220 @@
+"Head"  "X(S)0"
+X(S)0::Spline             10         4.3     4.7   1
+
+#B+{X(S)0,pi+}                                     0  0.5 0.001 0  5     0 0.0 0.1 -360 360
+#X(S)0[MIPWA.Polar]{K*(892)0{K+,pi-},psi(2S)0}                  2  1.00  0.01  2     0.0 1.0
+
+#B+{X(S)0,K+}                                                                   0 0.5 0.001 0.1 10         0 0.0 0.1 -360 360
+#X(S)0[MIPWA.Polar]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}         2  1.00  0.001 0 5    2 0.0 0.1 -360 360
+
+X(S)0_mass  2 4.352 0.002146 4.2 4.65
+X(S)0_width  2 0.2312 0.04262 0.01 0.35
+
+X(S)0[MIPWA.Polar]{Z(4100)+{psi(2S)0,pi+},pi-}  0 0.4011 0.06017 0 2    0 -154.5 7.447 -360 360
+X(S)0[MIPWA.Polar]{Z(4430)+{psi(2S)0,pi+},pi-}  0 0.5422 0.08569 0 2    0 115.7 6.28 -360 360
+X(S)0[MIPWA.Polar]{psi(2S)0,rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}  0 1.327 0.1169 0 4    0 -6.642 6.204 -360 360
+X(S)0[MIPWA.Polar]{Z(4100)-{psi(2S)0,pi-},pi+}_Re = X(S)0[MIPWA.Polar]{Z(4100)+{psi(2S)0,pi+},pi-}_Re
+X(S)0[MIPWA.Polar]{Z(4100)-{psi(2S)0,pi-},pi+}_Im 0 0 1 -360 360
+X(S)0[MIPWA.Polar]{Z(4430)-{psi(2S)0,pi-},pi+}_Re = X(S)0[MIPWA.Polar]{Z(4430)+{psi(2S)0,pi+},pi-}_Re
+X(S)0[MIPWA.Polar]{Z(4430)-{psi(2S)0,pi-},pi+}_Im 0 0 1 -360 360
+
+PiPi20[kMatrix.pole.0]{pi+,pi-}  0 0.63 0.06748 0 0    0 126.5 6.508 0 0
+PiPi20[kMatrix.prod.0]{pi+,pi-}  0 -0.3377 0.05468 0 0    0 61.92 9.701 0 0
+PiPi20_s0_prod  2 -0.1658 0 0 0
+
+
+
+
+
+
+
+
+#X(S)0[SBW]{psi(2S)0,f(0)(600)0[Bugg]{pi+,pi-}}                                0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[D;SBW]{rho(770)0[GounarisSakurai]{pi+,pi-},psi(2S)0}                     0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[D2;SBW]{rho(770)0[GounarisSakurai]{pi+,pi-},psi(2S)0}                    0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[SBW]{Z(4100)+{psi(2S)0,pi+},pi-}                                         0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[SBW]{Z(4240)P+{psi(2S)0,pi+},pi-}                                         0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[SBW]{Z(4200)+{psi(2S)0,pi+},pi-}                                         0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[SBW]{Z(4200)-{psi(2S)0,pi-},pi+}                                         0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+#X(S)0[SBW]{Z(c)(3900)+{psi(2S)0,pi+},pi-}                                         0  1.00  0.001 0 5    0 0.0 0.1 -360 360
+
+#X(S)0[SBW]{Z(4100)-{psi(2S)0,pi-},pi+}_Re = X(S)0[SBW]{Z(4100)+{psi(2S)0,pi+},pi-}_Re
+#X(S)0[SBW]{Z(4100)-{psi(2S)0,pi-},pi+}_Im = X(S)0[SBW]{Z(4100)+{psi(2S)0,pi+},pi-}_Im
+#X(S)0[SBW]{Z(4240)P-{psi(2S)0,pi-},pi+}_Re = X(S)0[SBW]{Z(4240)P+{psi(2S)0,pi+},pi-}_Re
+#X(S)0[SBW]{Z(4240)P-{psi(2S)0,pi-},pi+}_Im = X(S)0[SBW]{Z(4240)P+{psi(2S)0,pi+},pi-}_Im
+#X(S)0[SBW]{Z(4200)-{psi(2S)0,pi-},pi+}_Re = X(S)0[SBW]{Z(4200)+{psi(2S)0,pi+},pi-}_Re
+#X(S)0[SBW]{Z(4200)-{psi(2S)0,pi-},pi+}_Im = X(S)0[SBW]{Z(4200)+{psi(2S)0,pi+},pi-}_Im
+#X(S)0[SBW]{Z(c)(3900)-{psi(2S)0,pi-},pi+}_Re = X(S)0[SBW]{Z(c)(3900)+{psi(2S)0,pi+},pi-}_Re
+#X(S)0[SBW]{Z(c)(3900)-{psi(2S)0,pi-},pi+}_Im = X(S)0[SBW]{Z(c)(3900)+{psi(2S)0,pi+},pi-}_Im
+
+
+#"Head"  "Z(A)+"
+#Z(A)+::Spline             20         19.5              22.0
+#Z(A)+::Spline             6    4.45   4.7     1
+#B+[P]{Z(A)+[MIPWA.Polar]{psi(2S)0,pi+},K*(892)0{K+,pi-}}       2 0.5 0.001 0 1     2 0.0 0.1 -360 360
+
+X(S)0::Spline::Re::0                        0              1    0.001      0  5
+X(S)0::Spline::Re::1                        0              1    0.001      0  5
+X(S)0::Spline::Re::2                        0              1    0.001      0  5
+X(S)0::Spline::Re::3                        0              1    0.001          0  5
+X(S)0::Spline::Re::4                        2              4    0.001              0  5
+X(S)0::Spline::Re::5                        0              1    0.001   0  5
+X(S)0::Spline::Re::6                        0              1    0.001       0  5
+X(S)0::Spline::Re::7                        0              1    0.001           0  5
+X(S)0::Spline::Re::8                        0              1    0.001              0  5
+X(S)0::Spline::Re::9                        0              1    0.001       0  5
+X(S)0::Spline::Re::10                        0              1    0.001 0  5
+X(S)0::Spline::Re::11                        0              1    0.001 0  5
+X(S)0::Spline::Re::12                        0              1    0.001 0  5
+X(S)0::Spline::Re::13                        0              1    0.001 0  5
+X(S)0::Spline::Re::14                        0              1    0.001 0  5
+X(S)0::Spline::Re::15                        0              1    0.001 0  5
+X(S)0::Spline::Re::16                        0              1    0.001 0  5
+X(S)0::Spline::Re::17                        0              1    0.001 0  5
+X(S)0::Spline::Re::18                        0              1    0.001 0  5
+X(S)0::Spline::Re::19                        0              1    0.001 0  5
+X(S)0::Spline::Re::20                        0              1    0.001 0  5
+X(S)0::Spline::Re::21                        0              1    0.001 0  5
+X(S)0::Spline::Re::22                        0              1    0.001 0  5
+X(S)0::Spline::Re::23                        0              1    0.001 0  5
+X(S)0::Spline::Re::24                        0              1    0.001 0  5
+X(S)0::Spline::Re::25                        0              1    0.001 0  5
+X(S)0::Spline::Re::26                        0              1    0.001 0  5
+X(S)0::Spline::Re::27                        0              1    0.001 0  5
+X(S)0::Spline::Re::28                        0              1    0.001  0  5
+X(S)0::Spline::Re::29                        0              1    0.001  0  5
+X(S)0::Spline::Re::30                        0              1    0.001  0  5
+X(S)0::Spline::Re::31                        0              1    0.001  0  5
+X(S)0::Spline::Re::32                        0              1    0.001  0  5
+X(S)0::Spline::Re::33                        0              1    0.001  0  5
+X(S)0::Spline::Re::34                        0              1    0.001  0  5
+X(S)0::Spline::Re::35                        0              1    0.001  0  5
+X(S)0::Spline::Re::36                        0              1    0.001  0  5
+X(S)0::Spline::Re::37                        0              1    0.001  0  5
+X(S)0::Spline::Re::38                        0              1    0.001  0  5
+X(S)0::Spline::Re::39                        0              1    0.001  0  5
+
+X(S)0::Spline::Im::0                        0              0    0.001 -180 180
+X(S)0::Spline::Im::1                        0              0    0.001 -180 180
+X(S)0::Spline::Im::2                        0              0    0.001 -180 180
+X(S)0::Spline::Im::3                        0              0    0.001 -180 180
+X(S)0::Spline::Im::4                        2              0    0.001 -180 180
+X(S)0::Spline::Im::5                        0              0    0.001 -180 180
+X(S)0::Spline::Im::6                        0              0    0.001 -180 180
+X(S)0::Spline::Im::7                        0              0    0.001  -180 180
+X(S)0::Spline::Im::8                        0              0    0.001  -180 180
+X(S)0::Spline::Im::9                        0              0    0.001  -180 180
+X(S)0::Spline::Im::10                        0              0    0.001 -180 180
+X(S)0::Spline::Im::11                        0              0    0.001 -180 180
+X(S)0::Spline::Im::12                        0              0    0.001 -180 180
+X(S)0::Spline::Im::13                        0              0    0.001 -180 180
+X(S)0::Spline::Im::14                        0              0    0.001 -180 180
+X(S)0::Spline::Im::15                        0              0    0.001 -180 180
+X(S)0::Spline::Im::16                        0              0    0.001 -180 180
+X(S)0::Spline::Im::17                        0              0    0.001  -180 180
+X(S)0::Spline::Im::18                        0              0    0.001  -180 180
+X(S)0::Spline::Im::19                        0              0    0.001  -180 180
+X(S)0::Spline::Im::20                        0              0    0.001 -180 180
+X(S)0::Spline::Im::21                        0              0    0.001 -180 180
+X(S)0::Spline::Im::22                        0              0    0.001 -180 180
+X(S)0::Spline::Im::23                        0              0    0.001 -180 180
+X(S)0::Spline::Im::24                        0              0    0.001 -180 180
+X(S)0::Spline::Im::25                        0              0    0.001 -180 180
+X(S)0::Spline::Im::26                        0              0    0.001 -180 180
+X(S)0::Spline::Im::27                        0              0    0.001  -180 180
+X(S)0::Spline::Im::28                        0              0    0.001  -180 180
+X(S)0::Spline::Im::29                        0              0    0.001  -180 180
+X(S)0::Spline::Im::30                        0              0    0.001 -180 180
+X(S)0::Spline::Im::31                        0              0    0.001 -180 180
+X(S)0::Spline::Im::32                        0              0    0.001 -180 180
+X(S)0::Spline::Im::33                        0              0    0.001 -180 180
+X(S)0::Spline::Im::34                        0              0    0.001 -180 180
+X(S)0::Spline::Im::35                        0              0    0.001 -180 180
+X(S)0::Spline::Im::36                        0              0    0.001 -180 180
+X(S)0::Spline::Im::37                        0              0    0.001  -180 180
+X(S)0::Spline::Im::38                        0              0    0.001  -180 180
+X(S)0::Spline::Im::39                        0              0    0.001  -180 180
+
+
+
+Z(A)+::Spline::Re::0                        0              1    0.001    0.1  5
+Z(A)+::Spline::Re::1                        0              1    0.001     0.1  5
+Z(A)+::Spline::Re::2                        0              1    0.001     0.1  5
+Z(A)+::Spline::Re::3                        0              1    0.001              0.1  5
+Z(A)+::Spline::Re::4                        0              1    0.001     0.1  5
+Z(A)+::Spline::Re::5                        0              1    0.001   0.1  5
+Z(A)+::Spline::Re::6                        0              1    0.001     0.1  5
+Z(A)+::Spline::Re::7                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::8                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::9                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::10                        0              1    0.001    0.1  5
+Z(A)+::Spline::Re::11                        0              1    0.001       0.1  5
+Z(A)+::Spline::Re::12                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::13                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::14                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::15                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::16                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::17                        0              1    0.001      0.1  5
+Z(A)+::Spline::Re::18                        0              1    0.001       0.1  5
+Z(A)+::Spline::Re::19                        0              1    0.001       0.1  5
+Z(A)+::Spline::Re::20                        0              1    0.001              
+Z(A)+::Spline::Re::21                        0              1    0.001              
+Z(A)+::Spline::Re::22                        0              1    0.001              
+Z(A)+::Spline::Re::23                        0              1    0.001              
+Z(A)+::Spline::Re::24                        0              1    0.001              
+Z(A)+::Spline::Re::25                        0              1    0.001              
+Z(A)+::Spline::Re::26                        0              1    0.001              
+Z(A)+::Spline::Re::27                        0              1    0.001              
+Z(A)+::Spline::Re::28                        0              1    0.001              
+Z(A)+::Spline::Re::29                        0              1    0.001       
+Z(A)+::Spline::Re::30                        2              1    0.001              
+Z(A)+::Spline::Re::31                        0              1    0.001              
+Z(A)+::Spline::Re::32                        0              1    0.001              
+Z(A)+::Spline::Re::33                        0              1    0.001              
+Z(A)+::Spline::Re::34                        0              1    0.001              
+Z(A)+::Spline::Re::35                        0              1    0.001              
+Z(A)+::Spline::Re::36                        0              1    0.001              
+Z(A)+::Spline::Re::37                        0              1    0.001              
+Z(A)+::Spline::Re::38                        0              1    0.001              
+Z(A)+::Spline::Re::39                        0              1    0.001    
+
+Z(A)+::Spline::Im::0                        0              0    0.001 -180 180              
+Z(A)+::Spline::Im::1                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::2                        0              0    0.001 -180 180     
+Z(A)+::Spline::Im::3                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::4                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::5                        0              0    0.001 -180 180
+Z(A)+::Spline::Im::6                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::7                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::8                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::9                        0              0    0.001  -180 180      
+Z(A)+::Spline::Im::10                        0              0    0.001 -180 180              
+Z(A)+::Spline::Im::11                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::12                        0              0    0.001 -180 180     
+Z(A)+::Spline::Im::13                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::14                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::15                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::16                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::17                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::18                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::19                        0              0    0.001  -180 180      
+Z(A)+::Spline::Im::20                        0              0    0.001 -180 180              
+Z(A)+::Spline::Im::21                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::22                        0              0    0.001 -180 180     
+Z(A)+::Spline::Im::23                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::24                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::25                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::26                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::27                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::28                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::29                        0              0    0.001  -180 180      
+Z(A)+::Spline::Im::30                        2              0    0.001 -180 180              
+Z(A)+::Spline::Im::31                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::32                        0              0    0.001 -180 180     
+Z(A)+::Spline::Im::33                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::34                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::35                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::36                        0              0    0.001 -180 180             
+Z(A)+::Spline::Im::37                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::38                        0              0    0.001  -180 180            
+Z(A)+::Spline::Im::39                        0              0    0.001  -180 180     

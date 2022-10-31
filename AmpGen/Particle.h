@@ -164,6 +164,7 @@ namespace AmpGen
 
       /// Returns the range of orbital angular momentum between the decay products
       std::pair<size_t,size_t> orbitalRange( const bool& converseParity = true ) const;
+      std::pair<size_t,size_t> orbitalRangeMod( const bool& converseParity = true ) const;
 
       /// Returns the set of possible spin-orbit couplings allowed by conservation of angular momentum, and if specified parity
       std::vector<std::pair<double,double>> spinOrbitCouplings( const bool& conserveParity = true ) const;

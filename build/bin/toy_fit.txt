@@ -1,0 +1,123 @@
+EventType B+ K+ pi+ pi- mu+ mu-
+psi(2S)0[None]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+
+#EventType B+ K+ pi+ pi- psi(2S)0
+
+nEvents     1000
+Type PolarisedSum
+"PolarisedSum::InterferenceFractions"  true
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg
+Phasespace TreePhaseSpace
+Seed    2
+addAmpList ""
+normAmps 0
+
+DataSample        toy.root:DalitzEventList
+weightData        weight
+DataUnits         GeV
+
+IntegrationSample    toy_integration.root:DalitzEventList
+#IntegrationSample    toy.root:DalitzEventList
+weightMC        weight
+MCUnits             GeV
+maxIntEvents     100000
+
+"Minimiser::MaxCalls"   100000
+"Minimiser::Tolerance"  1.0
+"Minimiser::PrintLevel" 1
+"Minimiser::Normalise"    1
+"nCores"        1
+
+Fit::nReTries     0
+nFits         1
+#addAmpList  addAmpListNoExotic.txt
+"randomizeStartVals"     0
+
+saveWeights     1
+nBins       60
+MinEventsChi2    25
+
+nPermErrorBands   0
+smoothFitProj 0
+
+"useFilter"     0
+"invertCut"     1
+"cut_dim"       0 2
+"cut_limits"    0.8 0.95
+
+#B+  K+ pi+ pi- mu+ mu-
+#-   0  1   2   3   4
+
+#K pi
+"invertCut_plot1"     0
+"cut_dim_plot1"       0 2
+"cut_limits_plot1"    0.8 0.95
+
+"invertCut_plot2"     1
+"cut_dim_plot2"       0 2
+"cut_limits_plot2"    0.8 0.95
+
+#Kpipi
+"invertCut_plot3"     0
+"cut_dim_plot3"       0 1 2
+"cut_limits_plot3"    1.3 2
+#"cut_limits_plot3"    1.35 2
+
+"invertCut_plot4"     1
+"cut_dim_plot4"       0 1 2
+"cut_limits_plot4"    1.3 2
+
+#pipi
+"invertCut_plot5"     0
+"cut_dim_plot5"       1 2
+"cut_limits_plot5"    0.6 0.85
+
+"invertCut_plot6"     1
+"cut_dim_plot6"       1 2
+"cut_limits_plot6"    0.6 0.85
+
+#K pi
+"invertCut_plot7"     0
+"cut_dim_plot7"       0 2
+"cut_limits_plot7"    1. 3
+
+"invertCut_plot8"     1
+"cut_dim_plot8"       0 2
+"cut_limits_plot8"    1. 3
+
+#psipipi
+"invertCut_plot9"     0
+"cut_dim_plot9"       1 2 3 4
+"cut_limits_plot9"    4.55 6
+
+"invertCut_plot10"     1
+"cut_dim_plot10"       1 2 3 4
+"cut_limits_plot10"    4.55 6
+
+#psipi
+"invertCut_plot11"     0
+"cut_dim_plot11"       1 3 4
+"cut_limits_plot11"    4.1 4.3
+
+"invertCut_plot12"     1
+"cut_dim_plot12"       1 3 4
+"cut_limits_plot12"    4.1 4.3
+
+
+"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ NonRes Z(_Z2( Zs(_Zs2( X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9( Xs(_Xs2(_Xs3(_Xs4(
+"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6 weight_7 weight_8
+"plot_legend" "Data" "Fit" "#it{B#rightarrow}#psi(2S)#it{K}_{1}" "#it{B}#rightarrow#psi(2S)#it{K^{*}}" "#it{B}#rightarrow#psi(2S)#it{K/K}_{2}" "#it{B#rightarrow}NonRes" "#it{B#rightarrowZK#pi}" "#it{B#rightarrowZ_{s}#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowX_{s}#pi}" 
+
+
+#"UpdateWidth"   1
+#"nIterations"   2
+#"ThreeBodiesToIntegrate"    K(1)(1270)+ K(1)(1400)+ K*(1410)+
+#"Release"     K*(1410)+_mass K*(1410)+_width
+#"ThreeBodiesToIntegrate"      X(V)0
+#"Release"     X(S)0_mass X(S)0_width 
+
+f_sig       2  1.0 0.001
+f_bkg       2  0.0 0.001
+#Inco_B+[Bkg;BgSpin0]{psi(2S)0,K+,pi+,pi-}  2 1 0 0 10    2 0 0 -360 360
+Inco_B+[BgSpin0]{psi(2S)0,K+,pi+,pi-}  2 1 0 0 10    2 0 0 -360 360

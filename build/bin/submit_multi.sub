@@ -1,0 +1,47 @@
+executable  = myFitter2.sh
+universe    = vanilla
+#getenv 	    = True
+#requirements   = OpSysAndVer == "CentOS7"
+requirements = (OpSysAndVer =?= "CentOS7")
+# && (TARGET.has_avx2)
+#requirements = ( (TARGET.has_avx2) && (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost) )
+#on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
+#max_retries             = 5
+
+OPTIONFILELOC = v0
+OPTIONFILE = model_90.txt
+OUTDIR = v1
+
+#espresso     = 20 minutes
+#microcentury = 1 hour
+#longlunch    = 2 hours
+#workday      = 8 hours
++JobFlavour = "workday"
+#+MaxDuration = 300
+#request_memory = 8096
+request_cpus   = 4
+#RequestCpus = 8
+request_disk   = 500000
+
+WHEN_TO_TRANSFER_OUTPUT = ON_EXIT_OR_EVICT
+#+SpoolOnEvict = False
+stream_output = True
+stream_error = True
+
+transfer_input_files = myFitter, myPlotter, main_options.txt, $(OPTIONFILELOC)/$(OPTIONFILE), $(filename), MINT_Data.root, SignalIntegrationEvents_AccBDT.root, mass_width.csv, MintDalitzSpecialParticles.csv 
+arguments = $(Process) main_options.txt $(OPTIONFILE) $(filename)
+#$(Process) 
+
+#input      = $(OPTIONFILE)
+output      = $(OUTDIR)/out_$(Process).out
+error       = $(OUTDIR)/error_$(Process).err
+log         = $(OUTDIR)/log_$(Process).log
+
+#transfer_output_files = results.root, Fit_weights.root, model.txt
+#transfer_output_remaps = "results.root =  $(OUTDIR)/results_$(Process).root ; Fit_weights.root =  $(OUTDIR)/Fit_weights_$(Process).root; model.txt =  $(OUTDIR)/model_$(Process).txt"
+
+transfer_output_files = results.root, model.txt, amp_plots.eps
+transfer_output_remaps = "results.root =  $(OUTDIR)/results_$(Process).root ; amp_plots.eps =  $(OUTDIR)/amp_plots_$(Process).eps; model.txt =  $\
+(OUTDIR)/model_$(Process).txt"
+
+queue filename matching b*.txt

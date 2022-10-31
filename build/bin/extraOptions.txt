@@ -1,0 +1,25 @@
+rhoOmega10_mass  =  rho(770)0_mass	
+rhoOmega10_width =  rho(770)0_width	
+rhoOmega20_mass  =  rho(770)0_mass	
+rhoOmega20_width =  rho(770)0_width	
+rhoOmega30_mass  =  rho(770)0_mass	
+rhoOmega30_width =  rho(770)0_width	
+rhoOmega40_mass  =  rho(770)0_mass	
+rhoOmega40_width =  rho(770)0_width	
+rhoOmega50_mass  =  rho(770)0_mass	
+rhoOmega50_width =  rho(770)0_width
+
+Z(4430)-_mass = Z(4430)+_mass
+Z(4430)-_width = Z(4430)+_width
+
+Z(c)(3900)-_mass = Z(c)(3900)+_mass
+Z(c)(3900)-_width = Z(c)(3900)+_width
+
+Z(4200)-_mass = Z(4200)+_mass
+Z(4200)-_width = Z(4200)+_width
+
+X(A)0[SBW]{Z(4200)-{psi(2S)0,pi-},pi+}_Re = X(A)0[SBW]{Z(4200)+{psi(2S)0,pi+},pi-}_Re
+X(A)0[SBW]{Z(4200)-{psi(2S)0,pi-},pi+}_Im = X(A)0[SBW]{Z(4200)+{psi(2S)0,pi+},pi-}_Im
+
+#X(A)0[SBW]{Z(c)(3900)-{psi(2S)0,pi-},pi+}_Re = X(A)0[SBW]{Z(c)(3900)+{psi(2S)0,pi+},pi-}_Re
+#X(A)0[SBW]{Z(c)(3900)-{psi(2S)0,pi-},pi+}_Im = X(A)0[SBW]{Z(c)(3900)+{psi(2S)0,pi+},pi-}_Im

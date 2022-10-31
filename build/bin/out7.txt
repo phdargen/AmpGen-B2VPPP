@@ -1,0 +1,624 @@
+
+[2;31m    █████╗ ███╗   ███╗██████╗  ██████╗ ███████╗███╗   ██╗
+   ██╔══██╗████╗ ████║██╔══██╗██╔════╝ ██╔════╝████╗  ██║
+   ███████║██╔████╔██║██████╔╝██║  ███╗█████╗  ██╔██╗ ██║
+   ██╔══██║██║╚██╔╝██║██╔═══╝ ██║   ██║██╔══╝  ██║╚██╗██║
+   ██║  ██║██║ ╚═╝ ██║██║     ╚██████╔╝███████╗██║ ╚████║
+   ╚═╝  ╚═╝╚═╝     ╚═╝╚═╝      ╚═════╝ ╚══════╝╚═╝  ╚═══╝
+[0m
+[1m                      version 2.1
+        build: gcc 8.3.0  Nov  4 2020 00:14:04[0m
+
+[1m Release notes (v2r1)[0m
+ - Improved cmake configuration to allow installation
+ - Consolidation of Generator and ConvertToSourceCode to single executable 'AmpGen'
+
+[2;34mvoid OptionsParser::import                     INFO         [0mImporting: main_options.txt
+[2;34mvoid OptionsParser::import                     INFO         [0mImporting: modelSel2/best2/model.txt
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+_radius
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{K(2)(1770)+,psi(2S)0}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{K(2)*(1430)+,psi(2S)0}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{X(4274)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{X(4500)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{X(4650)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{X(4675)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{X(4700)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{psi(2S)0,K(1460)+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{psi(4415)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: B+{psi(4660)0,K+}
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1270)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1270)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1400)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1400)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1650)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1)(1650)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1460)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K(1460)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K*(1410)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K*(1410)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K*(1680)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K*(1680)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: K*(892)0_radius
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4274)0_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4274)0_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4500)0_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4500)0_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4650)0_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4650)0_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4700)0_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: X(4700)0_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)A+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)A+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)A-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)A-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)P+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)P+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)P-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)P-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)V+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)V+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)V-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4050)V-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4100)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4100)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4100)-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4100)-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4200)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4200)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4200)-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4200)-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4430)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4430)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4430)-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(4430)-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(c)(3900)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(c)(3900)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(c)(3900)-_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Z(c)(3900)-_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Zs(4260)+_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: Zs(4260)+_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega10_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega10_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega20_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega20_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega30_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega30_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega40_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega40_width
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega50_mass
+[1;35mOptionsParser::import                          WARNING      [0mOverwriting parameter: rhoOmega50_width
+Using random seed = 0
+[2;34mint main                                       INFO         [0mLogFile: modelSel2/best7/log.txt; Plots: modelSel2/best7/result.root
+[2;34mint main                                       INFO         [0mHardware_concurrency 10
+[2;34mint main                                       INFO         [0momp_get_num_procs 10
+[2;34mint main                                       INFO         [0mSetting 10 fixed threads for OpenMP
+[2;34mconst vector<std::__cxx11::basic_string<char>  INFO         [0mUsing built-in AMPGENROOT (set env variable if incorrect): /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/AmpGen/build/bin
+[2;34mvoid EventList::loadFromTree                   INFO         [0mTime to read tree = 219.593[ms]; nEntries = 29580
+[2;34mvoid EventList::loadFromTree                   INFO         [0mTime to read tree = 237.665[ms]; nEntries = 100000
+[2;34mint main                                       INFO         [0mChanging data units from MeV -> GeV
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResA0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResV0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResA0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResV0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[D]{K(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[D]{K(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[D]{K(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[D]{K(1)(1270)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K(1)(1270)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K*(1410)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{K*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(1)(1270)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(1)(1400)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K*(1410)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{K*(1680)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+},psi(2S)0}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{X(4274)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{X(4500)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{X(4650)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{X(4700)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(2S)0,K(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(2S)0,K(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(2S)0,K(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0},K+}
+[2;34mPolarisedSum::PolarisedSum                     INFO         [0mB+{psi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}},K+}
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{K(1)(1650)+,psi(2S)0}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{K(1)(1650)+,psi(2S)0}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{K(2)(1580)+,psi(2S)0}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{K(2)(1580)+,psi(2S)0}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{X(4675)0,K+}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{X(4675)0,K+}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{psi(4360)0,K+}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving B+{psi(4360)0,K+}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.pole.0]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.pole.0]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.pole.1]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.pole.1]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.prod.1]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving PiPi30[kMatrix.prod.1]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega10[GounarisSakurai.Omega]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega10[GounarisSakurai.Omega]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega20[GounarisSakurai.Omega]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega20[GounarisSakurai.Omega]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega30[GounarisSakurai.Omega]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega30[GounarisSakurai.Omega]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega40[GounarisSakurai.Omega]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega40[GounarisSakurai.Omega]{pi+,pi-}_Im
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega50[GounarisSakurai.Omega]{pi+,pi-}_Re
+[2;34mvoid checkAmps                                 INFO         [0mRemoving rhoOmega50[GounarisSakurai.Omega]{pi+,pi-}_Im
+Number of amplitudes = 40
+==============================================
+[2;34mint main                                       INFO         [0mStart fit number 0
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0}_Re                               =       0.2881 ± 0.005106    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0}_Im                               =        144.6 ± 0.005106    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0}_Re                               =       0.1869 ± 0.004648    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0}_Im                               =        137.4 ± 0.004648    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{K*(1410)+,psi(2S)0}_Re                                 =       0.2908 ± 0.005209    [0.000000, 1.500000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{K*(1410)+,psi(2S)0}_Im                                 =         -133 ± 0.005209    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Re =       0.4945 ± 0.01032     [0.000000, 4.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Im =       -75.45 ± 0.01032     [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re            =         0.12 ± 0.009068    [0.000000, 5.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im            =       -12.46 ± 0.009068    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re            =       0.6583 ± 0.006271    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im            =       -63.74 ± 0.006271    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K(1)(1400)+,psi(2S)0}_Re                                  =        0.253 ± 0.006375    [0.000000, 3.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K(1)(1400)+,psi(2S)0}_Im                                  =        156.3 ± 0.006375    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K*(1410)+,psi(2S)0}_Re                                    =       0.1709 ± 0.008444    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K*(1410)+,psi(2S)0}_Im                                    =        91.82 ± 0.008444    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K*(1680)+,psi(2S)0}_Re                                    =       0.3965 ± 0.01012     [0.000000, 3.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{K*(1680)+,psi(2S)0}_Im                                    =       -8.452 ± 0.01012     [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}_Re     =       0.3938 ± 0.005611    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}_Im     =        25.34 ± 0.005611    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re               =       0.3029 ± 0.005106    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im               =       -35.96 ± 0.005106    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Re =       0.1376 ± 0.008025    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Im =       -103.4 ± 0.008025    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Re      =       0.3257 ± 0.004726    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Im      =       -143.6 ± 0.004726    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re                =       0.3193 ± 0.005157    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im                =        54.54 ± 0.005157    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+}_Re              =       0.4908 ± 0.006003    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+}_Im              =       -166.1 ± 0.006003    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Re         =       0.3363 ± 0.005647    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Im         =       -162.4 ± 0.005647    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re                   =       0.2407 ± 0.004592    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im                   =       -174.6 ± 0.004592    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re =       0.2228 ± 0.005575    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im =       -192.3 ± 0.005575    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+}_Re                 =         0.28 ± 0.003655    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+}_Im                 =       -37.78 ± 0.003655    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re =       0.2568 ± 0.00856     [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im =      -0.6577 ± 0.00856     [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+}_Re                   =       0.1838 ± 0.003995    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+}_Im                   =        74.25 ± 0.003995    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re =       0.1601 ± 0.004973    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im =        156.7 ± 0.004973    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re =       0.8082 ± 0.02413     [0.000000, 8.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im =        76.83 ± 0.02413     [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re                  =       0.1916 ± 0.02352     [0.000000, 4.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mK*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im                  =        166.6 ± 0.02352     [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4274)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =       0.3053 ± 0.007041    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4274)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =        121.9 ± 0.007041    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4500)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =        0.204 ± 0.004769    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4500)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =        48.52 ± 0.004769    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4650)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =       0.2524 ± 0.005171    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4650)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =       -209.7 ± 0.005171    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4700)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =       0.2033 ± 0.004493    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mX(4700)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =         -133 ± 0.004493    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Re     =      0.05098 ± 0.003761    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Im     =       -331.7 ± 0.003761    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =       0.1538 ± 0.003951    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =       -327.1 ± 0.003951    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re =      0.05971 ± 0.005086    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im =       -205.1 ± 0.005086    [-360.000000, 360.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Re     =       0.1891 ± 0.004069    [0.000000, 2.000000] [flag=Free]
+[2;34mvoid Minimiser::prepare                        INFO         [0mpsi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Im     =       -81.69 ± 0.004069    [-360.000000, 360.000000] [flag=Free]
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResA0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: NonResV0 does not conserve (electric) charge
+[1;31mvoid Particle::pdgLookup                       ERROR        [0mDecay: B+ does not conserve (electric) charge
+[2;34mFitResult* doFit                               INFO         [0mFitting PDF, iterating width  1 times
+Minuit2Minimizer: Minimize with max-calls 100000 convergence for edm < 1 strategy 1
+Minuit2Minimizer : Valid minimum - status = 0
+FVAL  = -1766.78958915848489
+Edm   = 8.58609184940428991e-06
+Nfcn  = 13999
+B+[D]{K(1)(1270)+,psi(2S)0}_Re	  = 0.336079	 +/-  0.0404068	(limited)
+B+[D]{K(1)(1270)+,psi(2S)0}_Im	  = 181.469	 +/-  10.2541	(limited)
+B+[P]{K(1)(1270)+,psi(2S)0}_Re	  = 0.224145	 +/-  0.067493	(limited)
+B+[P]{K(1)(1270)+,psi(2S)0}_Im	  = 346.834	 +/-  11.4688	(limited)
+B+[P]{K*(1410)+,psi(2S)0}_Re	  = 0.444708	 +/-  0.0314843	(limited)
+B+[P]{K*(1410)+,psi(2S)0}_Im	  = -97.2684	 +/-  5.6746	(limited)
+B+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Re	  = 0.178934	 +/-  0.0598561	(limited)
+B+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Im	  = 87.0687	 +/-  18.1107	(limited)
+B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re	  = 0.155336	 +/-  0.0559772	(limited)
+B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im	  = -88.7015	 +/-  16.953	(limited)
+B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re	  = 0.594164	 +/-  0.0297452	(limited)
+B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im	  = -1.4084	 +/-  6.66739	(limited)
+B+{K(1)(1400)+,psi(2S)0}_Re	  = 0.297535	 +/-  0.0442619	(limited)
+B+{K(1)(1400)+,psi(2S)0}_Im	  = 232.049	 +/-  9.07924	(limited)
+B+{K*(1410)+,psi(2S)0}_Re	  = 0.295103	 +/-  0.0398516	(limited)
+B+{K*(1410)+,psi(2S)0}_Im	  = 176.21	 +/-  9.77008	(limited)
+B+{K*(1680)+,psi(2S)0}_Re	  = 0.527386	 +/-  0.0664576	(limited)
+B+{K*(1680)+,psi(2S)0}_Im	  = 50.8794	 +/-  6.78579	(limited)
+B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}_Re	  = 0.379767	 +/-  0.0279907	(limited)
+B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}_Im	  = 50.685	 +/-  6.40724	(limited)
+B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Re	  = 0.397826	 +/-  0.0401506	(limited)
+B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}_Im	  = 11.5015	 +/-  8.1921	(limited)
+B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Re	  = 0.125384	 +/-  0.0495828	(limited)
+B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}}_Im	  = -55.4862	 +/-  10.5969	(limited)
+K(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Re	  = 0.422237	 +/-  0.0255535	(limited)
+K(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Im	  = -114.202	 +/-  4.53922	(limited)
+K(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re	  = 0.396342	 +/-  0.0289598	(limited)
+K(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im	  = 57.1141	 +/-  3.93537	(limited)
+K(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+}_Re	  = 0.350965	 +/-  0.035577	(limited)
+K(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+}_Im	  = -138.727	 +/-  5.0127	(limited)
+K(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Re	  = 0.40181	 +/-  0.0265449	(limited)
+K(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}_Im	  = -128.771	 +/-  5.71811	(limited)
+K(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re	  = 0.366946	 +/-  0.0222278	(limited)
+K(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im	  = -131.657	 +/-  5.37418	(limited)
+K(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re	  = 0.40845	 +/-  0.0273859	(limited)
+K(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im	  = -160.191	 +/-  5.46819	(limited)
+K(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+}_Re	  = 0.324125	 +/-  0.0246192	(limited)
+K(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+}_Im	  = -17.9259	 +/-  5.10314	(limited)
+K(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re	  = 0.28685	 +/-  0.0366022	(limited)
+K(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im	  = 33.3885	 +/-  6.57409	(limited)
+K(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+}_Re	  = 0.340607	 +/-  0.0222124	(limited)
+K(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+}_Im	  = 91.4365	 +/-  5.5655	(limited)
+K(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re	  = 0.279453	 +/-  0.0258127	(limited)
+K(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im	  = 170.107	 +/-  6.75518	(limited)
+K*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Re	  = 0.947587	 +/-  0.0886488	(limited)
+K*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}_Im	  = 47.4397	 +/-  6.19749	(limited)
+K*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}_Re	  = 0.587942	 +/-  0.131423	(limited)
+K*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}_Im	  = 36.7096	 +/-  9.87634	(limited)
+X(4274)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.549217	 +/-  0.0430222	(limited)
+X(4274)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = 152.169	 +/-  9.4181	(limited)
+X(4500)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.251209	 +/-  0.0293824	(limited)
+X(4500)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = 73.8674	 +/-  6.88089	(limited)
+X(4650)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.312894	 +/-  0.0314163	(limited)
+X(4650)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = -183.202	 +/-  6.02977	(limited)
+X(4700)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.159809	 +/-  0.027439	(limited)
+X(4700)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = -61.8864	 +/-  8.94066	(limited)
+psi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Re	  = 0.0731901	 +/-  0.0236422	(limited)
+psi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Im	  = -273.864	 +/-  15.9346	(limited)
+psi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.157217	 +/-  0.0208174	(limited)
+psi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = -320.25	 +/-  9.09324	(limited)
+psi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Re	  = 0.0496325	 +/-  0.0230194	(limited)
+psi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0}_Im	  = -180.52	 +/-  27.5024	(limited)
+psi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Re	  = 0.146433	 +/-  0.0209159	(limited)
+psi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}_Im	  = -72.7483	 +/-  9.80702	(limited)
+[2;34mFitResult* doFit                               INFO         [0mDone after 1 iteration
+[2;34mFitResult* doFit                               INFO         [0mFit conveged
+[2;34mFitResult* doFit                               INFO         [0mWall time = 358.816
+[2;34mFitResult* doFit                               INFO         [0mCPU  time = 2019.47
+[2;34mint main                                       INFO         [0mFit did improve: LL = -29243 ; min_LL = 99999
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mFit fractions: 
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0}                                     =    25.11 ± 2.15     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(2S)0,K(1460)+}                                        =    10.70 ± 0.73     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}               =     8.47 ± 0.56     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0}                                       =     8.31 ± 1.58     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+}                                              =     7.23 ± 1.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0}                                    =     6.52 ± 0.58     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0}                                    =     5.14 ± 0.43     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0}                                     =     4.48 ± 0.58     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}                  =     3.79 ± 0.58     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}}        =     3.46 ± 0.46     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0}                                       =     2.88 ± 0.84     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0}                                  =     2.77 ± 0.47     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+}                                              =     2.34 ± 0.44     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0}                                     =     2.12 ± 0.59     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+}                                              =     1.51 ± 0.32     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0}                                  =     1.26 ± 0.68     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.76 ± 0.51     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(4415)0,K+}                                            =     0.72 ± 0.17     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+}                                              =     0.61 ± 0.19     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}}               =     0.57 ± 0.39     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(4660)0,K+}                                            =     0.57 ± 0.14     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.37 ± 0.29     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_B+                                                       =    99.79 ± 2.52     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1)(1270)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    96.12 ± 3.98     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1)(1270)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}         =    17.26 ± 2.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1)(1270)+[GSpline]{K*(892)0{K+,pi-},pi+}                   =    15.20 ± 1.84     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1)(1270)+[GSpline]{rho(1450)0{pi+,pi-},K+}                 =    11.93 ± 2.73     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K(1)(1270)+                                              =   140.52 ± 6.61     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    37.40 ± 3.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1460)+[GSpline]{K(0)*(1430)0[LASS]{K+,pi-},pi+}            =    36.20 ± 2.98     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(1460)+[GSpline]{K*(892)0{K+,pi-},pi+}                      =    30.19 ± 2.64     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K(1460)+                                                 =   103.80 ± 1.62     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(2)(1770)+[SBW]{f(2)(1270)0{pi+,pi-},K+}                    =    56.23 ± 5.67     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(2)(1770)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    44.04 ± 5.66     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K(2)(1770)+                                              =   100.28 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(2)*(1430)+[SBW]{K*(892)0{K+,pi-},pi+}                      =    54.08 ± 4.52     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK(2)*(1430)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    36.40 ± 4.22     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K(2)*(1430)+                                             =    90.48 ± 1.11     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK*(1410)+[GSpline]{K*(892)0{K+,pi-},pi+}                     =    72.67 ± 6.22     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK*(1410)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    65.25 ± 6.64     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K*(1410)+                                                =   137.93 ± 1.19     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK*(1680)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+} =    80.27 ± 7.77     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mK*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}                     =    27.75 ± 9.75     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_K*(1680)+                                                =   108.03 ± 4.28     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mpsi(4415)0[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0} =    81.70 ± 10.00    %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mpsi(4415)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}        =    17.70 ± 9.87     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_psi(4415)0                                               =    99.40 ± 0.18     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mpsi(4660)0[SBW]{psi(2S)0,f(0)(980)0[Flatte]{pi+,pi-}}        =    89.34 ± 9.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mpsi(4660)0[P1;SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},psi(2S)0} =    10.26 ± 8.85     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_psi(4660)0                                               =    99.61 ± 0.22     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mInterference fractions: 
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{X(4274)0,K+}                       =     4.20 ± 0.40     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{X(4650)0,K+}                     =    -2.37 ± 0.28     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}                =    -2.04 ± 0.76     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{K(1)(1400)+,psi(2S)0}            =    -1.83 ± 0.50     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} B+{psi(2S)0,K(1460)+} =    -1.70 ± 0.18     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K(1)(1270)+,psi(2S)0}         =     1.50 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K*(1680)+,psi(2S)0} =    -1.42 ± 0.61     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -1.40 ± 0.27     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     1.22 ± 0.20     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K*(1680)+,psi(2S)0} =     1.19 ± 0.40     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(2)*(1430)+,psi(2S)0} =     1.08 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     1.05 ± 0.11     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{X(4274)0,K+}                       =    -1.02 ± 0.33     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{X(4274)0,K+}                  =     0.92 ± 0.34     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{X(4700)0,K+}                     =    -0.78 ± 0.25     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K*(1410)+,psi(2S)0} =     0.76 ± 0.30     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(2S)0,K(1460)+} =    -0.48 ± 0.07     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.43 ± 0.13     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{psi(4415)0,K+}                            =     0.42 ± 0.13     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.40 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4274)0,K+} =     0.40 ± 0.13     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{psi(4415)0,K+}                   =    -0.40 ± 0.16     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(2S)0,K(1460)+} =     0.40 ± 0.12     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{psi(2S)0,K(1460)+}                        =    -0.38 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.37 ± 0.29     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.34 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K*(1410)+,psi(2S)0} =     0.32 ± 0.24     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{X(4650)0,K+}                     =    -0.31 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{X(4274)0,K+} =    -0.30 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.27 ± 0.12     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{X(4650)0,K+}                    =     0.27 ± 0.06     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{X(4700)0,K+}                     =    -0.27 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(1)(1270)+,psi(2S)0} =    -0.23 ± 0.09     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.23 ± 0.10     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{X(4700)0,K+}                    =     0.22 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} B+{psi(4660)0,K+} =    -0.21 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{psi(2S)0,K(1460)+}                        =     0.21 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.20 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{X(4650)0,K+}                     =     0.20 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{X(4700)0,K+}                              =    -0.20 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{psi(2S)0,K(1460)+}               =     0.19 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.19 ± 0.09     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{X(4500)0,K+}                     =     0.18 ± 0.25     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{X(4274)0,K+}                    =     0.18 ± 0.07     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.17 ± 0.08     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{psi(4415)0,K+}                   =    -0.17 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{X(4500)0,K+}                    =     0.17 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{X(4650)0,K+}                  =    -0.16 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{psi(4415)0,K+}                  =     0.16 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.15 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4415)0,K+} =    -0.14 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  =    -0.13 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{psi(4660)0,K+}                   =    -0.11 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{psi(2S)0,K(1460)+}                        =    -0.11 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{psi(4660)0,K+}                   =     0.10 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.10 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K(1)(1400)+,psi(2S)0}         =    -0.10 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{X(4500)0,K+}                     =    -0.10 ± 0.07     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(2)(1770)+,psi(2S)0} =    -0.10 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.10 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K(2)*(1430)+,psi(2S)0} =     0.09 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4660)0,K+} =     0.09 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.09 ± 0.09     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{psi(2S)0,K(1460)+}               =    -0.09 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{psi(2S)0,K(1460)+}               =    -0.08 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.08 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(1)(1400)+,psi(2S)0} =     0.08 ± 0.11     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(2S)0,K(1460)+} =    -0.08 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{psi(4660)0,K+}                  =     0.07 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{psi(2S)0,K(1460)+}            =     0.07 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(2S)0,K(1460)+} B+{psi(4660)0,K+}                      =     0.07 ± 0.07     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} B+{psi(4415)0,K+} =     0.07 ± 0.06     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.05 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(2S)0,K(1460)+} B+{psi(4415)0,K+}                      =    -0.05 ± 0.05     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{psi(4415)0,K+}                   =     0.05 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.04 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4650)0,K+} =     0.04 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{psi(4660)0,K+}                   =    -0.04 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.04 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{psi(4415)0,K+} B+{psi(4660)0,K+}                          =    -0.03 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.03 ± 0.03     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(4415)0,K+} =     0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{X(4500)0,K+}                  =    -0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}             =     0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K(1)(1270)+,psi(2S)0}           =     0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}             =    -0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{psi(2S)0,K(1460)+}              =    -0.03 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.03 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.02 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{psi(2S)0,K(1460)+}                 =    -0.02 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{psi(4415)0,K+}                =    -0.02 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}           =    -0.02 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(1)(1270)+,psi(2S)0} =    -0.02 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.01 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{psi(2S)0,K(1460)+}                 =     0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K(1)(1400)+,psi(2S)0}           =     0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}              =     0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4415)0,K+} =    -0.01 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}           =    -0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.01 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}           =    -0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}           =    -0.01 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}           =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{X(4700)0,K+}                     =     0.00 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{X(4274)0,K+}                    =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{X(4274)0,K+}                  =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  =    -0.00 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+[P]{K*(1410)+,psi(2S)0}        =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4650)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(2)(1770)+,psi(2S)0} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}          =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4415)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}           =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{psi(2S)0,K(1460)+}                        =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{psi(4660)0,K+}                            =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4500)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{X(4700)0,K+}                  =    -0.00 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{K(2)(1770)+,psi(2S)0}            =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.00 ± 0.04     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}        =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4660)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{X(4500)0,K+}                     =     0.00 ± 0.01     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{psi(4660)0,K+}                     =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}              =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{X(4274)0,K+}                     =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{X(4700)0,K+}                    =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K(2)(1770)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{psi(4660)0,K+}                =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4274)0,K+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{X(4500)0,K+}                    =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}           =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K(2)*(1430)+,psi(2S)0}        =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4500)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K(2)(1770)+,psi(2S)0}           =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{X(4274)0,K+}                     =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K(1)(1400)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{psi(4415)0,K+}                            =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1270)+,psi(2S)0} B+{K(2)(1770)+,psi(2S)0}            =    -0.00 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{psi(4660)0,K+}                =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  =    -0.00 ± 0.02     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4700)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{psi(4415)0,K+}                     =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(2)*(1430)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{X(4650)0,K+}                              =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{X(4700)0,K+}                       =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{psi(4415)0,K+}                     =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(4660)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{X(4700)0,K+}                       =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{X(4700)0,K+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K*(1680)+,psi(2S)0} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+{K(2)(1770)+,psi(2S)0}         =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K*(1410)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{psi(4660)0,K+}                     =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(4660)0,K+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{X(4500)0,K+}                  =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{X(4500)0,K+}                       =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{psi(4660)0,K+}                            =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(4660)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{X(4500)0,K+}                       =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+[P]{K*(1410)+,psi(2S)0}        =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{X(4650)0,K+}                    =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K(1)(1270)+,psi(2S)0}         =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4650)0,K+} B+{X(4700)0,K+}                              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4700)0,K+} B+{psi(4415)0,K+}                            =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{psi(2S)0,K(1460)+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(2S)0,K(1460)+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{psi(4415)0,K+}                  =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1680)+,psi(2S)0} B+{X(4650)0,K+}                       =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K(2)(1770)+,psi(2S)0}         =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{X(4650)0,K+}                              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{X(4650)0,K+}                  =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{psi(4415)0,K+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K*(1410)+,psi(2S)0} B+{X(4650)0,K+}                       =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)*(1430)+,psi(2S)0} B+{psi(4660)0,K+}                  =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4500)0,K+} B+{psi(4660)0,K+}                            =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K(0)*(1430)0[LASS]{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(2)(1770)+,psi(2S)0} B+{X(4274)0,K+}                     =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{X(4700)0,K+}                              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[D]{K(1)(1270)+,psi(2S)0} B+[P]{K(1)(1270)+,psi(2S)0}      =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{psi(4415)0,K+}                =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{psi(4415)0,K+}                            =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{K(1)(1400)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}              =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{X(4700)0,K+}                  =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{K(1)(1400)+,psi(2S)0}         =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{X(4650)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{K(1)(1400)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{X(4700)0,K+} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{X(4500)0,K+} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{X(4500)0,K+}                              =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{K(1)(1270)+,psi(2S)0} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+{X(4274)0,K+} B+{psi(4660)0,K+}                            =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResA0{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} B+{Zs(4260)+{psi(2S)0,K+},rho(770)0[GounarisSakurai.Omega]{pi+,pi-}} =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{psi(2S)0,K(1460)+}              =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K*(1680)+,psi(2S)0}             =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K(1)(1270)+,psi(2S)0} B+{psi(2S)0,K(1460)+}            =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{NonResV0{psi(2S)0,pi+},K*(892)0{K+,pi-}} B+[P]{Z(4430)+{psi(2S)0,pi+},K*(892)0{K+,pi-}} =     0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mB+[P]{K*(1410)+,psi(2S)0} B+{K*(1410)+,psi(2S)0}             =    -0.00 ± 0.00     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mSum_B+                                                       =     0.10 ± 1.26     %
+[2;34mvector<FitFraction> PolarisedSum::fitFraction  INFO         [0mReturning: 50 fractions
+[2;34mshared_ptr<BinDT::INode> BinDT::makeNodes      INFO         [0mMaking nodes
+[2;34mshared_ptr<BinDT::INode> BinDT::makeNodes      INFO         [0mTime taken = 28.645 number of nodes = 1024
+[2;34mvoid Chi2Estimator::doChi2                     INFO         [0mSplitting: 29580 data 100000 mc amongst 1024 bins
+[2;34mvoid Chi2Estimator::doChi2                     INFO         [0mBinned 10000 data events
+[2;34mvoid Chi2Estimator::doChi2                     INFO         [0mBinned 20000 data events
+[2;34mvoid FitResult::print                          INFO         [0mChi2 per bin = 1.3103
+[2;34mvoid FitResult::print                          INFO         [0mChi2 per dof = 1.39911
+[2;34mvoid FitResult::print                          INFO         [0m-2LL         = -29243
+[2;34mvoid FitResult::print                          INFO         [0mFit Status   = 0
+[2;34mvoid EventList::loadFromTree                   INFO         [0mTime to read tree = 4418.78[ms]; nEntries = 1999923
+Plotting amp K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ with weight weight_1
+Plotting amp K*(1410)+_K*(1680)+ with weight weight_2
+Plotting amp K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ with weight weight_3
+Plotting amp NonRes with weight weight_4
+Plotting amp Z( with weight weight_5
+Plotting amp Zs with weight weight_6
+Plotting amp X(_psi(4 with weight weight_7
+Plotting amp Xs( with weight weight_8
+Plotting amp  with weight weight
+Fit weights saved
+==============================================
+ Done.  Total time since start 14.4167 min.
+==============================================

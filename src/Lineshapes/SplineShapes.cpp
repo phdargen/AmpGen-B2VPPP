@@ -61,6 +61,7 @@ DEFINE_LINESHAPE( GSpline )
   ADD_DEBUG( runningWidth, dbexpressions );
   ADD_DEBUG( kFactor( mass, width0 ), dbexpressions );
   ADD_DEBUG( BW, dbexpressions );
+    
   return BW;
 }
 

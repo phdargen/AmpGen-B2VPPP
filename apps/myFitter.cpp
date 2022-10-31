@@ -139,15 +139,15 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
         for(int i = 0; i < nPermErrorBands; i++){
             //INFO("sig.norm()" << sig.norm());
             //INFO("sig.prob_unnormalisedNoCache()" << sig.getValNoCache(eventsPlotMC[1]) << endl);
+            gep.perturb();
+            sig.reset();   
+            sig.prepare();
             vector<double> weightsErrTmp;
             for( const auto& evt : eventsPlotMC ){
                 weightsErrTmp.push_back( ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ; 
             }
             
             weightsErrVec.push_back(weightsErrTmp);
-            gep.perturb();
-            sig.reset();   
-            sig.prepare();
         }
         gep.reset();
         sig.reset();   
@@ -209,14 +209,14 @@ void makePlotWeightFile(IncoherentSum& sig, const EventList_type& eventsPlotMC, 
         for(int i = 0; i < nPermErrorBands; i++){
             //INFO("sig.norm()" << sig.norm());
             //INFO("sig.prob_unnormalisedNoCache()" << sig.prob_unnormalisedNoCache(eventsPlotMC[1]) << endl);
+            gep.perturb();
+            sig.reset(false);   
+            sig.prepare();
             vector<double> weightsErrTmp;
             for( const auto& evt : eventsPlotMC ){
                 weightsErrTmp.push_back( ( sig.prob_unnormalisedNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ; 
             }
             weightsErrVec.push_back(weightsErrTmp);
-            gep.perturb();
-            sig.reset(false);   
-            sig.prepare();
         }
         gep.reset();
         sig.reset(false);   
@@ -471,6 +471,8 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
 
     auto threeBodyShapes     = threeBodyCalculators( MPS );
     unsigned int updateWidth = NamedParameter<unsigned int>( "UpdateWidth", 0 );
+    
+    //for ( auto& shape : threeBodyShapes )shape.debug(2,0.5);
     
     //std::vector<TGraph*> rw_old;
     //for( auto& shape : threeBodyShapes ) rw_old.push_back(shape.widthGraph(1.));

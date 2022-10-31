@@ -178,7 +178,7 @@ void Particle::pdgLookup()
   if ( m_name.find( "NonRes" ) != std::string::npos ) isStrong = true;
   m_minL = m_daughters.size() == 2 ? orbitalRange( isStrong ).first : 0;
   if ( m_daughters.size() == 2 ) {
-    DEBUG( "IsStrong ? " << isStrong << " orbital =  " << m_orbital << " minL   =  " << m_minL
+      DEBUG( "IsStrong ? " << isStrong << " orbital =  " << m_orbital << " minL   =  " << m_minL
         << " name   =  " << m_name << " d0     =  " << m_daughters[0]->name()
         << " d1     =  " << m_daughters[1]->name() );
   }
@@ -554,8 +554,8 @@ Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) cons
   return Tensor( std::vector<double>( {1.} ), Tensor::dim(0) );
 }
 
-/*
-std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) const
+
+std::pair<size_t, size_t> Particle::orbitalRangeMod( const bool& conserveParity ) const
 {
   if( m_daughters.size() == 0 ) return {0, 0};
   if( m_daughters.size() == 1 ) return {0, 0};
@@ -563,27 +563,16 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
     ERROR( "L not well defined for nDaughters == " << m_daughters.size() );
     return {999, 998};
   }
-  const int S  = m_props->twoSpin()/2;
-  const int s1 = daughter( 0 )->props()->twoSpin()/2;
-  const int s2 = daughter( 1 )->props()->twoSpin()/2;
-        
-   int min                                  = std::abs( S - s1 - s2 );
-   if ( std::abs( S + s1 - s2 ) < min ) min = std::abs( S + s1 - s2 );
-   if ( std::abs( S - s1 + s2 ) < min ) min = std::abs( S - s1 + s2 );
-   int max                                  = S + s1 + s2;
-    
-  //int min_s12 = std::abs( s1 - s2 );
-  //int max_s12 = std::abs( s1 + s2 );
-        
-  //int min = std::abs( S - min_s12 );
-  //int max = std::abs( S + max_s12 );
-        
-//  for(int i=min_s12;i<=max_s12;i++){
-//                if(std::abs( S - i )< min)  min = std::abs( S - i );
-//                if(std::abs( S + i )> max)  max = std::abs( S + i );
-//  }
-//    
-  DEBUG( "Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S << " s1= " << s1 << " s2= " << s2 );
+  const int S  = m_props->twoSpin();
+  const int s1 = daughter(0)->props()->twoSpin();
+  const int s2 = daughter(1)->props()->twoSpin();
+  int min = std::abs( S - s1 - s2 );
+  min     = std::min(min, std::abs( S + s1 - s2 ));
+  min     = std::min(min, std::abs( S - s1 + s2 ));
+  int max = S + s1 + s2;
+  min /= 2;
+  max /= 2;
+  //INFO( "Name = " << m_name <<  " Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S/2 << " s1= " << s1/2 << " s2= " << s2/2 );
   if ( conserveParity == false ) return {min, max}; 
   int l = min;
   for ( ; l < max + 1; ++l ) if( conservesParity(l) ) break;
@@ -595,26 +584,49 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
   lLimit.second = l;
   return lLimit;
 }
-*/
+
 
 std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) const
 {
     if( m_daughters.size() == 0 ) return {0, 0};
     if( m_daughters.size() == 1 ) return {0, 0};
     if( m_daughters.size() != 2 ) {
-        ERROR( "L not well defined for nDaughters == " << m_daughters.size() );
-        return {999, 998};
+      ERROR( "L not well defined for nDaughters == " << m_daughters.size() );
+      return {999, 998};
     }
     const int S  = m_props->twoSpin();
-    const int s1 = daughter(0)->props()->twoSpin();
-    const int s2 = daughter(1)->props()->twoSpin();
-    int min = std::abs( S - s1 - s2 );
-    min     = std::min(min, std::abs( S + s1 - s2 ));
-    min     = std::min(min, std::abs( S - s1 + s2 ));
-    int max = S + s1 + s2;
+    const int s1 = daughter( 0 )->props()->twoSpin();
+    const int s2 = daughter( 1 )->props()->twoSpin();
+
+    int min_s12 = std::abs( s1 - s2 );
+    int max_s12 = std::abs( s1 + s2 );
+          
+    int min = std::abs( S - min_s12 );
+    int max = std::abs( S + max_s12 );
+              
+    for(int i=min_s12;i<=max_s12;i++){
+                  if(std::abs( S - i )< min)  min = std::abs( S - i );
+                  if(std::abs( S + i )> max)  max = std::abs( S + i );
+    }
+    
+    int minOld = std::abs( S - s1 - s2 );
+    minOld     = std::min(minOld, std::abs( S + s1 - s2 ));
+    minOld     = std::min(minOld, std::abs( S - s1 + s2 ));
+    int maxOld = S + s1 + s2;
+    
     min /= 2;
     max /= 2;
-    DEBUG( "Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " J = " << S << " s1= " << s1 << " s2= " << s2 );
+    minOld /= 2;
+    maxOld /= 2;
+    
+    DEBUG( "Name = " << m_name <<  " Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " 2J = " << S << " 2s1= " << s1 << " 2s2= " << s2 );
+    
+    if( min != minOld || max != maxOld    ){
+        WARNING( "Clash in orbitalRange calculation, please check decay " << m_name << " -> " << daughter( 0 )->props()->name() << " " << daughter( 1 )->props()->name()  << " 2J = " << S << " 2s1= " << s1 << " 2s2= " << s2  );
+        WARNING( "Range set to " << min << " -> " << max );
+        WARNING( "Alternative Range = " << minOld << " -> " << maxOld );
+    }
+    
     if ( conserveParity == false ) return {min, max}; 
     int l = min;
     for ( ; l < max + 1; ++l ) if( conservesParity(l) ) break;
@@ -622,7 +634,7 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
     std::pair<size_t, size_t> lLimit = {l, l};
     l = max;
     for ( ; l != min - 1; --l )
-        if ( conservesParity( l ) ) break;
+      if ( conservesParity( l ) ) break;
     lLimit.second = l;
     return lLimit;
 }

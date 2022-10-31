@@ -1,0 +1,26 @@
+EventType B+ K+ pi+ pi- mu+ mu-
+#EventType B+ K+ pi+ pi- psi(2S)0
+
+nEvents     20000
+Type PolarisedSum
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg
+#PhaseSpace TreePhaseSpace
+PhaseSpace RecursivePhaseSpace
+Normalise 0
+
+Output toy.root
+Seed    2
+
+#Output toy_integration.root
+#Seed    3
+
+normAmps 0
+
+psi(2S)0{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+
+#B+[BgSpin0]{psi(2S)0,K+,pi+,pi-}                                                 0 1 0.001 0  10     0 0.0 0.1 -360 360
+
+#psi(2S)0_width  2   0.05  0.0001
+ParticleProperties::qsThreshold     0.05
+

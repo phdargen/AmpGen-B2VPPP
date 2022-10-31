@@ -76,6 +76,7 @@ DEFINE_LINESHAPE( BW )
   Expression runningWidth                     = width( s_cse, s1, s2, mass, width0, radius, L, dbexpressions );
   const Expression BW = FormFactor / ( mass * mass - s_cse  -1i * mass * runningWidth );
   const Expression kf = kFactor( mass, width0, dbexpressions );
+ 
   ADD_DEBUG( s_cse, dbexpressions );
   ADD_DEBUG( s1, dbexpressions );
   ADD_DEBUG( s2, dbexpressions );
@@ -83,9 +84,7 @@ DEFINE_LINESHAPE( BW )
   ADD_DEBUG( runningWidth, dbexpressions );
   ADD_DEBUG( BW, dbexpressions );
   ADD_DEBUG( kf, dbexpressions );
-  
-    
-    
+      
   return lineshapeModifier == "BELLE2018" ? BW : kf*BW;
 }
 
