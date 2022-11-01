@@ -70,7 +70,8 @@ PolarisedSum::PolarisedSum(const EventType& type,
     for(const auto& pol : prodPols ) polStates.push_back({pol}); 
     for(unsigned i = 0 ; i != type.size(); ++i ) polStates = indexProduct(polStates, polarisations( type[i] ) ); 
     auto protoAmps       = m_rules.getMatchingRules(m_eventType);
-    for(const auto& m : protoAmps ) INFO( m.first.uniqueString() ); 
+    //for(const auto& m : protoAmps ) INFO( m.first.uniqueString() ); 
+    for(const auto& m : protoAmps ) INFO( m.first.uniqueStringFull() ); 
     m_matrixElements.resize( protoAmps.size() );
     for(unsigned i = 0; i < m_matrixElements.size(); ++i)
     {

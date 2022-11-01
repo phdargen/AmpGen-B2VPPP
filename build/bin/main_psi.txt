@@ -116,6 +116,7 @@ CouplingConstant::Coordinates  polar
 CouplingConstant::AngularUnits deg 
 Type PolarisedSum
 "PolarisedSum::InterferenceFractions"  true
+#Particle::SpinBasis Weyl
 
 #"UpdateWidth"   1
 #"nIterations"   2

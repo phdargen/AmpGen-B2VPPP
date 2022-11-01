@@ -204,7 +204,8 @@ namespace AmpGen
 
       std::string uniqueString() const;   ///< Returns the unique string (i.e. decay descriptor) that identifies this decay, which can be parsed to generate the decay tree.
       std::string decayDescriptor() const;///< Returns the unique string (i.e. decay descriptor) that identifies this decay, which can be parsed to generate the decay tree.
-      
+      std::string uniqueStringFull() const;   ///< Returns the unique string (i.e. decay descriptor) that identifies this decay including all angular momentum states, which can be parsed to generate the decay tree.
+
       /// The string that describes the spin/orbital topology of this decay, 
       /// i.e. replacing specific particle names with their spins.
       std::string topologicalString() const;

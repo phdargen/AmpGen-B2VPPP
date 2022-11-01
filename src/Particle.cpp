@@ -176,8 +176,13 @@ void Particle::pdgLookup()
   bool isStrong = quarks() == daughterQuarks();
   if( abs(m_props->pdgID()) == 24 || abs(m_props->pdgID()) == 23 ) isStrong = false; 
   if ( m_name.find( "NonRes" ) != std::string::npos ) isStrong = true;
+  if( !isStrong && !(m_name == "B+" || m_name == "B-") && !isStable() ){
+          //WARNING(m_name << " is weak ?" );
+          isStrong = true;
+  }  
   m_minL = m_daughters.size() == 2 ? orbitalRange( isStrong ).first : 0;
-  if ( m_daughters.size() == 2 ) {
+        
+  if ( m_daughters.size() == 2 ) {      
       DEBUG( "IsStrong ? " << isStrong << " orbital =  " << m_orbital << " minL   =  " << m_minL
         << " name   =  " << m_name << " d0     =  " << m_daughters[0]->name()
         << " d1     =  " << m_daughters[1]->name() );
@@ -266,7 +271,7 @@ std::string Particle::modifierString() const
   auto append = [&modString](const std::string& toAppend){ 
     modString += ( modString == "[" ? toAppend : ";" +toAppend );
   };
-  if ( m_orbital != m_minL || m_spinConfigurationNumber != 0 ) append( orbitalString() );
+  if ( m_orbital != m_minL || m_spinConfigurationNumber != 0 )append( orbitalString() );
   if ( !m_usesDefaultLineshape ) append( m_lineshape );
   std::vector<std::string> otherModifiers = {"BgSpin0", "Inco", "NoSym"};
   for ( auto& mod : otherModifiers ) if ( hasModifier( mod ) ) append(mod) ;
@@ -284,6 +289,30 @@ std::string Particle::makeUniqueString()
     m_uniqueString = m_props->name() + modifier ;
   }
   return m_uniqueString;
+}
+
+std::string Particle::uniqueStringFull() const { 
+    
+    std::string modString = "[";
+    auto append = [&modString](const std::string& toAppend){ 
+      modString += ( modString == "[" ? toAppend : ";" +toAppend );
+    };
+    if ( !isStable() ) append( orbitalString() );
+    if ( !m_usesDefaultLineshape ) append( m_lineshape );
+    std::vector<std::string> otherModifiers = {"BgSpin0", "Inco", "NoSym"};
+    for ( auto& mod : otherModifiers ) if ( hasModifier( mod ) ) append(mod) ;
+    for ( auto& mod : m_modifiers ) if( mod.find("=") != std::string::npos ) append( mod );
+    modString += "]";
+    modString = modString == "[]" ? "" : modString;
+    
+    std::string uniqueString;
+    if ( m_daughters.size() != 0 ) {
+        uniqueString = m_props->name() + modString + "{" + vectorToString( m_daughters, ",", [](auto& d){ return d->uniqueStringFull() ;} ) +"}";
+    } else {
+        uniqueString = m_props->name() + modString ;
+    }
+    
+    return uniqueString;
 }
 
 std::vector<std::shared_ptr<Particle>> Particle::getFinalStateParticles( const bool& sort ) const
@@ -485,7 +514,8 @@ Tensor Particle::spinTensor( DebugSymbols* db ) const
 
 Tensor Particle::externalSpinTensor(const int& polState, DebugSymbols* db ) const
 {
-  DEBUG("Getting final state spin tensor for: " << name() << " " << spin() );
+  DEBUG("Getting final state spin tensor for: " << name() << " " << spin() << " " << m_spinBasis << " " << m_spinFormalism  );
+    
   if ( spin() == 0 )
     return Tensor( std::vector<double>( {1.} ), std::vector<unsigned>( {1} ) );
   if( m_spinBasis == spinBasis::Dirac && ( m_props->isPhoton() || m_props->isNeutrino() ) )
@@ -605,10 +635,9 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
     int max = std::abs( S + max_s12 );
               
     for(int i=min_s12;i<=max_s12;i++){
-                  if(std::abs( S - i )< min)  min = std::abs( S - i );
-                  if(std::abs( S + i )> max)  max = std::abs( S + i );
+        min = std::min(min, std::abs( S - i ));
     }
-    
+          
     int minOld = std::abs( S - s1 - s2 );
     minOld     = std::min(minOld, std::abs( S + s1 - s2 ));
     minOld     = std::min(minOld, std::abs( S - s1 + s2 ));
@@ -622,9 +651,9 @@ std::pair<size_t, size_t> Particle::orbitalRange( const bool& conserveParity ) c
     DEBUG( "Name = " << m_name <<  " Range = " << min << " -> " << max << " conserving parity ? " << conserveParity << " 2J = " << S << " 2s1= " << s1 << " 2s2= " << s2 );
     
     if( min != minOld || max != maxOld    ){
-        WARNING( "Clash in orbitalRange calculation, please check decay " << m_name << " -> " << daughter( 0 )->props()->name() << " " << daughter( 1 )->props()->name()  << " 2J = " << S << " 2s1= " << s1 << " 2s2= " << s2  );
-        WARNING( "Range set to " << min << " -> " << max );
-        WARNING( "Alternative Range = " << minOld << " -> " << maxOld );
+        DEBUG( "Clash in orbitalRange calculation, please check decay " << m_name << " -> " << daughter( 0 )->props()->name() << " " << daughter( 1 )->props()->name()  << " 2J = " << S << " 2s1= " << s1 << " 2s2= " << s2  );
+        DEBUG( "Range set to " << min << " -> " << max );
+        DEBUG( "Alternative Range = " << minOld << " -> " << maxOld );
     }
     
     if ( conserveParity == false ) return {min, max}; 
