@@ -56,7 +56,7 @@ request_disk   = 800000
 #stream_output = True
 #stream_error = True
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(INDIR)/$(LIST), $(INDIR)/$(OPTIONFILE), b2psiKpipi_sw.root, SignalIntegrationEvents_Acc.root, mass_width.csv, MintDalitzSpecialParticles.csv
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(INDIR)/$(LIST), $(INDIR)/$(OPTIONFILE), psi_data_reduced.root, SignalIntegrationEvents_Acc.root, mass_width.csv, MintDalitzSpecialParticles.csv
 arguments = $(Process) main_psi.txt $(OPTIONFILE)
  
 
