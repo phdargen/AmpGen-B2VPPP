@@ -313,6 +313,22 @@ void perturb( MinuitParameterSet& MPS, double sigma = 1)
     }
 }
 
+void vary( MinuitParameterSet& MPS, string& paramName, double sigma = 1)
+{
+    for ( auto& param : MPS ) {
+
+        if ( param->name().find( paramName ) == std::string::npos ) continue;
+            
+        double new_val = param->mean() + param->err() * sigma;
+        INFO("Setting parameter " << paramName << " from " << param->mean() << " to new val = " << new_val);
+        
+        param->setInit(new_val);
+        param->setCurrentFitVal( new_val );
+        return;
+    }
+    ERROR("Paramater " << paramName << " not found");
+}
+
 void scan( MinuitParameterSet& MPS, string name, double min, double max, int step, int nSteps)
 {
     for ( auto& param : MPS ) {
@@ -330,7 +346,8 @@ void sanityChecks(MinuitParameterSet& mps){
 
    for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "cut_dim" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
 
-   //for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos)if(mps[i]->name().find( "::Spline::" ) == std::string::npos){ mps.unregister( mps.at(i)); i=0; }
+   // check 
+   for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
     
    string head = NamedParameter<std::string>("Head","");
    int nBins = 0;
@@ -360,7 +377,7 @@ void sanityChecks(MinuitParameterSet& mps){
    }
     
    for(int i=0;i<mps.size();i++){
-       if(!mps[i]->isFree())continue;
+       if((int)mps[i]->flag()==3)continue;
        if((mps[i]->name().find( "_mass" ) != std::string::npos || mps[i]->name().find( "_width" ) != std::string::npos || mps[i]->name().find( "_alpha" ) != std::string::npos || mps[i]->name().find( "_beta" ) != std::string::npos ) ){
            TString name(mps[i]->name());
            name.ReplaceAll("_mass","");
@@ -897,6 +914,9 @@ int main( int argc, char* argv[])
   std::string tableFile = NamedParameter<std::string>("TableFile", "table.tex", "Name of the output log file");
   std::string modelFile = NamedParameter<std::string>("ModelFile", "model.txt", "Name of the output log file");
   std::string plotFile = NamedParameter<std::string>("ResultsFile", "result.root", "Name of the output plot file");
+    
+  std::string doSystematic = NamedParameter<std::string>("doSystematic", "Baseline");  
+  cout << "Doing systematic " << doSystematic << endl;  
   
   auto normAmps = NamedParameter<bool>("normAmps", 1);
   auto excludeNorm = NamedParameter<std::string>("excludeNorm", std::vector<std::string>()).getVector();
@@ -1032,6 +1052,16 @@ int main( int argc, char* argv[])
       
         sanityChecks(MPS);
         cout << "Number of amplitudes = " << sig.numAmps() << endl;
+      
+        if(doSystematic=="Res"){
+            std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();            
+            int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
+            if(paramIndex >= paramsToVary.size()) FATAL("Nothing to vary");
+        
+            INFO("Have " << paramsToVary.size() << " params to vary +/- 1 sigma " );            
+            vary(MPS,paramsToVary[ paramIndex ], seed < paramsToVary.size() ? -1 : +1);
+            doSystematic += paramsToVary[ paramIndex ] + seed < paramsToVary.size() ? (string) "_m" : (string) "_p"  + "1sigma" ;
+        }
             
         auto ll = make_likelihood(events, sig, bkg);
         sig.prepare();
@@ -1070,9 +1100,7 @@ int main( int argc, char* argv[])
                 sig.prepare();
                 //sig.normaliseAmps(excludeNorm);
             }
-            FitResult* fr = new FitResult();
-            
-            fr = doFit(ll, events, eventsMC, MPS );
+            FitResult* fr = doFit(ll, events, eventsMC, MPS );
             
             if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                 INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
@@ -1111,6 +1139,7 @@ int main( int argc, char* argv[])
             }
             
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+            fr->setSystematic(doSystematic);
             fr->print();
             fr->writeToFile(logFile);
             fr->printToLatexTable(tableFile);

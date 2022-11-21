@@ -69,7 +69,7 @@ log         = $(OUTDIR)/log.log
 
 
 transfer_output_files = result.root, model.txt, log.txt, amp_plots.pdf, amp_plots2.pdf, amp_plots3.pdf
-transfer_output_remaps = "result.root = $(OUTDIR)/result_$(Process).root ; amp_plots.pdf = $(OUTDIR)/amp_plots_$(Process).pdf; amp_plots2.pdf = $(OUTDIR)/amp_plots2_$(Process).pdf; amp_plots3.pdf = $(OUTDIR)/amp_plots3_$(Process).pdf ; model.txt =  $(OUTDIR)/model_$(Process).txt; log.txt = $(OUTDIR)/log_$(Process).txt"
+transfer_output_remaps = "result.root = $(OUTDIR)/result_$(Process).root ; amp_plots.pdf = $(OUTDIR)/amp_plots_$(Process).pdf; amp_plots2.pdf = $(OUTDIR)/amp_plots2_$(Process).pdf; amp_plots3.pdf = $(OUTDIR)/amp_plots3_$(Process).pdf ; model.txt =  $(OUTDIR)/model_$(Process).txt ; log.txt = $(OUTDIR)/log_$(Process).txt"
 
 #transfer_output_files = result.root, model.txt, log.txt, amp_plots2.eps
 #transfer_output_remaps = "result.root = $(OUTDIR)/result_$(Process).root ; amp_plots2.eps = $(OUTDIR)/amp_plots2_$(Process).eps; model.txt =  $(OUTDIR)/model_$(Process).txt; log.txt = $(OUTDIR)/log_$(Process).txt"

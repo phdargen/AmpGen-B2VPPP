@@ -1,0 +1,4 @@
+"doSystematic"  "Acc1"
+IntegrationSample   SignalIntegrationEvents_Acc2.root
+weightMC		weight
+addAmpList		""

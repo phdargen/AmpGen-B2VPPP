@@ -215,10 +215,10 @@ vector<model> selectModel(string dir = "", MinuitParameterSet* mps = 0, int verb
     if(verbose){
         TCanvas* c = new TCanvas("c");    
         h_nll->Draw("h");
-        c->Print((dir+"/"+"n2ll.eps").c_str());  
+        c->Print((dir+"/"+"n2ll.pdf").c_str());  
         
         h_chi2->Draw("h");
-        c->Print((dir+"/"+"chi2.eps").c_str());
+        c->Print((dir+"/"+"chi2.pdf").c_str());
 
         chain->GetEntry(min_i_LL);
         cout << "==============================================" << endl;
@@ -273,9 +273,11 @@ void analyzeModelBuilder(int generation, int nFits, string project_dir){
     chain->SetBranchAddress("nPar",&nPar);
     chain->SetBranchAddress("nAmps",&nAmps);
     chain->SetBranchAddress("seed",&seed);
-    
+    chain->SetBranchAddress("Sum_Bp",&sumFractions);
+
     TCanvas* c = new TCanvas();    
     vector<TGraph*> graphs_chi2;
+    vector<int> bestInGeneration;
     
     int n = 0;
     for (int i=0; i< generation; i++ ) {
@@ -283,30 +285,76 @@ void analyzeModelBuilder(int generation, int nFits, string project_dir){
         double x_gen[nFits];
         double y_chi2[nFits];
         
+        int best = 0;
+        double min_chi2 = 999999.;
+        
         for (int j=0; j< nFits; j++ ) {        
             if(!std::ifstream((project_dir + "/v" + to_string(i) + "/" +resultsFile+"_"+to_string(j)+".root").c_str()).good())continue;
-            n++;
             chain->GetEntry(n);
-            x_gen[j] = (double)i+1.;
-            y_chi2[j] = chi2;          
+            x_gen[j] = (double)i;
+            y_chi2[j] = chi2;     
+            
+            if(chi2 < min_chi2){
+                min_chi2 = chi2;
+                best = n;
+            }
+            n++;
         }
 
         TGraph* g_chi2 = new TGraph(nFits,x_gen,y_chi2); 
         g_chi2->SetMinimum(0.1);
-        g_chi2->SetMaximum(5);
+        g_chi2->SetMaximum(3);
         g_chi2->SetMarkerStyle(20);
         g_chi2->SetMarkerSize(1.2);
         g_chi2->SetMarkerColor(kBlue);
         g_chi2->SetLineColor(kBlue);     
-        g_chi2->GetXaxis()->SetLimits(0,generation+1);
+        g_chi2->GetXaxis()->SetLimits(-0.5,generation+0.5);
         g_chi2->SetTitle(";Iteration ; #chi^{2}/ndf");
         graphs_chi2.push_back(g_chi2);
+        
+        bestInGeneration.push_back(best);
     }
 
     graphs_chi2[0]->Draw("AP");
     for(int i=1; i < graphs_chi2.size(); i++)graphs_chi2[i]->Draw("P");
+    c->Print((project_dir+"/"+"chi2_scanAll.pdf").c_str());
+    
+    double x_best[generation];
+    double y_chi2_best[generation];
+    double y_sumFractions_best[generation];
 
-    c->Print((project_dir+"/"+"chi2_scan.eps").c_str());
+    for (int i=0; i< generation; i++ ){
+        chain->GetEntry(bestInGeneration[i]);
+        
+        x_best[i] = (double)i;
+        y_chi2_best[i] = chi2;  
+        y_sumFractions_best[i] = sumFractions * 100.;  
+    }
+    
+    TGraph* g_chi2 = new TGraph(generation,x_best,y_chi2_best); 
+    g_chi2->SetMinimum(0.5);
+    g_chi2->SetMaximum(3);
+    g_chi2->SetMarkerStyle(20);
+    g_chi2->SetMarkerSize(1.2);
+    g_chi2->SetMarkerColor(kBlue);
+    g_chi2->SetLineColor(kBlue);     
+    g_chi2->GetXaxis()->SetLimits(-0.5,generation+0.5);
+    g_chi2->SetTitle(";Iteration ; #chi^{2}/ndf");
+    g_chi2->Draw("AP");
+    c->Print((project_dir+"/"+"chi2_scan.pdf").c_str());    
+    
+    TGraph* g_sumFractions = new TGraph(generation,x_best,y_sumFractions_best); 
+    g_sumFractions->SetMinimum(0);
+    g_sumFractions->SetMaximum(200);
+    g_sumFractions->SetMarkerStyle(20);
+    g_sumFractions->SetMarkerSize(1.2);
+    g_sumFractions->SetMarkerColor(kBlue);
+    g_sumFractions->SetLineColor(kBlue);     
+    g_sumFractions->GetXaxis()->SetLimits(-0.5,generation+0.5);
+    g_sumFractions->SetTitle(";Iteration ; Sum of fit fractions [%]");
+    g_sumFractions->Draw("AP");
+    c->Print((project_dir+"/"+"sumFrac_scan.pdf").c_str());   
+    
 }
 
 int main(int argc, char* argv[] )
@@ -440,7 +488,7 @@ int main(int argc, char* argv[] )
   INFO("Model building completed after generation " << generation-1);
   INFO("Best model: " << project_dir + "/v" + to_string(bestModel.gen) + "/model_" + to_string(bestModel.id));  
 
-  analyzeModelBuilder(generation-1,100,project_dir);
+  analyzeModelBuilder(generation,100,project_dir);
 
   cout << "==============================================" << endl;
   cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;

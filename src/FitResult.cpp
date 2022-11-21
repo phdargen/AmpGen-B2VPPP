@@ -40,6 +40,7 @@ FitResult::FitResult( const FitResult& other )
   , m_observables( other.observables() )
   , m_fitFractions( other.fitFractions() )
   , m_covarianceMatrix(other.cov())
+  , m_covMapping(other.m_covMapping )
 {
 }
 
@@ -73,7 +74,7 @@ FitResult::FitResult( MinuitParameterSet& mps, const TMatrixD& covMini ) : m_mps
   }
 }
 
-bool FitResult::readFile( const std::string& fname )
+bool FitResult::readFile( const std::string& fname, bool verbose )
 {
   std::ifstream checkIsClosed( fname );
   if ( !checkIsClosed.is_open() 
@@ -92,16 +93,18 @@ bool FitResult::readFile( const std::string& fname )
     else if ( name == "FitQuality" )  this->setFitQuality( line );
     else if ( name == "FitFraction" ) this->m_fitFractions.emplace_back(line);
     else if ( name == "Observable" )  this->addToObservables( line );
+    else if ( name == "Systematic" )  this->setSystematic( line );
   }
   size_t nParameters = parameterLines.size();
   m_covarianceMatrix.ResizeTo( parameterLines.size(), parameterLines.size() );
   for (size_t i = 0; i < nParameters; ++i ) {
     auto tokens             = split( parameterLines[i], ' ' );
     m_covMapping[tokens[1]] = i;
-    INFO(tokens[1]);
+    if(verbose)INFO(tokens[1]);
     m_mps->add( new MinuitParameter( tokens[1], parse<Flag>(tokens[2]), stod( tokens[3] ), stod( tokens[4] ), 0, 0 ) );
     for (size_t j = 0; j < nParameters; ++j ) m_covarianceMatrix( i, j ) = stod( tokens[5 + j] );
   }
+      
   return true;
 }
 
@@ -173,6 +176,7 @@ void FitResult::writeToFile( const std::string& fname )
     outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
     for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
     for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
+    outlog << "Systematic " << m_sys << "\n";
     outlog << "End Log\n";
     outlog.close();
 }
@@ -548,7 +552,18 @@ double FitResult::dof() const { return m_nBins - m_nParam - 1; }
 std::vector<FitFraction> FitResult::fitFractions() const { return m_fitFractions; }
 TMatrixD FitResult::cov() const { return m_covarianceMatrix; }
 double FitResult::cov( const size_t& x, const size_t& y ) const { return m_covarianceMatrix( x, y ); }
-double FitResult::cov( const std::string& x, const std::string& y ) const { return m_covarianceMatrix( m_covMapping.at(x), m_covMapping.at(y) ); }
+double FitResult::cov( const std::string& x, const std::string& y ) const 
+{
+  auto tx = m_covMapping.find(x);
+  auto ty = m_covMapping.find(y);
+  if( tx == m_covMapping.end() || ty == m_covMapping.end() ){
+    ERROR("Parameter not found: " << x << ", " << y );
+    for (const auto& [key, value] : m_covMapping)
+          std::cout << '[' << key << "] = " << value << "; ";
+    return -1;
+  }
+  return cov(tx->second, ty->second);
+}
 
 void FitResult::addFraction( const std::string& name, const double& frac, const double& err )
 {

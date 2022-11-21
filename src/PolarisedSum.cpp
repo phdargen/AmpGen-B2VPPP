@@ -422,6 +422,9 @@ Expression PolarisedSum::probExpression(const Tensor& T_matrix, const std::vecto
   ADD_DEBUG_TENSOR(rho, db);
   ADD_DEBUG_TENSOR(TT , db);
   Expression rt = rho(a,b) * TT(b,a);
+    
+    
+    
   return Real(rt);  
 }
 

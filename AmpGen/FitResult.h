@@ -30,6 +30,7 @@ namespace AmpGen
     void addFractions( const std::vector<FitFraction>& fractions );
     void addFraction( const std::string& name, const double& frac, const double& err );
     void setCov( const size_t& x, const size_t& y, const double& F );
+    void setSystematic( const std::string& sys ){ m_sys = sys;}  
     void writeToFile( const std::string& fname );
     void writeToFileMod( const std::string& fname );
     void writeToOptionsFile( const std::string& fname );
@@ -42,7 +43,7 @@ namespace AmpGen
 
     void clearFitFractions();
 
-    bool readFile( const std::string& fname );
+    bool readFile( const std::string& fname, bool verbose = false );
 
     double chi2() const;
     double LL()   const;
@@ -76,6 +77,7 @@ namespace AmpGen
     double                              m_nParam = {0};
     int                                 m_status = {-1};
     bool                                m_fitted = {false};
+    std::string                         m_sys    = {""};  
     std::map<std::string, double>       m_observables;
     std::vector<FitFraction>            m_fitFractions;
     TMatrixD                            m_covarianceMatrix;
