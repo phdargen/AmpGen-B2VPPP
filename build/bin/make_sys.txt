@@ -2,7 +2,7 @@
 
 "includeSys" "Acc" "Bkg" "FF" "NR" "LS" "Res" "AltAmp"
 #"includeSys" "Acc" "Bkg" "FF" "LS" "Res" 
-#"includeSys" "AltAmp" 
+#"includeSys" "Bkg" 
 
 "sysNameAcc" "Acc"
 "sysFilesAcc" "sys/log_sys_acc" 1 6
@@ -10,7 +10,7 @@
 
 "sysNameBkg" "Bkg."
 "sysFilesBkg" "sys/log_sys_bkg" 1 3
-"sysMethodBkg" "Var"
+"sysMethodBkg" "Diff"
 
 "sysNameFF" "Form Factors"
 "sysFilesFF" "sys/log_sys_ff" 1 5
@@ -24,10 +24,10 @@
 "sysFilesLS" "sys/log_sys_ls" 1 5
 "sysMethodLS" "Var"
 
-"sysNameRes" "$m,\\Gamma$"
+"sysNameRes" "$m,\Gamma$"
 "sysFilesRes" "sys/log_sysVary_res_" 0 27
-"sysMethodRes" "Var"
+"sysMethodRes" "Diff"
 
 "sysNameAltAmp" "Alt. Amp."
 "sysFilesAltAmp" "modelSelNoExotic/v14/log_" 1 50
-"sysMethodAltAmp" "Var"
+"sysMethodAltAmp" "Bias"

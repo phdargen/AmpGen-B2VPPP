@@ -28,7 +28,6 @@
 using namespace std;
 using namespace AmpGen;
 
-
 void regulateParameters( FitResult& fr ){  
   auto params = fr.parameters();
   vector< pair<size_t,size_t > > amplitude_parameters; 
@@ -93,58 +92,6 @@ void EnsureRing( const FitResult& fit, const FitResult& starterFit ){
     }
     other_param->setCurrentFitVal( form_ring( other_param->mean(), param->mean() ) );
   }
-}
-
-template< typename InputIterator, typename ReturnType = double , typename InputType = typename remove_pointer<decltype(declval<InputIterator>().p)>::type > 
-    pair<ReturnType,ReturnType> auto_stat( InputIterator first, InputIterator last,  const function<ReturnType(const InputType&)>& func, const function<double(const InputType&)>& wf = nullptr ){
-    ReturnType x=0;
-    ReturnType xx=0;
-    double N=0;
-    while( first != last ){
-        ReturnType f = func(*first);
-        double weight = wf == nullptr ? 1 : wf(*first);
-        x+=f * weight;
-        xx+=f*f * weight ;
-        N+=weight;
-        ++first;
-    }
-    x/=N;
-    xx = xx/N -x*x;
-    return pair<ReturnType,ReturnType>(x,sqrt(xx));
-}
-
-void sanityChecks(MinuitParameterSet& mps){
-   for(int i=0;i<mps.size();i++){
-       if((mps[i]->name().find( "_mass" ) != string::npos || mps[i]->name().find( "_width" ) != string::npos || mps[i]->name().find( "_alpha" ) != string::npos || mps[i]->name().find( "_beta" ) != string::npos ) ){
-
-               INFO("Found " << mps[i]->name() << ", remove it from MinuitParameterSet");
-               mps.unregister(mps[i]);  
-               i=0;                
-           }
-    }
-}  
-
-
-
-TMatrixD diffMethod( const vector<FitResult>& fits, const FitResult& starterFit){
-  auto params = starterFit.floating();
-  TMatrixD covMatrix( params.size(), params.size() );
-  
-  //vector<pair<double,double>> mean_test;
-  for( unsigned int i = 0 ; i < params.size(); ++i ){
-    string name_i = params[i]->name();
-      
-    function<double(const FitResult& f)> getMean = [&](const FitResult& f){ return f.mps()->find(name_i)->mean() ; };
-    function<double(const FitResult& f)> getErr = [&](const FitResult& f){ return f.mps()->find(name_i)->err() ; };
-    auto meanAndSigma = auto_stat( fits.begin(), fits.end(), getMean ); 
-      
-    covMatrix(i,i) = pow( meanAndSigma.first - params[i]->mean() ,2 );
-    if( params[i]->isFree() ){
-      INFO( params[i]->name() << "   " << params[i]->mean() << " +/- " << params[i]->err() << "; Mean = "  << meanAndSigma.first  <<  " sigma_sys/sigma_stat = " << sqrt( covMatrix(i,i) ) / params[i]->err()  );
-    }
-    //mean_test.push_back( meanAndSigma );
-  }
-  return covMatrix; 
 }
 
 
@@ -230,189 +177,61 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
     return vector<TMatrixD>({covMatrix,covMatrix_frac}); 
 }
 
-TMatrixD covMethod( const vector<FitResult>& fits, const FitResult& starterFit ){
-      
-  auto params = starterFit.floating();
-  TMatrixD SIGMA( params.size(), params.size() );
-  TVectorD param_vector( params.size() );
-    
-  for( size_t iFit = 0; iFit<fits.size();++iFit ){
-    auto& fit = fits[iFit];
-    TMatrixD rc( params.size(), params.size() );
+vector<TMatrixD> diffMethod(const FitResult& fit1, const FitResult& fit2, const FitResult& starterFit){
+
+    // Fit parameters    
+    auto params = starterFit.floating();
+    TMatrixD covMatrix( params.size(), params.size() );
+
     for( unsigned int i = 0 ; i < params.size(); ++i ){
-      for( unsigned int j = 0 ; j < params.size(); ++j ){
-          rc(i,j) =  fit.cov( params[i]->name(), params[j]->name() );
-      }
-    }
-    auto irc = rc.Invert();
-    SIGMA += irc; 
-    TVectorD xvec( params.size() );
-    for( unsigned int i = 0 ; i < params.size(); ++i){
-      xvec[i] = fit.mps()->find( params[i]->name() )->mean();
-    }
-    param_vector += irc * xvec ;
-  }
+      string name_i = params[i]->name();
+
+      double val1 = 0;
+      auto params_fit1 = fit1.floating();
+      for(auto& p: params_fit1) 
+          if(name_i == p->name() ) val1 = p->mean();    
+
+      double val2 = 0;
+      auto params_fit2 = fit2.floating();
+      for(auto& p: params_fit2) 
+          if(name_i == p->name() ) val2 = p->mean();    
       
-  auto M_matrix = SIGMA.Invert();
-  TVectorD combined_vector = M_matrix * param_vector;
- 
-  //auto allParameters = starterFit.parameters();
-  auto allParameters = starterFit.floating();
-  auto size = allParameters.size();
-  
-  vector<int> floatingToFull( params.size() , -1 );
-  vector<double> diagonalErrors( params.size() ,0);
-  for( size_t i = 0 ; i < params.size(); ++i ){
-    double param  = params[i]->mean();
-    double effSys = combined_vector[i];
-    diagonalErrors[i] = (param-effSys)*(param-effSys);
-    //INFO( params[i]->name() << " " << param << " " << effSys << " " << params[i]->err() );
-    for( size_t j = 0 ; j < allParameters.size(); ++j ){
-      if( allParameters[j]->name() == params[i]->name() ){
-        floatingToFull[i] = j;
-        break;
-      }
-    }
-    if( floatingToFull[i] == -1 ){
-      ERROR("Parameter: " << params[i]->name() << " not found in full covariance matrix");
-    }
-    auto paramName = params[i]->name();
-    //auto hist = auto_histogram( fits, [&paramName](auto& fit){ return fit.parameter(paramName )->mean() ; } , paramName+"_regulated" ,50);
-    //hist->Write();
-    //delete hist;
-  }
-  auto reducedCovariance = starterFit.getReducedCovariance();
-  TMatrixD covMatrix( size, size );
-      
-  for( size_t i = 0 ; i < params.size(); ++i){
-    for( size_t j = 0 ; j < params.size(); ++j){
-      covMatrix(floatingToFull[i],floatingToFull[j]) =  reducedCovariance(i,j) * sqrt( diagonalErrors[i] * diagonalErrors[j] ) / sqrt( reducedCovariance(i,i) * reducedCovariance(j,j) ); 
-    }
-    auto param = params[i];
-    double cov = sqrt( covMatrix( floatingToFull[i] , floatingToFull[i] ) );
-    /*  
-    INFO( setw(60) << left << param->name() << " " << setprecision(4) 
-        << setw(10) <<  right << round(  param->mean(),4) << " ± " 
-        << setw(8) <<  round( param->err() ,4) << " ± " 
-        << setw(8) <<  round(  cov ,4) << " ( " 
-        << setw(8) << round( cov /  param->err() ,4) << " %)" );
-     */
-  }
-  return covMatrix; 
-}
+      if(val1==0 || val2==0){
+          ERROR("Parameter " << name_i << " not found ");
+          covMatrix(i,i) = 0;
+          continue;
+      }          
+      //INFO(name_i << " val1 = " << val1 << " val2 = " << val2 << " diff " <<  (val1-val2)/2. );  
+      covMatrix(i,i) = pow((val1-val2)/2.,2);
+    }  
 
-TMatrixD combMethod( const vector<FitResult>& fits ){
-  const FitResult& f0 = fits[0];
-  sanityChecks(*f0.mps());  
-  auto mps = f0.floating();
+    // Fit fractions
+    auto fracs = starterFit.fitFractions();
+    TMatrixD covMatrix_frac( fracs.size(), fracs.size() );
 
-  vector<double> means( mps.size(), 0 ); 
-  vector<string> names (mps.size(), "");
-  INFO("nParameters = " << mps.size() );
+    for( unsigned int i = 0 ; i < fracs.size(); ++i ){
+        string name_i = fracs[i].name();          
+
+        double val1 = 0;
+        auto fracs_fit1 = fit1.fitFractions();
+        for(auto& f: fracs_fit1) 
+            if(name_i == f.name() ) val1 = f.val();    
+
+        double val2 = 0;
+        auto fracs_fit2 = fit2.fitFractions();
+        for(auto& f: fracs_fit2) 
+            if(name_i == f.name() ) val2 = f.val();    
+        
+        if(val1==0 || val2==0){
+            ERROR("Fit fraction " << name_i << " not found ");
+            covMatrix_frac(i,i) = 0;
+            continue;
+        }          
+        covMatrix_frac(i,i) = pow((val1-val2)/2.,2);
+    }
     
-  vector< vector<MinuitParameter* > > params(  mps.size(), vector<MinuitParameter*>(fits.size(),0) );
-  for( size_t x = 0 ; x < mps.size(); ++x){
-    names[x] = mps[x]->name();
-    for( size_t iFit = 0; iFit < fits.size() ;++iFit ){
-      params[x][iFit] = fits[iFit].mps()->find( names[x] );
-      means[x] += params[x][iFit]->mean();
-    }
-    means[x] /= double( fits.size() );
-  }
-  INFO("Calculated means, calculating covariance matrix");
-  TMatrixD covMatrix( means.size(), means.size() );
-  for( unsigned int i = 0 ; i < means.size(); ++i){ 
-    auto   name_i = names[i];
-    double val_i  = means[i];
-    for( size_t j = 0 ; j < means.size(); ++j ){
-      auto   name_j = names[j]; 
-      double val_j  = means[j];
-      for( size_t iFit = 0 ; iFit < fits.size(); ++iFit ){
-        covMatrix(i,j) += 
-          ( params[i][iFit]->mean() - val_i )*( params[j][iFit]->mean() - val_j );
-      }
-    }
-  }
-  for( unsigned int i = 0 ; i < means.size(); ++i ){
-    for( unsigned int j = 0 ; j < means.size(); ++j ){
-      covMatrix(i,j) = covMatrix(i,j) / double( fits.size() );
-    }
-  }
-  return covMatrix; 
+    return vector<TMatrixD>({covMatrix,covMatrix_frac}); 
 }
-
-
-/*
-void doAnalysis(const vector<Fit>& fits, const Fit& starterFit ){
-  INFO("Doing systematic analysis");
-  Fit& mutable_fit = const_cast<Fit&>(starterFit) ; /// evil hack /// 
-  auto params = starterFit.fitResult().floating();
-  regulateParameters( mutable_fit.fitResultMutable() );
-  for( auto& fit : fits ){
-    Fit& this_mutable_fit = const_cast<Fit&>(fit) ; /// evil hack /// 
-    regulateParameters( this_mutable_fit.fitResultMutable()  );
-    EnsureRing( fit, starterFit );   
-  }
-  string mode = NamedParameter<string>("Mode","Combine"); // sigma or diff ///
-  INFO("Mode = " << mode );
-  const FitResult& fr = mode=="Combine"? fits[0].fitResult() : starterFit.fitResult();
-  size_t     size     = fr.mps()->size();
-  TMatrixD covMatrix( size, size );
-  if( mode == "Combine" ){
-    INFO("Using mode combine");
-    covMatrix = combMethod( fits, starterFit );
-  }
-  else if( mode == "Diff"    ) covMatrix = diffMethod( fits, starterFit );
-  else if( mode == "Cov"     ){
-    covMatrix = CovMethod(  fits, starterFit );
-  }
-  else {
-    ERROR("Systematic derivation : " << mode << " not recognised"); 
-  }
-  AmpGen::MinuitParameterSet output_params; 
-  for( unsigned int i = 0 ; i < size ; ++i){
-    auto iparam = fr.parameters()[i];
-    string paramName = iparam->name();
-    function<double(const Fit& fit)> val = [&paramName](const Fit& fit){ return fit.parameter(paramName)->mean(); };
-    function<double(const Fit& fit)> err = [&paramName](const Fit& fit){ return fit.parameter(paramName)->err(); };
-    pair<double,double> mu = auto_stat( fits.begin(), fits.end(),val);
-    pair<double,double> sig = auto_stat( fits.begin(), fits.end(),err);
-    double error = sqrt( covMatrix(i,i) );
-    AmpGen::MinuitParameter* param = 
-      new MinuitParameter(paramName, iparam->flag(), mu.first, error , iparam->minInit(), iparam->maxInit() );
-    output_params.add( param);
-    
-    INFO( setw(60) << left << param->name() << " " << setprecision(4) 
-        << setw(10) <<  right << round(  param->mean(),4) << " ± " 
-        << setw(8) <<  round( sig.first ,4) << " ± " 
-        << setw(8) <<  round(  sqrt( covMatrix(i,i)  ),4) << " ( " 
-        << setw(8) << round( sqrt(covMatrix(i,i) )  / sig.first,4) << " %)" );
-    
-    //auto hist = auto_histogram( fits, [&paramName](auto& fit){ return fit.parameter(paramName )->mean() ; } , paramName ,50);
-    //hist->Write();
-    //delete hist;
-  }
-  AmpGen::FitResult output( output_params, covMatrix );
-  if( NamedParameter<bool>("CalculateFractions",0)==1 ){
-    for( auto& ff : starterFit.processes() ){
-      auto name = ff.first; 
-      function<double(const Fit& fit)> frac = [&name](const Fit& fit){ return fit.fraction(name)->val(); };
-      pair<double,double> mus = auto_stat( fits.begin(), fits.end(),frac);
-      output.addFraction( name, mus.first, mus.second ); 
-    }
-  }
-  function<double(const Fit&)> LL_func = [](auto& fit){ return fit.likelihood() ; };
-  auto    chi2 = [](auto& fit){ return fit.fitResult().chi2(); };
-  //double avg_ll = auto_stat( fits.begin(), fits.end(), LL_func ).first;
-  //auto dLL_func = [&avg_ll](auto& fit){ return fit.likelihood() - avg_ll; };
-  
-//  auto_histogram( fits, LL_func, "delta_LL",50 )->Write();
-//  auto_histogram( fits, chi2, "chi2",50)->Write();
-//  string outputFile = AmpGen::NamedParameter<string>("Project","").getVal()+"/results.dat";
-  output.writeToFile(outputFile);
-}
-*/
-
 
 void analyzeResults(){
 
@@ -454,8 +273,45 @@ void analyzeResults(){
 
         vector<TMatrixD> cov({TMatrixD(params.size(),params.size()),TMatrixD(fracs.size(),fracs.size())});
         if(sysFiles.size()>0){
-            cov = sampleVarMethod(fits,starterFit,sysMethod);
-            cout <<  sys << " systematic with method " << sysMethod << endl;
+            cout << "Calculating " <<  sys << " systematic with method " << sysMethod << endl;
+            
+            if(sys=="Res" && sysMethod=="Diff"){
+                TMatrixD covMatrix( params.size(), params.size() );
+                TMatrixD covMatrix_frac( fracs.size(), fracs.size() );
+                for(unsigned int i=0; i < fits.size()/2 ; i++ ){
+                    auto tmp = diffMethod(fits[i],fits[i+fits.size()/2],starterFit);
+                    covMatrix += tmp[0];
+                    covMatrix_frac += tmp[1];   
+                    /*
+                    for( unsigned int j = 0 ; j < params.size() ; ++j)
+                        if(j==6){
+                            cout << i << " " << i+fits.size()/2 << endl;
+                            cout << sqrt(tmp[0][j][j])/params[j]->err() << endl;
+                        }
+                     */
+                }
+                cov = vector<TMatrixD>({covMatrix,covMatrix_frac});
+            }
+            
+            else if(sys=="Bkg" && sysMethod=="Diff"){
+                TMatrixD covMatrix( params.size(), params.size() );
+                TMatrixD covMatrix_frac( fracs.size(), fracs.size() );
+                
+                auto tmp = diffMethod(fits[0],fits[1],starterFit);
+                covMatrix += tmp[0];
+                covMatrix_frac += tmp[1];   
+                
+                fits.erase(fits.begin());
+                fits.erase(fits.begin());                
+                tmp = sampleVarMethod(fits,starterFit,"Bias");
+                covMatrix += tmp[0];
+                covMatrix_frac += tmp[1];   
+
+                cov = vector<TMatrixD>({covMatrix,covMatrix_frac});
+            }
+                
+            else cov = sampleVarMethod(fits,starterFit,sysMethod);
+            
             cout <<  "Fit parameters " << endl;    
             for( unsigned int i = 0 ; i < params.size() ; ++i){
                   INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
@@ -480,219 +336,7 @@ void analyzeResults(){
         }   
     
     }
-        
-    /*
-    // Bkg  
-    auto sysFilesBkg = NamedParameter<string>("sysFilesBkg", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodBkg = NamedParameter<string>("sysMethodBkg", "Diff");
-
-    vector<FitResult> fitsBkg;  
-    for(unsigned int i = 1 ; i <= stoi(sysFilesBkg[1]) ; ++i){
-        FitResult fr(sysFilesBkg[0] + to_string(i)+".txt");
-        EnsureRing( fr, starterFit );    
-        fitsBkg.push_back(fr);
-    }
-
-    TMatrixD covBkg(params.size(),params.size());
-    if(sysMethodBkg=="Diff"){
-        covBkg = diffMethod( fitsBkg, starterFit);
-    }
-    else if(sysMethodBkg=="Comb"){
-        covBkg = combMethod( fitsBkg);
-    }
-    else if(sysMethodBkg=="Cov"){
-        covBkg = covMethod( fitsBkg, starterFit);
-    }
-
-    // Print output  
-    INFO(endl << "Bkg systematic");
-    for( unsigned int i = 0 ; i < params.size() ; ++i){
-        
-        INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-            << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-            << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-            << setw(8) <<  round(  sqrt( covBkg(i,i)  ),4) << " ( " 
-            << setw(8) << round( sqrt(covBkg(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-        
-    }  
-    
-    // FF  
-    auto sysFilesFF = NamedParameter<string>("sysFilesFF", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodFF = NamedParameter<string>("sysMethodFF", "Diff");
-
-    vector<FitResult> fitsFF;  
-    for(unsigned int i = 1 ; i <= stoi(sysFilesFF[1]) ; ++i){
-        FitResult fr(sysFilesFF[0] + to_string(i)+".txt");
-        EnsureRing( fr, starterFit );    
-        fitsFF.push_back(fr);
-    }
-
-    TMatrixD covFF(params.size(),params.size());
-    if(sysMethodFF=="Diff"){
-        covFF = diffMethod( fitsFF, starterFit);
-    }
-    else if(sysMethodFF=="Comb"){
-        covFF = combMethod( fitsFF);
-    }
-    else if(sysMethodFF=="Cov"){
-        covFF = covMethod( fitsFF, starterFit);
-    }
-
-    // Print output  
-    INFO(endl << "FF systematic");
-    for( unsigned int i = 0 ; i < params.size() ; ++i){
-        
-        INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-            << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-            << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-            << setw(8) <<  round(  sqrt( covFF(i,i)  ),4) << " ( " 
-            << setw(8) << round( sqrt(covFF(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-        
-    }  
-    
-    // NR  
-    auto sysFilesNR = NamedParameter<string>("sysFilesNR", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodNR = NamedParameter<string>("sysMethodNR", "Diff");
-
-    if(sysFilesNR.size()>0){
-
-        vector<FitResult> fitsNR;  
-        for(unsigned int i = 1 ; i <= stoi(sysFilesNR[1]) ; ++i){
-            FitResult fr(sysFilesNR[0] + to_string(i)+".txt");
-            EnsureRing( fr, starterFit );    
-            fitsNR.push_back(fr);
-        }
-
-        TMatrixD covNR(params.size(),params.size());
-        if(sysMethodNR=="Diff"){
-            covNR = diffMethod( fitsNR, starterFit);
-        }
-        else if(sysMethodNR=="Comb"){
-            covNR = combMethod( fitsNR);
-        }
-        else if(sysMethodNR=="Cov"){
-            covNR = covMethod( fitsNR, starterFit);
-        }
-
-        // Print output
-        INFO(endl << "NR systematic");
-        for( unsigned int i = 0 ; i < params.size() ; ++i){
-            INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-                << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-                << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-                << setw(8) <<  round(  sqrt( covNR(i,i)  ),4) << " ( " 
-                << setw(8) << round( sqrt(covNR(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-            
-        }  
-        covTot += covNR; 
-    }
-    
-    // Resonances  
-    auto sysFilesRes = NamedParameter<string>("sysFilesRes", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodRes = NamedParameter<string>("sysMethodRes", "Diff");
-
-    vector<FitResult> fitsRes;  
-    for(unsigned int i = 0 ; i < stoi(sysFilesRes[1]) ; ++i){
-        FitResult fr(sysFilesRes[0] + to_string(i)+".txt");
-        EnsureRing( fr, starterFit );    
-        fitsRes.push_back(fr);
-    }
-
-    TMatrixD covRes(params.size(),params.size());
-    if(sysMethodRes=="Diff"){
-        covRes = diffMethod( fitsRes, starterFit);
-    }
-    else if(sysMethodRes=="Comb"){
-        covRes = combMethod( fitsRes);
-    }
-    else if(sysMethodRes=="Cov"){
-        covRes = covMethod( fitsRes, starterFit);
-    }
-
-    // Print output
-    INFO(endl << "Res systematic");
-    for( unsigned int i = 0 ; i < params.size() ; ++i){
-        
-        INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-            << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-            << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-            << setw(8) <<  round(  sqrt( covRes(i,i)  ),4) << " ( " 
-            << setw(8) << round( sqrt(covRes(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-        
-    }  
-    
-    // LS  
-    auto sysFilesLS = NamedParameter<string>("sysFilesLS", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodLS = NamedParameter<string>("sysMethodLS", "Diff");
-
-    vector<FitResult> fitsLS;  
-    for(unsigned int i = 1 ; i <= stoi(sysFilesLS[1]) ; ++i){
-        FitResult fr(sysFilesLS[0] + to_string(i)+".txt");
-        EnsureRing( fr, starterFit );    
-        fitsLS.push_back(fr);
-    }
-
-    TMatrixD covLS(params.size(),params.size());
-    if(sysMethodLS=="Diff"){
-        covLS = diffMethod( fitsLS, starterFit);
-    }
-    else if(sysMethodLS=="Comb"){
-        covLS = combMethod( fitsLS);
-    }
-    else if(sysMethodLS=="Cov"){
-        covLS = covMethod( fitsLS, starterFit);
-    }
-
-    // Print output
-    INFO(endl << "LS systematic");
-    for( unsigned int i = 0 ; i < params.size() ; ++i){
-        
-        INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-            << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-            << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-            << setw(8) <<  round(  sqrt( covLS(i,i)  ),4) << " ( " 
-            << setw(8) << round( sqrt(covLS(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-        
-    }  
-    
-    // Alt models  
-    auto sysFilesAltAmp = NamedParameter<string>("sysFilesAltAmp", vector<string>()).getVector(); // basename, number of files
-    auto sysMethodAltAmp = NamedParameter<string>("sysMethodAltAmp", "Diff");
-    TMatrixD covAltAmp(params.size(),params.size());
-
-    if(sysFilesAltAmp.size()>0){
-        vector<FitResult> fitsAltAmp;  
-        for(unsigned int i = 0 ; i < stoi(sysFilesAltAmp[1]) ; ++i){
-            FitResult fr(sysFilesAltAmp[0] + to_string(i)+".txt");
-            EnsureRing( fr, starterFit );    
-            fitsAltAmp.push_back(fr);
-        }
-
-        if(sysMethodAltAmp=="Diff"){
-            covAltAmp = diffMethod( fitsAltAmp, starterFit);
-        }
-        else if(sysMethodAltAmp=="Comb"){
-            covAltAmp = combMethod( fitsAltAmp);
-        }
-        else if(sysMethodAltAmp=="Cov"){
-            covAltAmp = covMethod( fitsAltAmp, starterFit);
-        }
-
-        // Print output
-        INFO(endl << "AltAmp systematic");
-        for( unsigned int i = 0 ; i < params.size() ; ++i){
-            INFO( setw(60) << left << params[i]->name() << " " << setprecision(4) 
-                << setw(10) <<  right << round(  params[i]->mean(),4) << " ± " 
-                << setw(8) <<  round( params[i]->err() ,4) << " ± " 
-                << setw(8) <<  round(  sqrt( covAltAmp(i,i)  ),4) << " ( " 
-                << setw(8) << round( sqrt(covAltAmp(i,i) )  / params[i]->err() * 100.,4) << " %)" );  
-            
-        }  
-        covTot += covAltAmp;
-    }
-    
-    */
-    
+  
     // Total
     cout << "Total systematic" << endl;
     //covTot.Print();
@@ -866,10 +510,6 @@ void analyzeResults(){
     FracResultFile2 << "\\end{tabular}" << "\n";
 }
 
-
-//starterFit.setCov((int)starterFit.parameters().size(),(int)starterFit.parameters().size() ,cov);
-//TMatrixD cov_reduced =  starterFit.getReducedCovariance();
-//cov_reduced.Print();
 
 int main( int argc, char* argv[] ){
 
