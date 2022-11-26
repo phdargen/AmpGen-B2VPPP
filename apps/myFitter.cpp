@@ -76,10 +76,10 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
     vector<vector<unsigned>> indices;
 
     auto weightFunction = sig.componentEvaluator();
-    auto evaluator_sig = sig.evaluator();
+    //auto evaluator_sig = sig.evaluator();
 
     // Amplitude component weights
-    for(int i = 0; i < plot_amps.size(); i++){
+    for(unsigned int i = 0; i < plot_amps.size(); i++){
         INFO( "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] );
 
         auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
@@ -126,19 +126,44 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
     branches.push_back(branch_w_bkg);
     
     // Error bands
+    auto params = ep.params();
     unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
-    auto gep = GaussErrorPropagator( ep.cov(), ep.params(), &rand );
+    auto gep = GaussErrorPropagator( ep.cov(), params, &rand );
     vector<double> weightsErr(nPermErrorBands,0.);
     vector<vector<double>> weightsErrVec; 
 
+    // Sys error
+    string sysCovFileName = NamedParameter<std::string>("sysCovFileName", "");  
+    FitResult fr(sysCovFileName);
+    auto params_sys = fr.floating();
+    bool doSysErrBand = params_sys.size() > 0 ? true : false;
+    INFO("SysCovFile has " << params_sys.size() << " parameters vs " << params.size() << " fit parameters " );
+
+    for(unsigned int i=0; i < params_sys.size(); ++i){
+        if(params[i]->name() != params_sys[i]->name() ) {
+            ERROR("SysCovFile incosistent " << params.size() << " " << params_sys.size() << " " << params[i]->name() << " " << params_sys[i]->name() );
+            doSysErrBand = false;
+            break;
+        }
+    }
+    auto gep_tot = GaussErrorPropagator( doSysErrBand ? ep.cov()+fr.getReducedCovariance() : ep.cov(), params, &rand );
+    vector<double> weightsErrTot(nPermErrorBands,0.);
+    vector<vector<double>> weightsErrTotVec; 
+        
     if( nPermErrorBands > 0 ){
         for(int i = 0; i < nPermErrorBands; i++){
             auto branch = weight_tree->Branch( ("weightErr_"+to_string(i)).c_str(),&weightsErr[i]);     
             branches.push_back(branch);
+            if(doSysErrBand){
+                auto branch_tot = weight_tree->Branch( ("weightErrTot_"+to_string(i)).c_str(),&weightsErrTot[i]);     
+                branches.push_back(branch_tot);
+            }
         }
         for(int i = 0; i < nPermErrorBands; i++){
             //INFO("sig.norm()" << sig.norm());
             //INFO("sig.prob_unnormalisedNoCache()" << sig.getValNoCache(eventsPlotMC[1]) << endl);
+            INFO("Doing error band perturb " << i);
+            gep.reset();
             gep.perturb();
             sig.reset();   
             sig.prepare();
@@ -146,10 +171,22 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
             for( const auto& evt : eventsPlotMC ){
                 weightsErrTmp.push_back( ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ; 
             }
-            
             weightsErrVec.push_back(weightsErrTmp);
+
+            if(doSysErrBand){
+                gep_tot.reset();
+                gep_tot.perturb();
+                sig.reset();   
+                sig.prepare();
+                vector<double> weightsErrTotTmp;
+                for( const auto& evt : eventsPlotMC ){
+                    weightsErrTotTmp.push_back( ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ; 
+                }
+                weightsErrTotVec.push_back(weightsErrTotTmp);
+            }
         }
         gep.reset();
+        if(doSysErrBand)gep_tot.reset();
         sig.reset();   
         sig.prepare();
     }
@@ -157,7 +194,8 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
     unsigned counter = 0;
     for( const auto& evt : eventsPlotMC ){
         
-        weightsFit[1] = evt.weight() * evaluator_sig(evt) / evt.genPdf() ; 
+        //weightsFit[1] = evt.weight() * evaluator_sig(evt) / evt.genPdf() ; 
+        weightsFit[1] = ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ; 
         weightsFit[2] = ( bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight() / bkg.norm() ) * evt.weight() / evt.genPdf() ; 
         //weightsFit[2] = evt.weight() * evaluator_bkg(evt) / evt.genPdf() ;  // does not work ???
         weightsFit[0] = weightsFit[1] + weightsFit[2]; 
@@ -169,10 +207,11 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
         }
 
         for(int i = 0; i < nPermErrorBands; i++){
-            weightsErr[i] = weightsErrVec[i][counter];
+            weightsErr[i] = weightsErrVec[i][counter] + weightsFit[2] ;
+            if(doSysErrBand)weightsErrTot[i] = weightsErrTotVec[i][counter] + weightsFit[2];
         }
-        counter++;
         
+        counter++;        
         weight_tree->Fill();
     }
 
@@ -327,6 +366,24 @@ void vary( MinuitParameterSet& MPS, string& paramName, double sigma = 1)
         return;
     }
     ERROR("Paramater " << paramName << " not found");
+}
+
+void varyGauss( MinuitParameterSet& MPS, vector<string>& paramNames, double sigma = 1)
+{
+    for ( auto& param : MPS ) {
+
+        for ( auto& paramName : paramNames ) {
+        
+            if ( param->name().find( paramName ) == std::string::npos ) continue;
+                
+            double new_val = gRandom->Gaus( param->mean(), param->err()* sigma);
+            INFO("Setting parameter " << paramName << " from " << param->mean() << " to new val = " << new_val);
+            
+            param->setInit(new_val);
+            param->setCurrentFitVal( new_val );
+        }
+        
+    }
 }
 
 void scan( MinuitParameterSet& MPS, string name, double min, double max, int step, int nSteps)
@@ -1061,6 +1118,12 @@ int main( int argc, char* argv[])
             INFO("Have " << paramsToVary.size() << " params to vary +/- 1 sigma " );            
             vary(MPS,paramsToVary[ paramIndex ], seed < paramsToVary.size() ? -1 : +1);
             doSystematic += paramsToVary[ paramIndex ] + seed < paramsToVary.size() ? (string) "_m" : (string) "_p"  + "1sigma" ;
+        }
+      
+        if(doSystematic=="ResAll"){
+            std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();            
+            INFO("Have " << paramsToVary.size() << " params to vary within uncertainties" );            
+            varyGauss(MPS, paramsToVary );
         }
             
         auto ll = make_likelihood(events, sig, bkg);

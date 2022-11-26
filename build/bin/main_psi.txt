@@ -20,16 +20,16 @@ maxIntEvents		700000
 "Minimiser::Tolerance"  1.0
 "Minimiser::PrintLevel" 1
 "Minimiser::Normalise"	1
-"nCores"        4
+"nCores"        6
 Fit::nReTries	 0
 nFits		 1
-addAmpList  addAmpListNoExotic.txt
+addAmpList  addAmpListExotic.txt
 "randomizeStartVals"     0
 normAmps 1
 
 
 saveWeights 	1
-nBins       60
+nBins       80
 MinEventsChi2	25
 
 nPermErrorBands   0

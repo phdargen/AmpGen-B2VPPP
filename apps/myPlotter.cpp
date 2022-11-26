@@ -238,6 +238,12 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
       histos.push_back(h);
   }
     
+  unsigned int addSysErrBand   = NamedParameter<unsigned int>("addSysErrBand",0);    
+  if(addSysErrBand)for(int i = 0; i < nPermErrorBands; i++)  {
+        TH1D* h = (TH1D*) histo->Clone((name+"ErrTot"+to_string(i)).c_str());
+        histos.push_back(h);
+  }  
+    
   auto FitWeightFileNames = NamedParameter<std::string>("AltFitWeightFileNames", std::vector<std::string>(),"AltFitWeightFileNames" ).getVector();
   for(int i = 0; i < FitWeightFileNames.size(); i++)  {
         TH1D* h = (TH1D*) histo->Clone((name+"Alt"+to_string(i)).c_str());
@@ -262,19 +268,30 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
   auto FitWeightFileNames = NamedParameter<std::string>("AltFitWeightFileNames", std::vector<std::string>(),"AltFitWeightFileNames" ).getVector();
   unsigned int nAltModels = FitWeightFileNames.size();
-    
+  unsigned int addSysErrBand   = NamedParameter<unsigned int>("addSysErrBand",0);  
+  
+//  INFO("nPermErrorBands = " << nPermErrorBands);  
+//  INFO("nAltModels = " << nAltModels);  
+//  INFO("addSysErrBand = " << addSysErrBand);  
+
   // Only compute once for every histo set !  
   if(computeErrorBands){
       
       auto h_norm = (TH1D*) histos[1]->Clone(((string)histos[1]->GetName()+"norm").c_str());
       h_norm->Scale(1./h_norm->Integral());
       
-      for (unsigned int i=histos.size()-1 ; i >= histos.size()-nPermErrorBands-nAltModels; i--){
+      for (unsigned int i=histos.size()-1 ; i >= histos.size()-nPermErrorBands*(1+addSysErrBand)-nAltModels; i--){
                 histos[i]->Scale(1./histos[i]->Integral());
       }  
         
       // Stat error bars
       if(nPermErrorBands>3){
+          
+//          for (unsigned int i=histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand ; i >= histos.size()-nPermErrorBands*(1+addSysErrBand)-nAltModels; i--) {
+//              histos[i]->SetLineColor(i);                    
+//              histos[i]->SetMarkerColor(i);
+//              histos[i]->DrawNormalized("e1same",1);
+//          }
           
             for(unsigned int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
                 
@@ -282,42 +299,75 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
                 double min = TMath::Limits<Double_t>::Max();
                 double max = 0;
                 
-                for (unsigned int i=histos.size()-1-nAltModels ; i >= histos.size()-nPermErrorBands-nAltModels; i--) {
+                for (unsigned int i=histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand ; i >= histos.size()-nPermErrorBands*(1+addSysErrBand)-nAltModels; i--) {
                     stat.Fill(histos[i]->GetBinContent(b)) ;
                     min = (histos[i]->GetBinContent(b) < min) ? histos[i]->GetBinContent(b) : min;
                     max = (histos[i]->GetBinContent(b) > max) ? histos[i]->GetBinContent(b) : max;
+
+                    //histos[i]->SetLineColor(i);                    
+                    //histos[i]->SetMarkerColor(i);
+                    //histos[i]->DrawNormalized("e1same",1);
                 }
                 //if(b==20)stat.Print();
-                histos[histos.size()-1-nAltModels]->SetBinContent(b, h_norm->GetBinContent(b));
-                //histos[histos.size()-1-nAltModels]->SetBinError(b,  (stat.GetMean() > 0 && stat.GetRMS() > 0) > 0 ? stat.GetRMS() : 0.);
-                histos[histos.size()-1-nAltModels]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. : 0.);
-
-                histos[histos.size()-2-nAltModels]->SetBinContent(b, stat.GetMean());
-                histos[histos.size()-2-nAltModels]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. : 0.);
+                histos[histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand]->SetBinContent(b, stat.GetMean());
+                histos[histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand]->SetBinError(b,  (stat.GetMean() > 0 && stat.GetRMS() > 0) > 0 ? stat.GetRMS() : 0.);
                 
-                //histos[histos.size()-2]->SetBinContent(b, stat.GetMean()+abs(max-stat.GetMean())/2.);
-                //histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-stat.GetMean())/2. : 0.);
-                //histos[histos.size()-3]->SetBinContent(b, stat.GetMean()-abs(stat.GetMean()-min)/2.);
-                //histos[histos.size()-3]->SetBinError(b,  stat.GetMean() > 0 ? abs(stat.GetMean()-min)/2. : 0.);
+                histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->SetBinContent(b, stat.GetMean());
+                histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. : 0.);
+                
+                histos[histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand]->SetMarkerSize(0.);
+                histos[histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand]->SetFillColor( kAzure - 4);
+
+                histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->SetMarkerSize(0.);
+                histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->SetFillColor( kAzure - 4);
+
+                if(addSysErrBand){
+                    TStatistic stat_tot;
+                    min = TMath::Limits<Double_t>::Max();
+                    max = 0;
+                    
+//                    for (unsigned int i=histos.size()-1-nAltModels ; i >= histos.size()-nPermErrorBands-nAltModels; i--) {
+//                        histos[i]->SetLineColor(i);                    
+//                        histos[i]->SetMarkerColor(i);
+//                        histos[i]->DrawNormalized("e1same",1);
+//                    }
+                    
+                    for (unsigned int i=histos.size()-1-nAltModels ; i >= histos.size()-nPermErrorBands-nAltModels; i--) {
+                        stat_tot.Fill(histos[i]->GetBinContent(b)) ;
+                        min = (histos[i]->GetBinContent(b) < min) ? histos[i]->GetBinContent(b) : min;
+                        max = (histos[i]->GetBinContent(b) > max) ? histos[i]->GetBinContent(b) : max;
+                    }
+                    //if(b==20)stat_tot.Print();
+
+                    double stat_err = nPermErrorBands>3 ? histos[histos.size()-1-nAltModels-nPermErrorBands*addSysErrBand]->GetBinError(b) : 0.;
+                    
+                    histos[histos.size()-1-nAltModels]->SetBinContent(b, stat_tot.GetMean());
+                    histos[histos.size()-1-nAltModels]->SetBinError(b,  (stat_tot.GetMean() > 0 && stat_tot.GetRMS() > 0) > 0 ? stat_tot.GetRMS() : 0);
+                    
+                    histos[histos.size()-2-nAltModels]->SetBinContent(b, stat_tot.GetMean());
+                    histos[histos.size()-2-nAltModels]->SetBinError(b,  stat_tot.GetMean() > 0 ? abs(max-min)/2. : stat_err);
+                    
+                    histos[histos.size()-1-nAltModels]->SetMarkerSize(0.);
+                    histos[histos.size()-1-nAltModels]->SetFillColor(kAzure - 4);
+
+                    histos[histos.size()-2-nAltModels]->SetMarkerSize(0.);
+                    histos[histos.size()-2-nAltModels]->SetFillColor(kAzure - 4);
+                }
+                
             }
         
-            histos[histos.size()-1-nAltModels]->SetMarkerSize(0.);
-            histos[histos.size()-1-nAltModels]->SetFillColor(kBlue-2);
-            histos[histos.size()-1-nAltModels]->SetFillColorAlpha(kBlue-2, 0.9);
 
-            histos[histos.size()-2-nAltModels]->SetMarkerSize(0.);
-            histos[histos.size()-2-nAltModels]->SetFillColor(kBlue-2);
-            histos[histos.size()-2-nAltModels]->SetFillColorAlpha(kBlue-2, 0.45);
-          
-            //histos[histos.size()-3]->SetMarkerSize(0.);
-            //histos[histos.size()-3]->SetFillColor(kBlue-2);
-            //histos[histos.size()-3]->SetFillColorAlpha(kBlue-2, 0.45);
-            //histos[histos.size()-3]->DrawNormalized("e5same",1);
       }  
         
       //Compute err bands from alternative fit  
       if(nAltModels>0){
-            
+          
+              for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
+                  histos[i]->SetLineColor(i);                    
+                  histos[i]->SetMarkerColor(i);
+                  histos[i]->DrawNormalized("e1same",1);
+              }
+          
               for(unsigned int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
                   
                   TStatistic stat;
@@ -329,49 +379,45 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
                       min = (histos[i]->GetBinContent(b) < min) ? histos[i]->GetBinContent(b) : min;
                       max = (histos[i]->GetBinContent(b) > max) ? histos[i]->GetBinContent(b) : max;
                   }
-                  //if(b==20){
-                      //stat.Print();
-                      //cout << "abs(max-min)/2 = " << abs(max-min)/2. << endl;
-                  //}
                   
-                  double stat_err = nPermErrorBands>3 ? histos[histos.size()-1-nAltModels]->GetBinError(b) : 0.;
+                  double stat_err = nPermErrorBands>3 ? histos[histos.size()-2-nAltModels]->GetBinError(b) : 0.;
                   
-                  histos[histos.size()-1]->SetBinContent(b, h_norm->GetBinContent(b));
-                  histos[histos.size()-1]->SetBinError(b,  (stat.GetMean() > 0 && stat.GetRMS() > 0) ? stat.GetRMS() + stat_err : stat_err);
+                  histos[histos.size()-1]->SetBinContent(b, stat.GetMean());
+                  histos[histos.size()-1]->SetBinError(b,  (stat.GetMean() > 0 && stat.GetRMS() > 0) ? sqrt( pow(stat.GetRMS(),2) + pow(stat_err,2) ) : stat_err);
                   
                   histos[histos.size()-2]->SetBinContent(b, stat.GetMean());
-                  histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. + stat_err : stat_err);
+                  //histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? sqrt( pow(abs(max-min)/2.,2) + pow(stat_err,2) ) : stat_err);
+                  histos[histos.size()-2]->SetBinError(b,  stat.GetMean() > 0 ? abs(max-min)/2. + stat_err  : stat_err);
+
               }
           
               histos[histos.size()-1]->SetMarkerSize(0.);
-              histos[histos.size()-1]->SetFillColor(kBlue-2);
-              histos[histos.size()-1]->SetFillColorAlpha(kBlue-2, 0.5);
-              //histos[histos.size()-1]->DrawNormalized("e5same",1);
+              histos[histos.size()-1]->SetFillColor(862);
+              histos[histos.size()-1]->SetFillColorAlpha(kAzure - 4, 1);
 
               histos[histos.size()-2]->SetMarkerSize(0.);
-              histos[histos.size()-2]->SetFillColor(kBlue-2);
-              histos[histos.size()-2]->SetFillColorAlpha(kBlue-2, 0.85);
-              //histos[histos.size()-2]->DrawNormalized("e5same",1);
-            
+              histos[histos.size()-2]->SetFillColor(862);
+              histos[histos.size()-2]->SetFillColorAlpha(kAzure - 4, 1);        
       } 
    
   }
-    
+   
+  if(!computeErrorBands){  
   // Plot error bands
   if(nAltModels>0){
-      histos[histos.size()-1]->DrawNormalized("e5same",1);
-      //histos[histos.size()-2]->DrawNormalized("e5same",1);
+      histos[histos.size()-2]->DrawNormalized("e5same",1);
   }
   if(nPermErrorBands>3){
-        histos[histos.size()-1-nAltModels]->DrawNormalized("e5same",1);
-        //histos[histos.size()-2-nAltModels]->DrawNormalized("e5same",1);
+        if(addSysErrBand)histos[histos.size()-2-nAltModels]->DrawNormalized("e5same",1);
+        histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->DrawNormalized("e5same",1);
   }
-    
+  }  
   // Plot fit projections
   for (unsigned int i = (plotComponents == true ? histos.size()-nPermErrorBands-nAltModels-1 : 1); i >= 1 ; i--)
   {
       histos[i]->SetMinimum(1);
       if(style == 1)histos[i]->SetLineWidth(2);
+      if(nPermErrorBands>3)histos[1]->SetLineWidth(1);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
   }
@@ -1036,7 +1082,7 @@ void makePlotsMuMu(){
         INFO("Changing MC units from MeV -> GeV");
         eventsMC.transform( scale_transform );
     }
-    
+        
     auto invertCut_plot1 = NamedParameter<bool>("invertCut_plot1", 0,"Invert cut logic");
     auto cut_dim_plot1 = NamedParameter<unsigned int>("cut_dim_plot1", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
     auto cut_limits_plot1 = NamedParameter<double>("cut_limits_plot1", std::vector<double>(),"cut window" ).getVector();    
@@ -1104,7 +1150,6 @@ void makePlotsMuMu(){
     
     vector<TTree*> weight_trees;
     for( const auto& f : FitWeightFileNames ){
-    
         TFile* weight_file = TFile::Open(f.c_str(),"OPEN");
         weight_file->cd();
         auto weight_tree = (TTree*) weight_file->Get("DalitzEventList");
@@ -1206,6 +1251,10 @@ void makePlotsMuMu(){
     unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
     vector<double> wErr(nPermErrorBands);    
     for(unsigned int i = 0; i < nPermErrorBands; i++) weight_trees[0]->SetBranchAddress( ("weightErr_"+to_string(i)).c_str(),&wErr[i]); 
+
+    unsigned int addSysErrBand   = NamedParameter<unsigned int>("addSysErrBand",0);  
+    vector<double> wErrTot(nPermErrorBands);    
+    if(addSysErrBand)for(unsigned int i = 0; i < nPermErrorBands; i++) weight_trees[0]->SetBranchAddress( ("weightErrTot_"+to_string(i)).c_str(),&wErrTot[i]); 
     
     // Alternative models
     vector<double> wAlt(nAltModels);    
@@ -1273,6 +1322,7 @@ void makePlotsMuMu(){
     //Fill fit projections
     cout << "Fill fits hists ..." << endl;
     auto nHists = weights.size();
+    
     for(unsigned int i=0; i< eventsMC.size(); i++ ){
         
         for( const auto& weight_tree : weight_trees )weight_tree->GetEntry(i);
@@ -1328,25 +1378,46 @@ void makePlotsMuMu(){
                 if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists]->Fill(val,wErr[k]);   
             }
             
-            for(unsigned int k = 0; k < nAltModels; k++){
-                histo_set[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot1(eventsMC[i]))histo_set_cut1[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot2(eventsMC[i]))histo_set_cut2[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot3(eventsMC[i]))histo_set_cut3[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot4(eventsMC[i]))histo_set_cut4[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot5(eventsMC[i]))histo_set_cut5[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot6(eventsMC[i]))histo_set_cut6[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot7(eventsMC[i]))histo_set_cut7[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot8(eventsMC[i]))histo_set_cut8[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot9(eventsMC[i]))histo_set_cut9[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot10(eventsMC[i]))histo_set_cut10[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
-                if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);
+            if(addSysErrBand)for(unsigned int k = 0; k < nPermErrorBands; k++){
+                histo_set[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot1(eventsMC[i]))histo_set_cut1[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot2(eventsMC[i]))histo_set_cut2[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot3(eventsMC[i]))histo_set_cut3[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot4(eventsMC[i]))histo_set_cut4[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot5(eventsMC[i]))histo_set_cut5[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot6(eventsMC[i]))histo_set_cut6[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot7(eventsMC[i]))histo_set_cut7[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot8(eventsMC[i]))histo_set_cut8[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot9(eventsMC[i]))histo_set_cut9[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot10(eventsMC[i]))histo_set_cut10[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
                 
-                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);   
-                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);   
-                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);   
-                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands]->Fill(val,wAlt[k]);   
+                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
+                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
+                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
+            }
+            
+            for(unsigned int k = 0; k < nAltModels; k++){
+                histo_set[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot1(eventsMC[i]))histo_set_cut1[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot2(eventsMC[i]))histo_set_cut2[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot3(eventsMC[i]))histo_set_cut3[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot4(eventsMC[i]))histo_set_cut4[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot5(eventsMC[i]))histo_set_cut5[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot6(eventsMC[i]))histo_set_cut6[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot7(eventsMC[i]))histo_set_cut7[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot8(eventsMC[i]))histo_set_cut8[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot9(eventsMC[i]))histo_set_cut9[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot10(eventsMC[i]))histo_set_cut10[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                
+                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
+                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
+                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
             }
             
         }
@@ -1383,7 +1454,7 @@ void makePlotsMuMu(){
     stringstream ss_chi;
     ss_chi << setprecision(3) << chi2;
     leg.AddEntry((TObject *)0,("#chi^{2}/ndf = " + ss_chi.str()).c_str() ,"");
-    leg.AddEntry((TObject *)0,"" ,"");
+    //leg.AddEntry((TObject *)0,"" ,"");
     leg.AddEntry((TObject *)0,("nPar = " + to_string(nPar)).c_str() ,"");
     leg.AddEntry((TObject *)0,("nAmps = " + to_string(nAmps)).c_str() ,"");
     leg.SetNColumns(2);
@@ -1439,6 +1510,9 @@ void makePlotsMuMu(){
     for(unsigned int j=0;j<dims.size();j++){ 
         plotHistos(histo_set[j], true, 0, true);
         c->Print((outDir+"/"+labels[j]+".pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+".png").c_str());
+        if(j==0)c->Print((outDir+"/"+labels[j]+".C").c_str());
+        if(j==0)c->Print((outDir+"/"+labels[j]+".root").c_str());
     }
     
     c->Clear();
@@ -2016,6 +2090,7 @@ void makePlots3body(){
 
 int main( int argc, char* argv[] ){
 
+  time_t startTime = time(0);
   OptionsParser::setArgs( argc, argv );
 
   gStyle->SetOptStat(0);
@@ -2029,6 +2104,10 @@ int main( int argc, char* argv[] ){
   if(pNames.size()==4)makePlots3body();
   if(pNames.size()==6)makePlotsMuMu();
   else makePlots();
+  
+  cout << "==============================================" << endl;
+  cout << " Done. " << " Total time since start " << (time(0) - startTime)/60.0 << " min." << endl;
+  cout << "==============================================" << endl;  
     
   return 0;
 }

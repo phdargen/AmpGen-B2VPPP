@@ -43,4 +43,4 @@ log         = $(OUTDIR)/log.log
 transfer_output_files = result.root, model.txt, log.txt, amp_plots.pdf, amp_plots2.pdf, amp_plots3.pdf
 transfer_output_remaps = "result.root = $(OUTDIR)/result_$SUBSTR(OPTIONFILE, 0, -4).root ; amp_plots.pdf = $(OUTDIR)/amp_plots_$SUBSTR(OPTIONFILE, 0, -4).pdf; amp_plots2.pdf = $(OUTDIR)/amp_plots2_$SUBSTR(OPTIONFILE, 0, -4).pdf; amp_plots3.pdf = $(OUTDIR)/amp_plots3_$SUBSTR(OPTIONFILE, 0, -4).pdf ; model.txt =  $(OUTDIR)/model_$SUBSTR(OPTIONFILE, 0, -4).txt ; log.txt = $(OUTDIR)/log_$SUBSTR(OPTIONFILE, 0, -4).txt"
 
-queue OPTIONFILE matching files sys_nr*.txt
+queue OPTIONFILE matching files sys_ls*.txt

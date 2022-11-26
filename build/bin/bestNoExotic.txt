@@ -1,3 +1,5 @@
+"AltFitWeightFileNames" "modelSelNoExotic/v12/Fit_weights.root" "modelSelNoExotic/v10/Fit_weights.root" "sys/nr1/Fit_weights.root" "sys/nr2/Fit_weights.root" "sys/nr3/Fit_weights.root"
+
 B+[D]{psi(2S)0,K(1)(1270)+}  0 0.6043 0.02373 0 2    0 127 2.243 -360 360 
 B+[P]{psi(2S)0,K(1)(1270)+}  0 0.3773 0.02496 0 2    0 -125.9 3.705 -360 360 
 B+[P]{psi(2S)0,K(1)(1400)+}  0 0.4703 0.03847 0 2    0 128 4.684 -360 360 

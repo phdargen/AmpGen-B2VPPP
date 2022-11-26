@@ -1,6 +1,6 @@
 EventType B+ K+ pi+ pi- mu+ mu-
 
-DataSample		/afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/MassFits/b2psiKpipi_sidebandNoBDT.root:DecayTree
+DataSample		/eos/lhcb/user/p/phdargen/B2JpsiKpipi/Final/psi_sideband.root:DecayTree
 "weightData"		" "
 DataUnits	 	MeV
 Branches FullDTFCP_K_PX FullDTFCP_K_PY FullDTFCP_K_PZ FullDTFCP_K_PE FullDTFCP_pip_PX FullDTFCP_pip_PY FullDTFCP_pip_PZ FullDTFCP_pip_PE FullDTFCP_pim_PX FullDTFCP_pim_PY FullDTFCP_pim_PZ FullDTFCP_pim_PE FullDTFCP_mup_PX FullDTFCP_mup_PY FullDTFCP_mup_PZ FullDTFCP_mup_PE FullDTFCP_mum_PX FullDTFCP_mum_PY FullDTFCP_mum_PZ FullDTFCP_mum_PE
@@ -23,17 +23,16 @@ maxIntEvents		400000
 "nCores"        1
 Fit::nReTries     1
 nFits         1
-#addAmpList  addAmpListExotic.txt
 "randomizeStartVals"     0
 
 saveWeights 	1
 nBins       60
 MinEventsChi2	25
 
-nPermErrorBands   25
+nPermErrorBands   0
 smoothFitProj 1
-"AltFitWeightFileNames"     "bkgFit2/Fit_weights.root" "bkgFit/Fit_weights.root"
-
+*"AltFitWeightFileNames"     "bkgFit2/Fit_weights.root" "bkgFit/Fit_weights.root"
+outDir  bkgFit3
 
 #B+  K+ pi+ pi- mu+ mu-
 #-   0  1   2   3   4
@@ -52,9 +51,12 @@ Type IncoherentSum
 CoherentSum::Debug  1
 "CoherentSum::Verbosity"    1
 
-#B+[Bkg;BgSpin0]{psi(2S)0,NonResS0{rho(770)0{pi+,pi-}},K+}               0 1 0.001 0.1  10       2 0.0 0.1 -360 360
-#B+[Bkg;BgSpin0]{psi(2S)0,NonResS0{K*(892)0{K+,pi-}},pi+}                0 1 0.001 0.01 10     2 0.0 0.1 -360 360 
+#Inco_B+[Bkg;BgSpin0]{psi(2S)0,NonResS0{rho(770)0{pi+,pi-}},K+}               0 1 0.001 0.1  10       2 0.0 0.1 -360 360
+#Inco_B+[Bkg;BgSpin0]{psi(2S)0,NonResS0{K*(892)0{K+,pi-}},pi+}                0 1 0.001 0.4 10     2 0.0 0.1 -360 360 
 Inco_B+[Bkg;BgSpin0]{psi(2S)0,K+,pi+,pi-}                                    2 1 0.001 0  10    2 0.0 0.1 -360 360
+
+K*(892)0_mass        2    0.892     0.01  0.6 0.9
+K*(892)0_width       2    0.3      0.0001  0.05 0.2
 
 rho(770)0_mass        2    0.77609     0.01  0.6 0.9
 rho(770)0_width       2     0.14446    0.0001
@@ -67,42 +69,44 @@ rho(770)0_width       2     0.14446    0.0001
 #PolyNR::Degree  1
 
 #NonResS0_alpha  0 0.1 0.001
-Bkg_a_cosTheta   0  0.1 0.001 -10 10
-Bkg_b_cosTheta   0  0.1 0.001 -10 10
-Bkg_c_cosTheta   0 -1 0.001 -10 10
+Bkg_a_cosTheta  0 0.195 0.001 -10 10 
+Bkg_b_cosTheta  0 -0.006597 0.001 -10 10    
+Bkg_c_cosTheta  0 -0.8424 0.001 -10 10  
 
-Bkg_a_m012      0 0.1 0.001 -10 10
-Bkg_a_m02       0 0.1 0.001 -10 10
-Bkg_a_m12       0 0.1 0.001 -10 10
-Bkg_a_m3412     0 0.1 0.001 -10 10
-Bkg_a_m341      0 0.1 0.001 -10 10
-Bkg_a_m342      0 0.1 0.001 -10 10
-Bkg_a_m340      0 0.1 0.001 -10 10
-Bkg_a_m3402     0 0.1 0.001 -10 10
+Bkg_a_m012      0 -0.12 0.001 -10 10    
+Bkg_a_m02       0 0.9726 0.001 -10 10    
+Bkg_a_m12       0 -0.5355 0.001 -10 10    
+Bkg_a_m3412     0 1.093 0.001 -10 10    
+Bkg_a_m341      0 -0.7735 0.001 -10 10    
+Bkg_a_m342      0 2.691 0.001 -10 10 
+Bkg_a_m340      0 5.282 0.001 -10 10    
+Bkg_a_m3402     0 -4.103 0.001 -10 10    
 Bkg_a_m3401     0 0. 0.001 -10 10
 Bkg_a_m01       0 0. 0.001 -10 10
 
-#Bkg_b_m012      0 0.1 0.001 -10 10
-#Bkg_b_m02       0 0.1 0.001 -10 10
-#Bkg_b_m12       0 0.1 0.001 -10 10
-Bkg_b_m3412     0 0.1 0.001 -10 10
-#Bkg_b_m341      0 0.1 0.001 -10 10
-#Bkg_b_m342      0 0.1 0.001 -10 10
-Bkg_b_m340      0 0.1 0.001 -10 10
-#Bkg_b_m3402     0 0.1 0.001 -10 10
-#Bkg_b_m3401     0 0.1 0.001 -10 10
-#Bkg_b_m01       0 0.1 0.001 -10 10
+Bkg_b_m012      0 0.1 0.001 -10 10
+Bkg_b_m02       0 0.1 0.001 -10 10
+Bkg_b_m12       0 0.1 0.001 -10 10
+Bkg_b_m3412      0 -1.295 0.001 -10 10  
+Bkg_b_m341      0 0.1 0.001 -10 10
+Bkg_b_m342      0 0.1 0.001 -10 10
+Bkg_b_m340       0 -2.25 0.001 -10 10    
+Bkg_b_m3402     0 0.1 0.001 -10 10
+Bkg_b_m3401     0 0.1 0.001 -10 10
+Bkg_b_m01       0 0.1 0.001 -10 10
 
-#Bkg_c_m012      0 0.1 0.001 -10 10
-#Bkg_c_m02       0 0.1 0.001 -10 10
-#Bkg_c_m12       0 0.1 0.001 -10 10
-Bkg_c_m3412     0 0.1 0.001 -10 10
-#Bkg_c_m341      0 0.1 0.001 -10 10
-#Bkg_c_m342      0 0.1 0.001 -10 10
-Bkg_c_m340      0 0.1 0.001 -10 10
-#Bkg_c_m3402     0 0.1 0.001 -10 10
-#Bkg_c_m3401     0 0.1 0.001 -10 10
-#Bkg_c_m01       0 0.1 0.001 -10 10
+Bkg_c_m012      0 0.1 0.001 -10 10
+Bkg_c_m02       0 0.1 0.001 -10 10
+Bkg_c_m12       0 0.1 0.001 -10 10
+Bkg_c_m3412      0 0.4007 0.001 -10 10    
+Bkg_c_m341      0 0.1 0.001 -10 10
+Bkg_c_m342      0 0.1 0.001 -10 10
+Bkg_b_m340       0 -2.25 0.001 -10 10    
+Bkg_c_m3402     0 0.1 0.001 -10 10
+Bkg_c_m3401     0 0.1 0.001 -10 10
+Bkg_c_m01       0 0.1 0.001 -10 10
+     
+     
 
 #B+{psi(2S)0,K(1)(1270)+}           2 1 0.001 0.2 3  2 0.0 0.1 -360 360
 #K(1)(1270)+[SBW]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}          2 1.0 0.000         2 0.0 0.0
