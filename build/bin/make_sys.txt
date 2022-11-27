@@ -26,7 +26,7 @@
 
 "sysNameRes" "$m,\Gamma$"
 "sysFilesRes" "sys/log_sysVary_res_" 0 27
-"sysMethodRes" "Diff"
+"sysMethodRes" "Var"
 
 "sysNameAltAmp" "Alt. Amp."
 "sysFilesAltAmp" "modelSelNoExotic/v14/log_" 1 50

@@ -21,7 +21,7 @@ IntegrationSample    toy_integration.root:DalitzEventList
 #IntegrationSample    toy.root:DalitzEventList
 weightMC        weight
 MCUnits             GeV
-maxIntEvents     100000
+maxIntEvents     1000000
 
 "Minimiser::MaxCalls"   100000
 "Minimiser::Tolerance"  1.0

@@ -29,7 +29,7 @@ normAmps 1
 
 
 saveWeights 	1
-nBins       80
+nBins       60
 MinEventsChi2	25
 
 nPermErrorBands   0

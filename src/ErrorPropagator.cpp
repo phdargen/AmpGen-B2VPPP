@@ -35,6 +35,7 @@ void GaussErrorPropagator::perturb()
   TVectorD p = m_decomposedCholesky * e; 
   for ( int j = 0; j < p.GetNrows(); ++j ) {
     auto f = m_parameters[j];
+    INFO("Setting parameter " << f->name() << " from " << f->mean() << " to " << m_startingValues[j] + p[j] );  
     f->setCurrentFitVal( m_startingValues[j] + p[j] );
   }
 }

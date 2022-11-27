@@ -212,8 +212,9 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("[GSpline.EFF]","");
     n.ReplaceAll("[GSpline]","");
     n.ReplaceAll("[SBW]","");
-    n.ReplaceAll("[NONRESEXP]","");
+    n.ReplaceAll("[ExpNR]","");
     n.ReplaceAll("[Flatte]","");
+    n.ReplaceAll("[DGSpline]","");
 
     n.ReplaceAll("GounarisSakurai.Omega","");
     n.ReplaceAll("GounarisSakurai","");
@@ -224,22 +225,101 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("Dabba","");
     n.ReplaceAll("GSpline.EFF","");
     n.ReplaceAll("SBW","");
-    n.ReplaceAll("NONRESEXP","");
+    n.ReplaceAll("ExpNR","");
 
     n.ReplaceAll("(0)","_{0}");
     n.ReplaceAll("(1)","_{1}");
     n.ReplaceAll("(2)","_{2}");
 
-    n.ReplaceAll("(S)","_{S}");
-    n.ReplaceAll("(P)","_{P}");
-    n.ReplaceAll("(V)","_{V}");
-    n.ReplaceAll("(A)","_{A}");
-    n.ReplaceAll("(T)","_{T}");
-    n.ReplaceAll("(PT)","_{PT}");
+    n.ReplaceAll("NonResP20","NonResP0");    
+    n.ReplaceAll("NonResP30","NonResP0");    
+    n.ReplaceAll("NonResP40","NonResP0");    
+    n.ReplaceAll("NonResP50","NonResP0");    
+    n.ReplaceAll("NonResS20","NonResS0");    
+    n.ReplaceAll("NonResS30","NonResS0");    
+    n.ReplaceAll("NonResS40","NonResS0");    
+    n.ReplaceAll("NonResS50","NonResS0");    
+    n.ReplaceAll("NonResV20","NonResV0");    
+    n.ReplaceAll("NonResV30","NonResV0");    
+    n.ReplaceAll("NonResV40","NonResV0");    
+    n.ReplaceAll("NonResV50","NonResV0");    
+    n.ReplaceAll("NonResA20","NonResA0");    
+    n.ReplaceAll("NonResA30","NonResA0");    
+    n.ReplaceAll("NonResA40","NonResA0");    
+    n.ReplaceAll("NonResA50","NonResA0");    
+    n.ReplaceAll("NonResT20","NonResT0");    
+    n.ReplaceAll("NonResT30","NonResT0");    
+    n.ReplaceAll("NonResT40","NonResT0");    
+    n.ReplaceAll("NonResT50","NonResT0");    
+    n.ReplaceAll("NonResPT20","NonResPT0");    
+    n.ReplaceAll("NonResPT30","NonResPT0");    
+    n.ReplaceAll("NonResPT40","NonResPT0");    
+    n.ReplaceAll("NonResPT50","NonResPT0");   
+
+    n.ReplaceAll("KPi10[FOCUS.K\\pi]\\{K^{+}\\pi^{-}\\}","[K^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("KPi10","[K^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("KPi20","[K^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("KPi30","[K^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("KPi40","[K^{+}\\pi^{-}]_{\\text{S}}");
+
+    n.ReplaceAll("PiPi00","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("PiPi10","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("PiPi20","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("PiPi30","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("PiPi40","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+
+    n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{S}}");    
+    n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{P}}");    
+    n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{A}}");    
+    n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{V}}");    
+    n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{T}}");    
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{PT}}");  
+    
+    n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{S}}");    
+    n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{P}}");    
+    n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{A}}");    
+    n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{V}}");    
+    n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{T}}");    
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}\\pi^{-}\\}","\\{[psi(2S)^{0}\\pi^{-}\\}_{\\text{PT}}");    
+    
+    n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{S}}");    
+    n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{P}}");    
+    n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{A}}");    
+    n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{V}}");    
+    n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{T}}");    
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}K^{+}\\}","\\{[psi(2S)^{0}K^{+}\\}_{\\text{PT}}");   
+    
+    n.ReplaceAll("\\rho(770)^{0}\\{\\pi^{+}\\pi^{-}\\}","\\rho(770)^{0}");    
+    n.ReplaceAll("\\rho(1450)^{0}\\{\\pi^{+}\\pi^{-}\\}","\\rho(1450)^{0}");    
+    n.ReplaceAll("K^{*}(892)^{0}\\{K^{+}\\pi^{-}\\}","K^{*}(892)^{0}");    
+    n.ReplaceAll("K^{*}(1410)^{0}\\{K^{+}\\pi^{-}\\}","K^{*}(1410)^{0}");    
+
+    n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{P}}");    
+    n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{S}}");    
+    n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{V}}");    
+    n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{A}}");    
+    n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{T}}");    
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}\\rho(770)^{0}\\}","\\{[psi(2S)^{0}\\rho(770)^{0}\\}_{\\text{PT}}");    
+   
+    n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{P}}");    
+    n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{S}}");    
+    n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{V}}");    
+    n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{A}}");    
+    n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{T}}");    
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{PT}}");    
+        
+    n.ReplaceAll("_Re","\\,\\text{Amp}");
+    n.ReplaceAll("_Im","\\,\\text{Phase}");
+
+    n.ReplaceAll("psi(2S)^{0}","\\psi(\\text{2S})\\,");
+    n.ReplaceAll("\\{","\\rightarrow [");
+    n.ReplaceAll("\\}","]");
+    
+    n.ReplaceAll("[","\\left[");
+    n.ReplaceAll("]","\\right]");
 
     n.ReplaceAll("_mass"," \\text{ mass [MeV]}");
     n.ReplaceAll("_width"," \\text{ width [MeV]}");
-
     
     return (std::string)n;
 }

@@ -44,7 +44,7 @@ endif
 #workday      = 8 hours
 #tomorrow     = 1 day
 
-+JobFlavour = "microcentury"
++JobFlavour = "longlunch"
 #+MaxDuration = 300
 #request_memory = 8096
 request_cpus   = 2

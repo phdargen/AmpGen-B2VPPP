@@ -444,7 +444,7 @@ int main(int argc, char* argv[] )
              sleep(300);
               
              if((time(0) - startTimeGen)/60./60. > maxTimePerGen){
-                 ERROR(fitsToDo - nCompleted - nFailed  << "jobs exceed time limit, will terminate them");
+                 ERROR(fitsToDo - nCompleted - nFailed  << " jobs exceed time limit, will terminate them");
                  killJobs(clusterID); 
               }
              continue;
