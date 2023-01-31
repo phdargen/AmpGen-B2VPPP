@@ -388,6 +388,21 @@ void varyGauss( MinuitParameterSet& MPS, vector<string>& paramNames, double sigm
 
 void scan( MinuitParameterSet& MPS, string name, double min, double max, int step, int nSteps)
 {
+    if(step>=nSteps && name.find( "_mass" ) != std::string::npos){
+        for ( auto& param : MPS ){
+            TString width_name = TString(name).ReplaceAll("_mass","_width");
+            if ( param->name().find(width_name) == std::string::npos ) continue;
+            
+            double new_val = param->mean() * (step/nSteps) * 2.;
+            param->setInit(new_val);
+            param->setCurrentFitVal(new_val);
+            param->fix();
+            
+            cout << "Set " << width_name << " to " << new_val << endl;
+            step = step % nSteps;
+        }
+    }
+    
     for ( auto& param : MPS ) {
         if ( param->name().find( name ) == std::string::npos ) continue;
             
@@ -1109,7 +1124,7 @@ int main( int argc, char* argv[])
       
         sanityChecks(MPS);
         cout << "Number of amplitudes = " << sig.numAmps() << endl;
-      
+
         if(doSystematic=="Res"){
             std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();            
             int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
@@ -1158,7 +1173,10 @@ int main( int argc, char* argv[])
             INFO("Start fit number " << i);
 
             if(i>0){
-                randomizeStartingPoint(MPS,rndm);
+            
+                if(scanParam.size()==4)perturb(MPS,i);
+                else randomizeStartingPoint(MPS,rndm);
+                
                 sig.setMC( eventsMC );
                 sig.prepare();
                 //sig.normaliseAmps(excludeNorm);
@@ -1200,6 +1218,9 @@ int main( int argc, char* argv[])
                 //chi2.writeBinningToFile("chi2_binning.txt");
                 fr->addChi2( chi2.chi2(), chi2.nBins() );
             }
+            
+            cout << "Number of amplitudes = " << sig.numAmps() << endl;
+            cout << "Number of parameters = " << fr->floating().size() << endl;
             
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->setSystematic(doSystematic);
