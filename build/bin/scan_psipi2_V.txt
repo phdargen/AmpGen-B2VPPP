@@ -8,7 +8,7 @@ Z(V)+_width   2 0.050 0.10  0.01  0.8
 B+{Z(V)+{psi(2S)0,pi+},KPi40[FOCUS.Kpi]{K+,pi-}}     0 0.33 0.001 0 2      0 0.0 0.1 -360 360
 B+{Z(V)+{psi(2S)0,pi+},KPi40[FOCUS.I32]{K+,pi-}}     0 0.33 0.001 0 2      0 0.0 0.1 -360 360
 
-"scanParam"	"Z(V)+_mass" 3.8 4.6 50
+"scanParam"	"Z(V)+_mass" 3.8 4.6 40
 addAmpList	""
 Fit::nReTries     0
 nFits         3

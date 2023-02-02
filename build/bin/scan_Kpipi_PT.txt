@@ -7,7 +7,7 @@ K(2)(1770)+[GSpline]{KPi20[FOCUS.Kpi]{K+,pi-},pi+}                     0 0.15 0.
 K(2)(1770)+[GSpline]{rho(770)0[GounarisSakurai]{pi+,pi-},K+}           0 0.15 0.001 0 1     0 0.0 0.1 -360 360
 K(2)(1770)+[GSpline]{f(2)(1270)0{pi+,pi-},K+}                          0 0.15 0.001 0 1     0 0.0 0.1 -360 360
 
-"scanParam"	"K(2)(1770)+_mass" 1.2 1.9 40
+"scanParam"	"K(2)(1770)+_mass" 1.2 1.9 33
 addAmpList	""
 Fit::nReTries     0
 nFits         3

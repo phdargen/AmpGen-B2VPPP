@@ -6,7 +6,7 @@ Zs(P)+_width   2 0.050 0.10  0.01  0.8
 #rhoOmega20_deltaOmegaPhase   2   -12.6 0.001 -180 180
 B+{PiPi40,Zs(P)+{psi(2S)0,K+}}                                      0 0.25 0.001 0 2     0 0.0 0.1 -360 360
 
-"scanParam"	"Zs(P)+_mass" 3.9 4.9 50
+"scanParam"	"Zs(P)+_mass" 3.9 4.9 40
 addAmpList	""
 Fit::nReTries     0
 nFits         3

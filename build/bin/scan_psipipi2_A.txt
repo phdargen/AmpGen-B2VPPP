@@ -5,7 +5,7 @@ X(A)0[GSpline]{psi(2S)0,PiPi20}   0 0.5 0.001 0 1     0 0.0 0.1 -360 360
 rhoOmega10_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
 rhoOmega10_deltaOmegaPhase   2   -12.6 0.001 -180 180
 
-"scanParam"	"X(A)0_mass" 4.1 4.8 50
+"scanParam"	"X(A)0_mass" 4.1 4.8 40
 addAmpList	""
 Fit::nReTries     0
 nFits         3

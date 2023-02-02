@@ -9,7 +9,7 @@ B+{Zs(A)+{psi(2S)0,K+},PiPi40}                                      0 0.25 0.001
 #rhoOmega20_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
 #rhoOmega20_deltaOmegaPhase   2   -12.6 0.001 -180 180
 
-"scanParam"	"Zs(A)+_mass" 3.9 4.9 50
+"scanParam"	"Zs(A)+_mass" 3.9 4.9 40
 addAmpList	""
 Fit::nReTries     0
 nFits         3
