@@ -1,0 +1,14 @@
+Zs(P)+_mass    2 4.600 0.05  3.5   5.5
+Zs(P)+_width   2 0.050 0.10  0.01  0.8
+
+#B+{rhoOmega20,Zs(P)+{psi(2S)0,K+}}  0 0.5 0.001 0 2     0 0.0 0.1 -360 360
+#rhoOmega20_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
+#rhoOmega20_deltaOmegaPhase   2   -12.6 0.001 -180 180
+B+{PiPi40,Zs(P)+{psi(2S)0,K+}}                                      0 0.25 0.001 0 2     0 0.0 0.1 -360 360
+
+"scanParam"	"Zs(P)+_mass" 3.9 4.9 50
+addAmpList	""
+Fit::nReTries     0
+nFits         3
+
+B+[D]{rhoOmega20,Zs(4000)+{psi(2S)0,K+}}  2 0. 0.01678 0 2    2 67.27 2.858 -360 360

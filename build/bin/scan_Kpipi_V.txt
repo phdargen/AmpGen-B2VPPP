@@ -1,0 +1,10 @@
+K*(1680)+_mass    2 1.500 0.05  3.5   5.5
+K*(1680)+_width   2 0.050 0.10  0.01  0.8
+
+K*(1680)+[GSpline]{K*(892)0{K+,pi-},pi+}  2 1 0 0 2    2 0 0 -360 360 
+K*(1680)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}  0 1.127 0 0 10    0 -239.3 2.957 -360 360 
+
+"scanParam"	"K*(1680)+_mass" 1.45 1.8 40
+addAmpList	""
+Fit::nReTries     0
+nFits         3
