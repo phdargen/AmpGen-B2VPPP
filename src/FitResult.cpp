@@ -188,6 +188,12 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("{","\\{");
     n.ReplaceAll("}","\\}");
     
+    n.ReplaceAll("rhoOmega10","rho(770)0");
+    n.ReplaceAll("rhoOmega20","rho(770)0");
+    n.ReplaceAll("rhoOmega30","rho(770)0");
+    n.ReplaceAll("rhoOmega40","rho(770)0");
+    n.ReplaceAll("rhoOmega00","rho(770)0");
+    
     n.ReplaceAll("*","^{*}");
     n.ReplaceAll("+","^{+}");
     n.ReplaceAll("-","^{-}");
@@ -306,12 +312,35 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("\\{NonResV0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{V}}");    
     n.ReplaceAll("\\{NonResA0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{A}}");    
     n.ReplaceAll("\\{NonResT0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{T}}");    
-    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{PT}}");    
-        
+    n.ReplaceAll("\\{NonResPT0\\{psi(2S)^{0}K^{*}(892)^{0}\\}","\\{[psi(2S)^{0}K^{*}(892)^{0}\\}_{\\text{PT}}");   
+    
+    n.ReplaceAll(")S0",")_{\\text{S}}^{0}");
+    n.ReplaceAll(")P0",")_{\\text{P}}^{0}");
+    n.ReplaceAll(")V0",")_{\\text{V}}^{0}");
+    n.ReplaceAll(")A0",")_{\\text{A}}^{0}");
+    n.ReplaceAll(")T0",")_{\\text{T}}^{0}");
+    n.ReplaceAll(")PT0",")_{\\text{PT}}^{0}");
+    
+    n.ReplaceAll(")S+",")_{\\text{S}}^{+}");
+    n.ReplaceAll(")P+",")_{\\text{P}}^{+}");
+    n.ReplaceAll(")V+",")_{\\text{V}}^{+}");
+    n.ReplaceAll(")A+",")_{\\text{A}}^{+}");
+    n.ReplaceAll(")T+",")_{\\text{T}}^{+}");
+    n.ReplaceAll(")PT+",")_{\\text{PT}}^{+}");
+    
+    n.ReplaceAll(")S-",")_{\\text{S}}^{-}");
+    n.ReplaceAll(")P-",")_{\\text{P}}^{-}");
+    n.ReplaceAll(")V-",")_{\\text{V}}^{-}");
+    n.ReplaceAll(")A-",")_{\\text{A}}^{-}");
+    n.ReplaceAll(")T-",")_{\\text{T}}^{-}");
+    n.ReplaceAll(")PT-",")_{\\text{PT}}^{-}");
+    
+
     n.ReplaceAll("_Re","\\,\\text{Amp}");
     n.ReplaceAll("_Im","\\,\\text{Phase}");
 
     n.ReplaceAll("psi(2S)^{0}","\\psi(\\text{2S})\\,");
+    n.ReplaceAll("psi(4","\\psi(4");
     n.ReplaceAll("\\{","\\rightarrow [");
     n.ReplaceAll("\\}","]");
     
@@ -370,7 +399,7 @@ void FitResult::printToLatexTable( const std::string& fname )
     SummaryFile << "\\end{tabular}" << "\n";
 }
 
-void FitResult::writeToOptionsFile( const std::string& fname )
+void FitResult::writeToOptionsFile( const std::string& fname, int fixParams )
 {
     std::ofstream outlog;
     outlog << std::setprecision( 4 );
@@ -411,7 +440,7 @@ void FitResult::writeToOptionsFile( const std::string& fname )
             i++;
         }
         else if(param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos){
-            outlog << param->name() << "  " << (int)param->flag() << " "
+            outlog << param->name() << "  " << ( fixParams==0 ? to_string((int)param->flag()) : "2") << " "
             << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->stepInit() : 0) << " "
             << param->minInit() << " " << param->maxInit() << "    " ;
         }

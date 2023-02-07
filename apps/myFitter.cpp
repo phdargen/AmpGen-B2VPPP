@@ -1305,11 +1305,12 @@ int main( int argc, char* argv[])
                   fr->addChi2( chi2.chi2(), chi2.nBins() );
               }
               
+              int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
               TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
               fr->print();
               fr->writeToFile(logFile);
               fr->printToLatexTable(tableFile);
-              fr->writeToOptionsFile(modelFile);
+              fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
               fr->writeToRootFile( output, seed, 0, 0, nSig, {0}, {0} );
               output->cd();
               output->Close();
