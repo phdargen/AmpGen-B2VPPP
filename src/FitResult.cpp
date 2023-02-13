@@ -410,16 +410,23 @@ void FitResult::writeToOptionsFile( const std::string& fname, int fixParams )
         if(param->isHidden() || param->name().find( "::Spline" ) != std::string::npos )continue;
         //if(!param->isFree())continue;
 
+        
         if(param->name().find( "_Re" ) != std::string::npos){
-            outlog << replaceAll(param->name(),"_Re", "") << "  " << (int)param->flag() << " " 
+            int flag = (int)param->flag() ;
+            if((param->name().find( "FOCUS" ) != std::string::npos || param->name().find( "kMatrix" ) != std::string::npos) && fixParams>0 ) flag = 2;
+                
+            outlog << replaceAll(param->name(),"_Re", "") << "  " << flag << " "
                    << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->err()/scale_error : 0 ) << " "
                    << param->minInit() << " ";
+            
             if(abs(param->mean()-param->maxInit())<10*param->stepInit()) outlog << param->maxInit()*2 << "    " ;       
             else outlog << param->maxInit() << "    " ;               
+            
             auto param_im = m_mps->at(i+1);
-            if(param->name().find( replaceAll(param_im->name(),"_Im", "")) == std::string::npos)ERROR("Found no matching imaginary part for " << param->name() << "; have " << param_im->name());
+            if(param->name().find( replaceAll(param_im->name(),"_Im", "")) == std::string::npos)
+                ERROR("Found no matching imaginary part for " << param->name() << "; have " << param_im->name());
 
-            outlog << (int)param_im->flag() << " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i+1)->err()/scale_error : 0 ) << " "
+            outlog << flag<< " " << param_im->mean() << " " << (param_im->isFree() ? m_mps->at(i+1)->err()/scale_error : 0 ) << " "
             << param_im->minInit() << " " << param_im->maxInit() << " " ;               
             i++;            
         }
@@ -427,20 +434,22 @@ void FitResult::writeToOptionsFile( const std::string& fname, int fixParams )
             auto param_re = m_mps->at(i+1);
             if(param->name().find( replaceAll(param_re->name(),"_Re", "")) == std::string::npos)ERROR("Found no matching real part for " << param->name() << "; have " << param_re->name());
             
-            outlog << replaceAll(param_re->name(),"_Re", "") << "  " << (int)param_re->flag() << " "
+            int flag = (int)param->flag() ;
+            if((param->name().find( "FOCUS" ) != std::string::npos || param->name().find( "kMatrix" ) != std::string::npos) && fixParams>0 ) flag = 2;
+            outlog << replaceAll(param_re->name(),"_Re", "") << "  " << flag << " "
                    << param_re->mean() << " " << ( param_re->isFree() ? m_mps->at(i+1)->err()/scale_error : 0 ) << " "
                    << param_re->minInit() << " ";
             if(abs(param_re->mean()-param_re->maxInit())<10*param_re->stepInit()) outlog << param_re->maxInit()*2 << "    " ;
             else outlog << param_re->maxInit() << "    " ;
             
-            outlog << (int)param->flag() << " " << param->mean() << " " << (param->isFree() ? m_mps->at(i)->err()/scale_error : 0 ) << " "
+            outlog << flag << " " << param->mean() << " " << (param->isFree() ? m_mps->at(i)->err()/scale_error : 0 ) << " "
             << param->minInit() << " " << param->maxInit() << " " ;
             
             
             i++;
         }
         else if(param->name().find( "_mass" ) != std::string::npos || param->name().find( "_width" ) != std::string::npos){
-            outlog << param->name() << "  " << ( fixParams==0 ? to_string((int)param->flag()) : "2") << " "
+            outlog << param->name() << "  " << ( fixParams==0 ? (int)param->flag() : 2) << " "
             << param->mean() << " " << ( param->isFree() ? m_mps->at(i)->stepInit() : 0) << " "
             << param->minInit() << " " << param->maxInit() << "    " ;
         }

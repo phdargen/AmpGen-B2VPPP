@@ -458,6 +458,12 @@ void analyzeResults(){
     FracResultFile << "\\hline" << "\n";
     FracResultFile << "Decay channel &  Fit fraction " << " \\\\ " << "\n";
     FracResultFile << "\\hline" << "\n";
+    
+    FracResultFile2 << "\\begin{tabular}{l c} " << "\n";
+    FracResultFile2 << "\\hline" << "\n";
+    FracResultFile2 << "\\hline" << "\n";
+    FracResultFile2 << "Decay channel &  Fit fraction " << " \\\\ " << "\n";
+    FracResultFile2 << "\\hline" << "\n";
 
     for(int i =0 ; i < fracs.size() ; i++){
         if( fracs[i].err()<0.0001)continue;
@@ -472,8 +478,8 @@ void analyzeResults(){
             
             FracResultFile << fixed << setprecision(2) << "$" << starterFit.latexName(fracs[i].name()) << "$ & $" ;
             FracResultFile << fracs[i].val() * 100. << " \\pm " ;
-            FracResultFile << fracs[i].err() * 100. << " \\pm " ;
-            if(tot>0)FracResultFile << sqrt(tot) * 100. ;
+            FracResultFile << fracs[i].err() * 100.  ;
+            if(tot>0)FracResultFile << " \\pm " << sqrt(tot) * 100. ;
             FracResultFile << "$ \\\\ " << "\n";  
         }
         else {
@@ -487,8 +493,8 @@ void analyzeResults(){
             
             FracResultFile2 << fixed << setprecision(2) << "$" << starterFit.latexName(fracs[i].name()) << "$ & $" ;
             FracResultFile2 << fracs[i].val() * 100. << " \\pm " ;
-            FracResultFile2 << fracs[i].err() * 100. << " \\pm " ;
-            if(tot>0)FracResultFile2 << sqrt(tot) * 100. ;
+            FracResultFile2 << fracs[i].err() * 100.  ;
+            if(tot>0)FracResultFile2 << " \\pm " << sqrt(tot) * 100. ;
             FracResultFile2 << "$ \\\\ " << "\n"; 
         }
     }

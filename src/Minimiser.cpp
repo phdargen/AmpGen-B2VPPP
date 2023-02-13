@@ -107,6 +107,7 @@ bool Minimiser::doFit()
     for ( unsigned int j = 0; j < m_nParams; ++j ) {
       m_covMatrix[i + m_nParams * j] = m_minimiser->CovMatrix( i, j );
     }
+    INFO( par->name() << " " << par->meanInit() << " " << par->mean() << " +/- " << par->err() << " ( " <<  (par->mean() - par->meanInit())/par->err() << " )" );
   }
   m_status = m_minimiser->Status();
   if(NamedParameter<bool>("Minimiser::RunMinos",false)){

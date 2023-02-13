@@ -419,6 +419,11 @@ void scan(){
                 cout << "Outlier:: nll= " << nll_vals[i] << " ; seed = " << seed_vals[i] << " ; seed2 = " << seed_vals2[i] << endl;
             }
             
+            if( nll_vals[i] > -1 ){
+            //if( abs( nll_vals[i] - nll_vals[i-1] ) > 50   ||  abs( nll_vals[i] - (nll_vals[i-1]+nll_vals[i+1])/2. ) > 50 ){
+                cout << "Small:: nll= " << nll_vals[i] << " ; seed = " << seed_vals[i] << " ; seed2 = " << seed_vals2[i] << endl;
+            }
+            
             //if( abs( nll_vals[i] - (nll_vals[i-1]+nll_vals[i+1])/2. ) > 50 ) nll_vals[i] = (nll_vals[i-1]+nll_vals[i+1])/2.;
             
             //if( i > 3 && abs( nll_vals[i] - (nll_vals[i-1]+nll_vals[i+1] + nll_vals[i-2]+nll_vals[i+2] )/4. ) > 30 ) nll_vals[i] = (nll_vals[i-1]+nll_vals[i+1] + nll_vals[i-2]+nll_vals[i+2] )/4.;
@@ -504,8 +509,8 @@ void scan(){
     }
     
     vec_g_nll[0]->SetMinimum(min_nll_all);
-    vec_g_nll[0]->Draw("APC");
-    for(auto& g : vec_g_nll)g->Draw("PCsame");
+    vec_g_nll[0]->Draw("APL");
+    for(auto& g : vec_g_nll)g->Draw("PLsame");
     c->Print((outDir+"scan_n2ll_seed.pdf").c_str());
     
 }

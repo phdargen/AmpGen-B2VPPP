@@ -362,11 +362,11 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
       //Compute err bands from alternative fit  
       if(nAltModels>0){
           
-              for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
-                  histos[i]->SetLineColor(i);                    
-                  histos[i]->SetMarkerColor(i);
-                  histos[i]->DrawNormalized("e1same",1);
-              }
+//              for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
+//                  histos[i]->SetLineColor(i);                    
+//                  histos[i]->SetMarkerColor(i);
+//                  histos[i]->DrawNormalized("e1same",1);
+//              }
           
               for(unsigned int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
                   
@@ -402,7 +402,6 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
    
   }
    
-  if(!computeErrorBands){  
   // Plot error bands
   if(nAltModels>0){
       histos[histos.size()-2]->DrawNormalized("e5same",1);
@@ -411,7 +410,6 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         if(addSysErrBand)histos[histos.size()-2-nAltModels]->DrawNormalized("e5same",1);
         histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->DrawNormalized("e5same",1);
   }
-  }  
   // Plot fit projections
   for (unsigned int i = (plotComponents == true ? histos.size()-nPermErrorBands-nAltModels-1 : 1); i >= 1 ; i--)
   {

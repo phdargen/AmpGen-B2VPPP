@@ -846,7 +846,8 @@ vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& m
 vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const std::function<double( const Event& )>& fcn_bkg, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
     
     EventType pdg = dataEvents.eventType();
- 
+    //EventType B+ K+ pi+ pi- mu+ mu-
+
     vector<unsigned int> m012{0,1,2};
     vector<unsigned int> m02{0,2};
     vector<unsigned int> m12{1,2};
@@ -863,7 +864,11 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
     HyperPoint min(dim);
     HyperPoint max(dim);
 
-    if(dim==7){
+    if(dim==7 && mode==1){
+        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first, pdg.minmax(m340).first, pdg.minmax(m3402).first);
+        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second, pdg.minmax(m340).second, pdg.minmax(m3402).second );
+    }
+    else if(dim==7){
         min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first, -1, -3.141 );
         max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second, 1, 3.141 );
     }
@@ -880,23 +885,27 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
     
     for( auto& evt : dataEvents ){
         HyperPoint point( dim );
-        if(mode ==0){
-            point.at(0)= sqrt(evt.s(m012));
-            point.at(1)= sqrt(evt.s(m02));
-            point.at(2)= sqrt(evt.s(m12));
-            point.at(3)= sqrt(evt.s(m3412));
-            point.at(4)= sqrt(evt.s(m341));
-        }
-        else{
+        if(mode == 1 && dim==5){
             point.at(0)= evt.s(m012);
             point.at(1)= evt.s(m02);
             point.at(2)= evt.s(m12);
             point.at(3)= evt.s(m3412);
             point.at(4)= evt.s(m341);
         }
-        if(dim==7){
+        else{
+            point.at(0)= sqrt(evt.s(m012));
+            point.at(1)= sqrt(evt.s(m02));
+            point.at(2)= sqrt(evt.s(m12));
+            point.at(3)= sqrt(evt.s(m3412));
+            point.at(4)= sqrt(evt.s(m341));
+        }
+        if(dim==7 && mode==0){
             point.at(5)= cosThetaMuAngle(evt);
             point.at(6)= chiMuAngle(evt);
+        }
+        else if(dim==7 && mode==1){
+            point.at(5)= sqrt(evt.s(m340));
+            point.at(6)= sqrt(evt.s(m3402));
         }
         point.addWeight(evt.weight());
         points.push_back(point);
@@ -905,23 +914,27 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
     HyperPointSet pointsMC( dim);
     for( auto& evt : mcEvents ){
         HyperPoint point( dim );
-        if(mode ==0){
-            point.at(0)= sqrt(evt.s(m012));
-            point.at(1)= sqrt(evt.s(m02));
-            point.at(2)= sqrt(evt.s(m12));
-            point.at(3)= sqrt(evt.s(m3412));
-            point.at(4)= sqrt(evt.s(m341));
-        }
-        else{
+        if(mode == 1 && dim==5){
             point.at(0)= evt.s(m012);
             point.at(1)= evt.s(m02);
             point.at(2)= evt.s(m12);
             point.at(3)= evt.s(m3412);
             point.at(4)= evt.s(m341);
         }
-        if(dim==7){
+        else{
+            point.at(0)= sqrt(evt.s(m012));
+            point.at(1)= sqrt(evt.s(m02));
+            point.at(2)= sqrt(evt.s(m12));
+            point.at(3)= sqrt(evt.s(m3412));
+            point.at(4)= sqrt(evt.s(m341));
+        }
+        if(dim==7 && mode==0){
             point.at(5)= cosThetaMuAngle(evt);
             point.at(6)= chiMuAngle(evt);
+        }
+        else if(dim==7 && mode==1){
+            point.at(5)= sqrt(evt.s(m340));
+            point.at(6)= sqrt(evt.s(m3402));
         }
         point.addWeight( ( fcn( evt ) + fcn_bkg( evt ) ) * evt.weight() / evt.genPdf());
         pointsMC.push_back(point);
@@ -1207,10 +1220,13 @@ int main( int argc, char* argv[])
             auto evaluator_bkg = bkg.evaluator();
             
             auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+            auto chi2Mode = NamedParameter<Int_t>("chi2Mode", 0);
             if(pNames.size()==6){
-                vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0. );
-                //chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, 5, MinEventsChi2, 0. );
-                fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
+                INFO("Calculating chi2 ...");
+                vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
+                INFO("Calculating chi2 Dalitz ...");
+                vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
+                fr->addChi2( chi2Mode==0 ? chi2Hyper[0] : chi2HyperDalitz[0], chi2Mode==0 ? chi2Hyper[1] : chi2HyperDalitz[1] );
             }
             else{
                 Chi2Estimator chi2( events, eventsMC, evaluator_sig, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
@@ -1222,12 +1238,13 @@ int main( int argc, char* argv[])
             cout << "Number of amplitudes = " << sig.numAmps() << endl;
             cout << "Number of parameters = " << fr->floating().size() << endl;
             
+            int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->setSystematic(doSystematic);
             fr->print();
             fr->writeToFile(logFile);
             fr->printToLatexTable(tableFile);
-            fr->writeToOptionsFile(modelFile);
+            fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
             fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
             output->cd();
             output->Close();

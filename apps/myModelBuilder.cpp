@@ -378,7 +378,7 @@ int main(int argc, char* argv[] )
 
   int generation = NamedParameter<int>("generation", 0);  
   int maxGeneration = NamedParameter<int>("maxGeneration", 15);  
-  double maxTimePerGen  = NamedParameter<double>("maxTimePerGen",4);
+  double maxTimePerGen  = NamedParameter<double>("maxTimePerGen",12);
 
   int status=0;
   status &= system( ("mkdir -p " + project_dir).c_str() );
