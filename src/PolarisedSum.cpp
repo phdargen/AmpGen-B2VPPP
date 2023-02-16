@@ -268,7 +268,13 @@ size_t PolarisedSum::size() const
   return m_dim.first * m_dim.second * m_matrixElements.size(); 
 }
 
-void   PolarisedSum::reset( const bool& flag ){ m_nCalls = 0 ; }
+void   PolarisedSum::reset( const bool& flag ){
+    m_nCalls = 0 ;
+    if ( flag ){
+      m_events = nullptr;
+      m_integrator = Integrator();
+    }
+}
 
 Tensor PolarisedSum::transitionMatrix() const 
 { 
@@ -587,14 +593,17 @@ int PolarisedSum::findAmp(std::string& name){
     return counter;
 }
 
-void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude, const std::vector<std::string> combine){
+std::vector<double> PolarisedSum::normaliseAmps(const std::vector<std::string> exclude, const std::vector<std::string> combine){
     //prepare();
+    std::vector<double> scales;
     for ( unsigned int i = 0; i < m_matrixElements.size(); ++i ) {
 
         bool norm = true;
         for(auto& me : exclude )if(m_matrixElements[i].name().find( me ) != std::string::npos)norm=false;
-        if(!norm)continue;
-        
+        if(!norm){
+            scales.push_back(1.);
+            continue;
+        }
         double scale = sqrt(this->norm(i,i).real());
         for ( unsigned int j = 0; j < m_matrixElements.size(); ++j ){
             if(i==j)continue;
@@ -607,5 +616,7 @@ void PolarisedSum::normaliseAmps(const std::vector<std::string> exclude, const s
         m_matrixElements[i].scaleCoupling(1./scale);
         //m_matrixElements[i].workToDo= true;
         //m_matrixElements[i].prepare();
+        scales.push_back(scale);
     }
+    return scales;
 }

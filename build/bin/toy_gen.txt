@@ -1,13 +1,14 @@
 EventType B+ K+ pi+ pi- mu+ mu-
 #EventType B+ K+ pi+ pi- psi(2S)0
 
-nEvents     10000
+nEvents     30000
+BlockSize   500000
 Type PolarisedSum
 CouplingConstant::Coordinates  polar
 CouplingConstant::AngularUnits deg
 #PhaseSpace TreePhaseSpace
 PhaseSpace RecursivePhaseSpace
-Normalise 0
+#Normalise 0
 
 Output toy.root
 #Seed    2
@@ -18,7 +19,10 @@ Output toy.root
 #Output toy_integration.root
 #Seed    3
 
-normAmps 1
+normAmps 0
+phspFile SignalIntegrationEvents_Acc.root
+weightPhsp        weight
+BranchesPhsp Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ piplus_PE piminus_PX piminus_PY piminus_PZ piminus_PE muplus_PX muplus_PY muplus_PZ muplus_PE muminus_PX muminus_PY muminus_PZ muminus_PE
 
 psi(2S)0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
 
