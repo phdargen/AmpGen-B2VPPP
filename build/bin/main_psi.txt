@@ -112,7 +112,16 @@ smoothFitProj 1
 # Flag to interpret complex numbers are (amp,phase) rather than real/imaginary, and angles in deg rather than rad.
 CouplingConstant::Coordinates  polar
 CouplingConstant::AngularUnits deg 
-Type PolarisedSum
+
+#Type PolarisedSum
+Type PolarisedSumBkgBDT
+
+"ExtraBranches" "bkgPdf"
+"ExtraBranchesMC" "bkgPdf"
+DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/psi_data_bkgPdf.root:DecayTree
+IntegrationSample   /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/SignalIntegrationEvents_Acc_bkgPdf.root
+
+
 "PolarisedSum::InterferenceFractions"  true
 #Particle::SpinBasis Weyl
 

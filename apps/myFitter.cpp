@@ -20,6 +20,7 @@
 #include "AmpGen/EventType.h"
 #include "AmpGen/CoherentSum.h"
 #include "AmpGen/IncoherentSum.h"
+#include "AmpGen/BkgPDF.h"
 #include "AmpGen/FitResult.h"
 #include "AmpGen/Minimiser.h"
 #include "AmpGen/MinuitParameterSet.h"
@@ -54,7 +55,7 @@ using namespace std;
 using namespace AmpGen;
 
 namespace AmpGen { 
-  make_enum(pdfTypes, CoherentSum, PolarisedSum, IncoherentSum, FixedLib)
+  make_enum(pdfTypes, CoherentSum, PolarisedSum, PolarisedSumBkgBDT, IncoherentSum, FixedLib)
   make_enum(phspTypes, PhaseSpace, RecursivePhaseSpace, TreePhaseSpace)
 }  
 
@@ -219,6 +220,169 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
     weight_file->Write();
     weight_file->Close();
     std::cout << "Fit weights saved" << std::endl;    
+}
+
+void makePlotWeightFile(PolarisedSum& sig, BkgPDF& bkg, const EventList_type& eventsPlotMC, const LinearErrorPropagator& ep, TRandom3& rand){
+    
+    string outDir = NamedParameter<std::string>("outDir", ".");
+    string FitWeightFileName = NamedParameter<std::string>("FitWeightFileName", "Fit_weights.root");
+    FitWeightFileName = outDir + "/" + FitWeightFileName;
+
+    TFile* weight_file = TFile::Open(FitWeightFileName.c_str(),"RECREATE");
+    weight_file->cd();
+    TTree* weight_tree = new TTree("DalitzEventList","DalitzEventList");
+    
+    auto plot_amps = NamedParameter<string>("plot_amps", std::vector<string>(),"amplitudes to plot" ).getVector();
+    auto plot_weights = NamedParameter<string>("plot_weights", std::vector<string>(),"plot weight names" ).getVector();
+    
+    vector<double> weights(plot_amps.size(),0.);
+    vector<TBranch*> branches;
+    vector<vector<unsigned>> indices;
+
+    auto weightFunction = sig.componentEvaluator();
+    //auto evaluator_sig = sig.evaluator();
+
+    // Amplitude component weights
+    for(unsigned int i = 0; i < plot_amps.size(); i++){
+        INFO( "Plotting amp " << plot_amps[i] << " with weight " <<  plot_weights[i] );
+
+        auto branch = weight_tree->Branch( plot_weights[i].c_str(),&weights[i]);
+        branches.push_back(branch);
+        
+        stringstream ss( plot_amps[i] );
+        std::vector<std::string> selectAmps;
+        while( ss.good() ){
+            std::string substr;
+            getline( ss, substr, '_' );
+            selectAmps.push_back( AmpGen::programatic_name(substr) );
+        }
+        
+        vector<unsigned> index;
+        unsigned counter = 0;
+        for( auto& key : weightFunction.keys ){
+            stringstream ss( key );
+            std::vector<std::string> selectKeys;
+            while( ss.good() ){
+                std::string substr;
+                getline( ss, substr, '!' );
+                selectKeys.push_back( substr );
+                //INFO("Found " <<substr);
+            }
+            if(selectKeys.size()!=2)throw "ERROR";
+            for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
+                if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
+                    index.push_back(counter);
+                    //if(selectAmp != "")INFO("Found " << key);
+                }
+            }
+            counter++;
+        }
+        indices.push_back(index);
+    }
+    
+    // Fit weights
+    vector<double> weightsFit(3,0.);
+    auto branch_w_full = weight_tree->Branch( "weight",&weightsFit[0]);
+    branches.push_back(branch_w_full);
+    auto branch_w_sig = weight_tree->Branch( "weight_sig",&weightsFit[1]);
+    branches.push_back(branch_w_sig);
+    auto branch_w_bkg = weight_tree->Branch( "weight_bkg",&weightsFit[2]);
+    branches.push_back(branch_w_bkg);
+    
+    // Error bands
+    auto params = ep.params();
+    unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);
+    auto gep = GaussErrorPropagator( ep.cov(), params, &rand );
+    vector<double> weightsErr(nPermErrorBands,0.);
+    vector<vector<double>> weightsErrVec;
+
+    // Sys error
+    string sysCovFileName = NamedParameter<std::string>("sysCovFileName", "");
+    FitResult fr(sysCovFileName);
+    auto params_sys = fr.floating();
+    bool doSysErrBand = params_sys.size() > 0 ? true : false;
+    INFO("SysCovFile has " << params_sys.size() << " parameters vs " << params.size() << " fit parameters " );
+
+    for(unsigned int i=0; i < params_sys.size(); ++i){
+        if(params[i]->name() != params_sys[i]->name() ) {
+            ERROR("SysCovFile incosistent " << params.size() << " " << params_sys.size() << " " << params[i]->name() << " " << params_sys[i]->name() );
+            doSysErrBand = false;
+            break;
+        }
+    }
+    auto gep_tot = GaussErrorPropagator( doSysErrBand ? ep.cov()+fr.getReducedCovariance() : ep.cov(), params, &rand );
+    vector<double> weightsErrTot(nPermErrorBands,0.);
+    vector<vector<double>> weightsErrTotVec;
+        
+    if( nPermErrorBands > 0 ){
+        for(int i = 0; i < nPermErrorBands; i++){
+            auto branch = weight_tree->Branch( ("weightErr_"+to_string(i)).c_str(),&weightsErr[i]);
+            branches.push_back(branch);
+            if(doSysErrBand){
+                auto branch_tot = weight_tree->Branch( ("weightErrTot_"+to_string(i)).c_str(),&weightsErrTot[i]);
+                branches.push_back(branch_tot);
+            }
+        }
+        for(int i = 0; i < nPermErrorBands; i++){
+            //INFO("sig.norm()" << sig.norm());
+            //INFO("sig.prob_unnormalisedNoCache()" << sig.getValNoCache(eventsPlotMC[1]) << endl);
+            INFO("Doing error band perturb " << i);
+            gep.reset();
+            gep.perturb();
+            sig.reset();
+            sig.prepare();
+            vector<double> weightsErrTmp;
+            for( const auto& evt : eventsPlotMC ){
+                weightsErrTmp.push_back( ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ;
+            }
+            weightsErrVec.push_back(weightsErrTmp);
+
+            if(doSysErrBand){
+                gep_tot.reset();
+                gep_tot.perturb();
+                sig.reset();
+                sig.prepare();
+                vector<double> weightsErrTotTmp;
+                for( const auto& evt : eventsPlotMC ){
+                    weightsErrTotTmp.push_back( ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ) ;
+                }
+                weightsErrTotVec.push_back(weightsErrTotTmp);
+            }
+        }
+        gep.reset();
+        if(doSysErrBand)gep_tot.reset();
+        sig.reset();
+        sig.prepare();
+    }
+
+    unsigned counter = 0;
+    for( const auto& evt : eventsPlotMC ){
+        
+        //weightsFit[1] = evt.weight() * evaluator_sig(evt) / evt.genPdf() ;
+        weightsFit[1] = ( sig.getValNoCache(evt) * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ;
+        weightsFit[2] = ( bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight() / bkg.norm() ) * evt.weight() / evt.genPdf() ;
+        //weightsFit[2] = evt.weight() * evaluator_bkg(evt) / evt.genPdf() ;  // does not work ???
+        weightsFit[0] = weightsFit[1] + weightsFit[2];
+        
+        auto weightFun = weightFunction(evt);
+        for(int i = 0; i < plot_amps.size(); i++){
+            weights[i] = 0;
+            for( unsigned j = 0 ; j != indices[i].size(); ++j ) weights[i] += ( weightFun[indices[i][j]] * sig.getWeight() / sig.norm() ) * evt.weight() / evt.genPdf() ;
+        }
+
+        for(int i = 0; i < nPermErrorBands; i++){
+            weightsErr[i] = weightsErrVec[i][counter] + weightsFit[2] ;
+            if(doSysErrBand)weightsErrTot[i] = weightsErrTotVec[i][counter] + weightsFit[2];
+        }
+        
+        counter++;
+        weight_tree->Fill();
+    }
+
+    weight_tree->Write();
+    weight_file->Write();
+    weight_file->Close();
+    std::cout << "Fit weights saved" << std::endl;
 }
 
 void makePlotWeightFile(IncoherentSum& sig, const EventList_type& eventsPlotMC, const LinearErrorPropagator& ep, TRandom3& rand){
@@ -981,6 +1145,143 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
     return vals;
 }
 
+//vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const std::function<double( const Event& )>& fcn_bkg, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
+//
+//    EventType pdg = dataEvents.eventType();
+//    //EventType B+ K+ pi+ pi- mu+ mu-
+//
+//    vector<unsigned int> m012{0,1,2};
+//    vector<unsigned int> m02{0,2};
+//    vector<unsigned int> m12{1,2};
+//    vector<unsigned int> m3412{3,4,1,2};
+//    vector<unsigned int> m341{3,4,1};
+//    vector<unsigned int> m342{3,4,2};
+//    vector<unsigned int> m340{3,4,0};
+//    vector<unsigned int> m3402{3,4,0,2};
+//    vector<unsigned int> m3401{3,4,0,1};
+//    vector<unsigned int> m01{0,1};
+//    vector<unsigned int> m34{3,4};
+//
+//    HyperPointSet points( dim );
+//    HyperPoint min(dim);
+//    HyperPoint max(dim);
+//
+//    if(dim==7 && mode==1){
+//        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first, pdg.minmax(m340).first, pdg.minmax(m3402).first);
+//        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second, pdg.minmax(m340).second, pdg.minmax(m3402).second );
+//    }
+//    else if(dim==7){
+//        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first, -1, -3.141 );
+//        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second, 1, 3.141 );
+//    }
+//    else if(dim==5 && mode ==0){
+//        min = HyperPoint( pdg.minmax(m012).first, pdg.minmax(m02).first, pdg.minmax(m12).first, pdg.minmax(m3412).first, pdg.minmax(m341).first );
+//        max = HyperPoint( pdg.minmax(m012).second, pdg.minmax(m02).second, pdg.minmax(m12).second, pdg.minmax(m3412).second, pdg.minmax(m341).second );
+//    }
+//    else if(dim==5){
+//        min = HyperPoint( pow(pdg.minmax(m012).first,2), pow(pdg.minmax(m02).first,2), pow(pdg.minmax(m12).first,2), pow(pdg.minmax(m3412).first,2), pow(pdg.minmax(m341).first,2) );
+//        max = HyperPoint( pow(pdg.minmax(m012).second,2), pow(pdg.minmax(m02).second,2), pow(pdg.minmax(m12).second,2), pow(pdg.minmax(m3412).second,2), pow(pdg.minmax(m341).second,2) );
+//    }
+//
+//    HyperCuboid limits(min, max );
+//
+//    for( auto& evt : dataEvents ){
+//        HyperPoint point( dim );
+//        if(mode == 1 && dim==5){
+//            point.at(0)= evt.s(m012);
+//            point.at(1)= evt.s(m02);
+//            point.at(2)= evt.s(m12);
+//            point.at(3)= evt.s(m3412);
+//            point.at(4)= evt.s(m341);
+//        }
+//        else{
+//            point.at(0)= sqrt(evt.s(m012));
+//            point.at(1)= sqrt(evt.s(m02));
+//            point.at(2)= sqrt(evt.s(m12));
+//            point.at(3)= sqrt(evt.s(m3412));
+//            point.at(4)= sqrt(evt.s(m341));
+//        }
+//        if(dim==7 && mode==0){
+//            point.at(5)= cosThetaMuAngle(evt);
+//            point.at(6)= chiMuAngle(evt);
+//        }
+//        else if(dim==7 && mode==1){
+//            point.at(5)= sqrt(evt.s(m340));
+//            point.at(6)= sqrt(evt.s(m3402));
+//        }
+//        point.addWeight(evt.weight());
+//        points.push_back(point);
+//    }
+//
+//    HyperPointSet pointsMC( dim);
+//    for( auto& evt : mcEvents ){
+//        HyperPoint point( dim );
+//        if(mode == 1 && dim==5){
+//            point.at(0)= evt.s(m012);
+//            point.at(1)= evt.s(m02);
+//            point.at(2)= evt.s(m12);
+//            point.at(3)= evt.s(m3412);
+//            point.at(4)= evt.s(m341);
+//        }
+//        else{
+//            point.at(0)= sqrt(evt.s(m012));
+//            point.at(1)= sqrt(evt.s(m02));
+//            point.at(2)= sqrt(evt.s(m12));
+//            point.at(3)= sqrt(evt.s(m3412));
+//            point.at(4)= sqrt(evt.s(m341));
+//        }
+//        if(dim==7 && mode==0){
+//            point.at(5)= cosThetaMuAngle(evt);
+//            point.at(6)= chiMuAngle(evt);
+//        }
+//        else if(dim==7 && mode==1){
+//            point.at(5)= sqrt(evt.s(m340));
+//            point.at(6)= sqrt(evt.s(m3402));
+//        }
+//        point.addWeight( ( fcn( evt ) + fcn_bkg( evt ) ) * evt.weight() / evt.genPdf());
+//        pointsMC.push_back(point);
+//    }
+//
+//    HyperHistogram dataHist(limits, points,
+//                            /*** Name of the binning algorithm you want to use     */
+//                            HyperBinningAlgorithms::SMART_MULTI,
+//                            /***  The minimum number of events allowed in each bin */
+//                            /***  from the HyperPointSet provided (points1)        */
+//                            AlgOption::MinBinContent      (minEventsPerBin),
+//                            /*** This minimum bin width allowed. Can also pass a   */
+//                            /*** HyperPoint if you would like different min bin    */
+//                            /*** widths for each dimension                         */
+//                            AlgOption::MinBinWidth        (minBinWidth),
+//                            /*** If you want to use the sum of weights rather than */
+//                            /*** the number of events, set this to true.           */
+//                            AlgOption::UseWeights         (true),
+//                            /*** Some algorithms use a random number generator. Set*/
+//                            /*** the seed here                                     */
+//                            AlgOption::RandomSeed         (1),
+//                            /*** What dimesnion would you like to split first? Only*/
+//                            /*** applies to certain algortihms                     */
+//                            AlgOption::StartDimension     (0)
+//                            /*** What dimesnions would you like to bin in?         */
+//                            //AlgOption::BinningDimensions  (binningDims),
+//                            /*** Setting this option will make the agorithm draw   */
+//                            /*** the binning scheme at each iteration              */
+//                            //AlgOption::DrawAlgorithm("Algorithm")
+//                            );
+//
+//    HyperHistogram mcHist( dataHist.getBinning() );
+//    mcHist.fill(pointsMC);
+//    mcHist.normalise(dataHist.integral());
+//
+//    double chi2 = dataHist.chi2(mcHist);
+//    int nBins   = dataHist.getNBins();
+//    cout << "chi2 = " << (double)chi2/(nBins-1.) << endl;
+//
+//    vector<double> vals;
+//    vals.push_back(chi2);
+//    vals.push_back((double)nBins);
+//
+//    return vals;
+//}
 
 int main( int argc, char* argv[])
 {
@@ -1080,7 +1381,7 @@ int main( int argc, char* argv[])
   auto scanParam = NamedParameter<std::string>("scanParam", std::vector<std::string>()).getVector(); // name, min, max, nSteps
   if(scanParam.size()==4)scan( MPS, scanParam[0], std::stod(scanParam[1]), std::stod(scanParam[2]), seed, std::stoi(scanParam[3]) );
         
-  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+  auto scale_transform = [bExtraNames](auto& event){ for( size_t x = 0 ; x < event.size()-bExtraNames.size(); ++x ) event[x] /= 1000.; };
   auto useFilter = NamedParameter<Int_t>("useFilter", 0,"Apply phsp cut");
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
   auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
@@ -1105,12 +1406,12 @@ int main( int argc, char* argv[])
   }
   else for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
     
-  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));  
-  //EventList_type events(dataFile, evtType, Branches(bNames), ExtraBranches(bExtraNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
+  //EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
+  EventList_type events(dataFile, evtType, Branches(bNames), ExtraBranches(bExtraNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
     
   double nSig = events.sumWeights();
-  //EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
-  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+  EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
+  //EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
     
   if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
     INFO("Changing data units from MeV -> GeV");
@@ -1122,8 +1423,9 @@ int main( int argc, char* argv[])
   }
   
   auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
+  INFO("pdfType " << pdfType);
     
-  if(pdfType==pdfTypes::PolarisedSum){  
+  if(pdfType==pdfTypes::PolarisedSumBkgBDT){
         // Signal pdf
         PolarisedSum sig(evtType, MPS);
         sig.setMC( eventsMC );
@@ -1258,6 +1560,8 @@ int main( int argc, char* argv[])
                 }
                 sig.setMC( eventsPlotMC );
                 sig.prepare();
+                bkg.setMC( eventsPlotMC );
+                bkg.prepare();
                 makePlotWeightFile(sig, bkg, eventsPlotMC, ep, rndm);  
                 //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
                 //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
@@ -1267,72 +1571,169 @@ int main( int argc, char* argv[])
         }
       
   }
-      
-  else if(pdfType==pdfTypes::IncoherentSum){  
-          
+     
+  else if(pdfType==pdfTypes::PolarisedSum){
           // Signal pdf
-          IncoherentSum sig(evtType, MPS, "Inco");
+          PolarisedSum sig(evtType, MPS);
           sig.setMC( eventsMC );
-          //checkAmps(sig, MPS);
+          checkAmps(sig, MPS);
+        
+          IncoherentSum bkg( evtType, MPS, "Inco" );
+          bkg.setMC( eventsMC );
+
+          BkgPDF bkgBDT( evtType );
+          bkgBDT.setMC( eventsMC );
+
+          sig.setWeight( MPS["f_sig"] );
+          bkg.setWeight( MPS["f_bkg"] );
+          bkgBDT.setWeight( MPS["f_bkg"] );
+
           sanityChecks(MPS);
-          //cout << "Number of amplitudes = " << sig.numAmps() << endl;
-              
-          auto ll = make_likelihood(events, sig);
-          sig.prepare();
-          //sig.normaliseAmps();
-              
-          // Do fit          
-          auto nFits = NamedParameter<int>("nFits", 1);  
-          double min_LL = 99999;
+          cout << "Number of amplitudes = " << sig.numAmps() << endl;
       
+          if(doSystematic=="Res"){
+              std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
+              int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
+              if(paramIndex >= paramsToVary.size()) FATAL("Nothing to vary");
+          
+              INFO("Have " << paramsToVary.size() << " params to vary +/- 1 sigma " );
+              vary(MPS,paramsToVary[ paramIndex ], seed < paramsToVary.size() ? -1 : +1);
+              doSystematic += paramsToVary[ paramIndex ] + seed < paramsToVary.size() ? (string) "_m" : (string) "_p"  + "1sigma" ;
+          }
+        
+          if(doSystematic=="ResAll"){
+              std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
+              INFO("Have " << paramsToVary.size() << " params to vary within uncertainties" );
+              varyGauss(MPS, paramsToVary );
+          }
+              
+          unsigned int useBkgBDT = NamedParameter<unsigned int>("useBkgBDT",1);
+          if(useBkgBDT){
+              if(bExtraNames.size()==0) ERROR("No bkgPdf branch set for data");
+              if(bExtraNamesMC.size()==0) ERROR("No bkgPdf branch set for MC");
+          }
+          auto ll = make_likelihood(events, sig, bkg) ;
+          auto ll_bdt = make_likelihood(events, sig, bkgBDT) ;
+          sig.prepare();
+          bkg.prepare();
+          bkgBDT.prepare();
+
+          if(normAmps){
+              if(phspFile == ""){
+                  sig.normaliseAmps(excludeNorm,combineNorm);
+              }
+              else{
+                  auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
+                  std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
+                  EventList_type eventsPhspMC = EventList_type(phspFile, evtType, GetGenPdf(true),Branches(bNamesPhsp), WeightBranch(weightPhsp));
+                  sig.setMC( eventsPhspMC );
+                  sig.prepare();
+                  sig.normaliseAmps(excludeNorm);
+
+                  sig.setMC( eventsMC );
+                  sig.prepare();
+              }
+          }
+      
+          if(useBkgBDT){
+              events[0].print();
+              cout << "bkgBDT.prob_unnormalisedNoCache(events[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(events[0]) << endl;
+              eventsMC[0].print();
+              cout << "bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) << endl;
+              
+              cout << "bkgBDT.norm() = " << bkgBDT.norm() << endl;
+              cout << "bkg.norm() = " << bkg.norm() << endl;
+              cout << "sig.norm() = " << sig.norm() << endl;
+
+              double norm_sum(0.),norm_sumBkg(0.), norm_sumBkgBDT(0.);
+              for(auto& evt : events){
+                  norm_sumBkgBDT += bkgBDT(evt);
+                  norm_sumBkg += bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight()/bkg.norm();
+                  norm_sum += sig(evt);
+              }
+              cout << "norm_sumBDT = " << norm_sumBkgBDT << endl;
+              cout << "norm_sumBkg = " << norm_sumBkg << endl;
+              cout << "norm_sum = " << norm_sum << endl;
+              //throw "";
+          }
+              
+          // Do fit
+          auto nFits = NamedParameter<int>("nFits", 1);
+          double min_LL = 99999;
+          auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
+
           for (unsigned int i = 0; i< nFits; ++i) {
 
               cout << "==============================================" << endl;
               INFO("Start fit number " << i);
 
               if(i>0){
-                  randomizeStartingPoint(MPS,rndm);
+              
+                  if(scanParam.size()==4)perturb(MPS,i);
+                  else randomizeStartingPoint(MPS,rndm);
+                  
                   sig.setMC( eventsMC );
-                  //sig.prepare();
+                  sig.prepare();
+                  //sig.normaliseAmps(excludeNorm);
               }
-              FitResult* fr = doFit(ll, events, eventsMC, MPS );
+              FitResult* fr;
+              if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
+              else fr = doFit(ll, events, eventsMC, MPS );
               
               if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                   INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
-                  //continue;
+                  continue;
               }
               else {
                   INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
                   min_LL=fr->LL();
               }
-              
+
               auto ep = fr->getErrorPropagator();
-              auto fitFractions = sig.fitFractions( ep );   
+              auto fitFractions = sig.fitFractions( ep );
               fr->addFractions( fitFractions );
-                          
-              // Estimate the chi2 
-              auto evaluator = sig.evaluator();
+              vector<double> thresholds{0.1,0.5,1,2,5};
+              vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
+              
+              // Plot spline
+              string head = NamedParameter<std::string>("Head","");
+              if(head!="")fr->plotSpline(head,outDir);
+            
+              // Estimate the chi2
+              auto evaluator_sig = sig.evaluator();
+              auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
+              
               auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+              auto chi2Mode = NamedParameter<Int_t>("chi2Mode", 0);
               if(pNames.size()==6){
-                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, evaluator, 7, MinEventsChi2, 0. );
-                  fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
+                  INFO("Calculating chi2 ...");
+                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
+                  INFO("Calculating chi2 Dalitz ...");
+                  vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
+                  fr->addChi2( chi2Mode==0 ? chi2Hyper[0] : chi2HyperDalitz[0], chi2Mode==0 ? chi2Hyper[1] : chi2HyperDalitz[1] );
               }
               else{
-                  Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                  Chi2Estimator chi2( events, eventsMC, evaluator_sig, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                  //chi2Hyper = getChi2(events, eventsMC, evaluator, Dim(3*(pNames.size()-1)-7), MinEventsChi2, 0., 1 );
+                  //chi2.writeBinningToFile("chi2_binning.txt");
                   fr->addChi2( chi2.chi2(), chi2.nBins() );
               }
               
+              cout << "Number of amplitudes = " << sig.numAmps() << endl;
+              cout << "Number of parameters = " << fr->floating().size() << endl;
+              
               int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
               TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+              fr->setSystematic(doSystematic);
               fr->print();
               fr->writeToFile(logFile);
               fr->printToLatexTable(tableFile);
               fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
-              fr->writeToRootFile( output, seed, 0, 0, nSig, {0}, {0} );
+              fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
               output->cd();
               output->Close();
-
-              unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);  
+                              
+              unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
               if( saveWeights ){
                   EventList_type eventsPlotMC;
                   if(maxIntEvents == -1) eventsPlotMC = eventsMC;
@@ -1340,13 +1741,105 @@ int main( int argc, char* argv[])
                       eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListPlotMC));
                   }
                   sig.setMC( eventsPlotMC );
-                  //sig.prepare();
-                  makePlotWeightFile(sig,eventsPlotMC, ep, rndm);  
+                  sig.prepare();
+                  if(useBkgBDT){
+                      bkgBDT.setMC( eventsPlotMC );
+                      bkgBDT.prepare();
+                      makePlotWeightFile(sig, bkgBDT, eventsPlotMC, ep, rndm);
+                  }
+                  else{
+                      bkg.setMC( eventsPlotMC );
+                      bkg.prepare();
+                      makePlotWeightFile(sig, bkg, eventsPlotMC, ep, rndm);
+                  }
+                  //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                  //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
+                  //fr->print();
               }
               
-        }
+          }
+        
+  }
 
+  else if(pdfType==pdfTypes::IncoherentSum){
+        
+        // Signal pdf
+        IncoherentSum sig(evtType, MPS, "Inco");
+        sig.setMC( eventsMC );
+        //checkAmps(sig, MPS);
+        sanityChecks(MPS);
+        //cout << "Number of amplitudes = " << sig.numAmps() << endl;
+            
+        auto ll = make_likelihood(events, sig);
+        sig.prepare();
+        //sig.normaliseAmps();
+            
+        // Do fit
+        auto nFits = NamedParameter<int>("nFits", 1);
+        double min_LL = 99999;
+    
+        for (unsigned int i = 0; i< nFits; ++i) {
+
+            cout << "==============================================" << endl;
+            INFO("Start fit number " << i);
+
+            if(i>0){
+                randomizeStartingPoint(MPS,rndm);
+                sig.setMC( eventsMC );
+                //sig.prepare();
+            }
+            FitResult* fr = doFit(ll, events, eventsMC, MPS );
+            
+            if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
+                INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                //continue;
+            }
+            else {
+                INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                min_LL=fr->LL();
+            }
+            
+            auto ep = fr->getErrorPropagator();
+            auto fitFractions = sig.fitFractions( ep );
+            fr->addFractions( fitFractions );
+                        
+            // Estimate the chi2
+            auto evaluator = sig.evaluator();
+            auto MinEventsChi2 = NamedParameter<Int_t>("MinEventsChi2", 15, "MinEventsChi2" );
+            if(pNames.size()==6){
+                vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator, evaluator, 7, MinEventsChi2, 0. );
+                fr->addChi2( chi2Hyper[0], chi2Hyper[1] );
+            }
+            else{
+                Chi2Estimator chi2( events, eventsMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                fr->addChi2( chi2.chi2(), chi2.nBins() );
+            }
+            
+            int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
+            TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+            fr->print();
+            fr->writeToFile(logFile);
+            fr->printToLatexTable(tableFile);
+            fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
+            fr->writeToRootFile( output, seed, 0, 0, nSig, {0}, {0} );
+            output->cd();
+            output->Close();
+
+            unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
+            if( saveWeights ){
+                EventList_type eventsPlotMC;
+                if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+                else {
+                    eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListPlotMC));
+                }
+                sig.setMC( eventsPlotMC );
+                //sig.prepare();
+                makePlotWeightFile(sig,eventsPlotMC, ep, rndm);
+            }
+            
     }
+
+}
       
       
 //  int status = 0;

@@ -1,7 +1,7 @@
 EventType B+ K+ pi+ pi- mu+ mu-
 
 DataSample		/eos/lhcb/user/p/phdargen/B2JpsiKpipi/Final/psi_sideband.root:DecayTree
-"weightData"		" "
+"weightData"		"weight"
 DataUnits	 	MeV
 Branches FullDTFCP_K_PX FullDTFCP_K_PY FullDTFCP_K_PZ FullDTFCP_K_PE FullDTFCP_pip_PX FullDTFCP_pip_PY FullDTFCP_pip_PZ FullDTFCP_pip_PE FullDTFCP_pim_PX FullDTFCP_pim_PY FullDTFCP_pim_PZ FullDTFCP_pim_PE FullDTFCP_mup_PX FullDTFCP_mup_PY FullDTFCP_mup_PZ FullDTFCP_mup_PE FullDTFCP_mum_PX FullDTFCP_mum_PY FullDTFCP_mum_PZ FullDTFCP_mum_PE
 
@@ -30,8 +30,8 @@ nBins       60
 MinEventsChi2	25
 
 nPermErrorBands   0
-smoothFitProj 0
-*"AltFitWeightFileNames"     "bkgFit2/Fit_weights.root" "bkgFit/Fit_weights.root"
+smoothFitProj 1
+"AltFitWeightFileNames"     "bkgFitBDT/Fit_weights_low.root" "bkgFitBDT/Fit_weights_high.root" "bkgFitBDT/Fit_weights_allVars.root"
 outDir  bkgFitBDT
 
 #B+  K+ pi+ pi- mu+ mu-

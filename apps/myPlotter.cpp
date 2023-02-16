@@ -1513,6 +1513,9 @@ void makePlotsMuMu(){
         if(j==0)c->Print((outDir+"/"+labels[j]+".root").c_str());
     }
     
+    cout << "f_bkg = " << histo_set[0][histo_set[0].size()-1]->Integral()/histo_set[0][1]->Integral() << endl;
+    cout << "f_bkg = " << histo_set[1][histo_set[1].size()-1]->Integral()/histo_set[1][1]->Integral() << endl;
+
     c->Clear();
     c->Divide(3,2);
     c->SetCanvasSize(1000, 500);
