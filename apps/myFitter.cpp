@@ -1305,7 +1305,8 @@ int main( int argc, char* argv[])
 
           sanityChecks(MPS);
           cout << "Number of amplitudes = " << sig.numAmps() << endl;
-      
+          for(auto& p : MPS){if(p->name().find("Z(4055)V") != std::string::npos)INFO(p->name() << " = " << p->mean());}
+
           if(doSystematic=="Res"){
               std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
               int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
@@ -1335,7 +1336,7 @@ int main( int argc, char* argv[])
 
           if(normAmps){
               if(phspFile == ""){
-                  sig.normaliseAmps(excludeNorm,combineNorm);
+                  sig.normaliseAmps(excludeNorm);
               }
               else{
                   auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
@@ -1344,7 +1345,6 @@ int main( int argc, char* argv[])
                   sig.setMC( eventsPhspMC );
                   sig.prepare();
                   sig.normaliseAmps(excludeNorm);
-
                   sig.setMC( eventsMC );
                   sig.prepare();
               }

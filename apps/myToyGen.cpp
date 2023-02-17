@@ -284,7 +284,10 @@ int main( int argc, char** argv )
   #endif
 
   TRandom3 rand;
+  seed =  atoi(argv[1]);
+  cout << "Using random seed = " << seed << endl;
   rand.SetSeed( seed + 934534 );
+  gRandom = &rand;
 
   MinuitParameterSet MPS;
   MPS.loadFromStream();
@@ -309,47 +312,56 @@ int main( int argc, char** argv )
   EventList events( eventType );
   EventList events_bkg( eventType );
 
-  double f_sig = MPS["f_sig"]->mean();
-  double f_bkg = MPS["f_bkg"]->mean();
+  double f_sig = MPS["f_sig"]==nullptr ? 1.0 : MPS["f_sig"]->mean();
+  double f_bkg = MPS["f_bkg"]==nullptr ? 0.0 : MPS["f_bkg"]->mean();
+  INFO("Generating " << nEvents << " events with f_sig = " << f_sig << " and f_bkg = " << f_bkg << " ..." );
+  TFile* f;
+    
   // Generate signal events
-  {
-        PolarisedSum pdf(eventType, MPS);
-        checkAmps(pdf, MPS);
-        sanityChecks(MPS);
-        cout << "Number of amplitudes = " << pdf.numAmps() << endl;
-        if(normAmps){
-            auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
-            std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
-            EventList eventsPhspMC = EventList(phspFile, eventType, GetGenPdf(true),Branches(bNamesPhsp), WeightBranch(weightPhsp));
-            EventList dummy( eventType );
-            dummy.push_back(eventsPhspMC[0]);
-            pdf.setEvents( dummy );
-            pdf.setMC( dummy );
-            pdf.prepare();
-            INFO("Normalizing amps using the file " << phspFile);
-            pdf.normaliseAmps(excludeNorm);
-            pdf.reset(true);
+  if(f_sig>0){
+        {
+            PolarisedSum pdf(eventType, MPS);
+            checkAmps(pdf, MPS);
+            sanityChecks(MPS);
+            cout << "Number of amplitudes = " << pdf.numAmps() << endl;
+            if(normAmps){
+                auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
+                std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
+                EventList eventsPhspMC = EventList(phspFile, eventType, GetGenPdf(true),Branches(bNamesPhsp), WeightBranch(weightPhsp));
+                EventList dummy( eventType );
+                dummy.push_back(eventsPhspMC[0]);
+                
+                pdf.setEvents( dummy );
+                pdf.setMC( eventsPhspMC );
+                pdf.prepare();
+                INFO("Normalizing amps using the file " << phspFile);
+                pdf.normaliseAmps(excludeNorm);
+                pdf.reset(true);
+            }
+            INFO("Generating " << f_sig * nEvents << " signal events ...");
+            generateEvents( events, pdf, phspType, f_sig * nEvents, blockSize, &rand );
         }
-        INFO("Generating " << f_sig * nEvents << " signal events ...");
-        generateEvents( events, pdf, phspType, f_sig * nEvents, blockSize, &rand );
+        TString outfile_sig = TString(outfile.c_str()).ReplaceAll(".root","_sig.root");
+        f = new TFile( outfile_sig, "RECREATE" );
+        INFO( "Writing signal output file " << outfile_sig );
+        events.tree( "DalitzEventList" )->Write();
+        f->Close();
   }
-  TString outfile_sig = TString(outfile.c_str()).ReplaceAll(".root","_sig.root");
-  TFile* f = new TFile( outfile_sig, "RECREATE" );
-  INFO( "Writing signal output file " << outfile_sig );
-  events.tree( "DalitzEventList" )->Write();
-  f->Close();
   
   // Generate bkg events
-  {
-        IncoherentSum bkg( eventType, MPS, "Inco");
-        generateEvents(events_bkg, bkg, phspType , f_bkg * nEvents, blockSize, &rand );
+  if(f_bkg>0){
+        {
+            IncoherentSum bkg( eventType, MPS, "Inco");
+            INFO("Generating " << f_bkg * nEvents << " bkg events ...");
+            generateEvents(events_bkg, bkg, phspType , f_bkg * nEvents, blockSize, &rand );
+        }
+        TString outfile_bkg = TString(outfile.c_str()).ReplaceAll(".root","_bkg.root");
+        f = TFile::Open( outfile_bkg, "RECREATE" );
+        INFO( "Writing bkg output file " << outfile_bkg );
+        events_bkg.tree( "DalitzEventList" )->Write();
+        f->Close();
   }
-  TString outfile_bkg = TString(outfile.c_str()).ReplaceAll(".root","_bkg.root");
-  f = TFile::Open( outfile_bkg, "RECREATE" );
-  INFO( "Writing bkg output file " << outfile_bkg );
-  events_bkg.tree( "DalitzEventList" )->Write();
-  f->Close();
-
+    
   // Merge sig + bkg events
   events.add(events_bkg);
   f = TFile::Open( outfile.c_str(), "RECREATE" );
