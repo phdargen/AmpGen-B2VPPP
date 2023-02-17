@@ -1305,7 +1305,6 @@ int main( int argc, char* argv[])
 
           sanityChecks(MPS);
           cout << "Number of amplitudes = " << sig.numAmps() << endl;
-          for(auto& p : MPS){if(p->name().find("Z(4055)V") != std::string::npos)INFO(p->name() << " = " << p->mean());}
 
           if(doSystematic=="Res"){
               std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
