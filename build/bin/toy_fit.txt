@@ -1,20 +1,20 @@
-#useBkgBDT   0
-#DataSample        toy_bestExotic.root
-#weightData        noWeight
-#IntegrationSample   toy_coreStart.root
+useBkgBDT   0
+DataSample        toy_bestExotic.root
+weightData        noWeight
+IntegrationSample   toy_coreStart.root
 #IntegrationSample   toy_integration.root
 #IntegrationSample   toy_phspAmpGen_1M.root
-#ExtraBranches        ""
-#ExtraBranchesMC        ""
+ExtraBranches        ""
+ExtraBranchesMC        ""
 
-useBkgBDT   1
-DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/toy_bestExotic_bkgPdf.root
-weightData        noWeight
-IntegrationSample   /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/SignalIntegrationEvents_Acc_bkgPdf_toy.root
-ExtraBranches        "bkgPdf"
-ExtraBranchesMC        "bkgPdf"
+#useBkgBDT   1
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/toy_bestExotic_bkgPdf.root
+#weightData        noWeight
+#IntegrationSample   /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/SignalIntegrationEvents_Acc_bkgPdf_toy.root
+#ExtraBranches        "bkgPdf"
+#ExtraBranchesMC        "bkgPdf"
 
-maxIntEvents        500000
+maxIntEvents        600000
 
 phspFile SignalIntegrationEvents_Acc.root
 weightPhsp        weight
@@ -23,7 +23,6 @@ BranchesPhsp Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ p
 DataUnits	GeV
 Branches	""
 BranchesMC	""
-
 
 addAmpList  ""
 normAmps 1

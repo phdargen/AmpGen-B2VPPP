@@ -1,7 +1,7 @@
 EventType B+ K+ pi+ pi- mu+ mu-
 #EventType B+ K+ pi+ pi- psi(2S)0
 
-nEvents    30000
+nEvents    32000
 BlockSize   500000
 Type PolarisedSum
 CouplingConstant::Coordinates  polar
@@ -31,3 +31,5 @@ psi(2S)0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
 #psi(2S)0_width  2   0.05  0.0001
 ParticleProperties::qsThreshold     0.001
 
+"fixParamsOptionsFile"      0
+saveWeights     0
