@@ -1252,29 +1252,59 @@ int main( int argc, char* argv[])
 
   EventType evtType(pNames);
   vector<size_t> entryList,entryListMC,entryListPlotMC;
-  auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);  
+ 
+  auto doBootstrap = NamedParameter<int>("doBootstrap", 0);
+  auto N_bootstrap = NamedParameter<int>("N_bootstrap", -1);
+  auto maxDataEvents = NamedParameter<int>("maxDataEvents", -1);
+
+  auto doBootstrapMC = NamedParameter<int>("doBootstrapMC", 0);
+  auto N_bootstrapMC = NamedParameter<int>("N_bootstrapMC", -1);
+  auto maxIntEvents = NamedParameter<int>("maxIntEvents", -1);
+  
   if(useFilter==1){
-      EventList_type dummyEvents(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
-      EventList_type dummyEventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
-    
-      if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") dummyEvents.transform( scale_transform );      
-      if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") dummyEventsMC.transform( scale_transform );
-      
-      for(int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]))entryList.push_back(i);
-      for(int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])){
-          if(entryListMC.size()<maxIntEvents)entryListMC.push_back(i);
-          entryListPlotMC.push_back(i);
-       }
+        EventList_type dummyEvents(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
+        EventList_type dummyEventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+        
+        if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") dummyEvents.transform( scale_transform );
+        if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") dummyEventsMC.transform( scale_transform );
+        
+        for(int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]))entryList.push_back(i);
+        for(int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])){
+            if(entryListMC.size()<maxIntEvents)entryListMC.push_back(i);
+            entryListPlotMC.push_back(i);
+        }
   }
-  else for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
+  else{
+      if(doBootstrap){
+          EventList_type dummyEvents(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData));
+          int N_sample = dummyEvents.size();
+          if(N_bootstrap == -1)N_bootstrap = N_sample;
+          
+          vector<int> b_indices;
+          while( b_indices.size() < N_bootstrap )b_indices.push_back(TMath::Nint(rndm.Uniform(0,N_sample-1)));
+          sort(b_indices.begin(), b_indices.end());
+          for(unsigned int i=0; i<b_indices.size(); i++)entryList.push_back(b_indices[i]);
+      }
+      
+      if(doBootstrapMC){
+          EventList_type dummyEvents(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true));
+          int N_sample = dummyEvents.size();
+          if(N_bootstrap == -1)N_bootstrap = maxIntEvents > 0 ? maxIntEvents : N_sample;
+          
+          vector<int> b_indices;
+          while( b_indices.size() < N_bootstrap )b_indices.push_back(TMath::Nint(rndm.Uniform(0,N_sample-1)));
+          sort(b_indices.begin(), b_indices.end());
+          for(unsigned int i=0; i<b_indices.size(); i++)entryListMC.push_back(b_indices[i]);
+      }
+  }
     
-  //EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
+  if(entryList.size()==0 && maxDataEvents>0)for(int i = 0; i < maxDataEvents; i++)entryList.push_back(i);
+  if(entryListMC.size()==0 && maxIntEvents>0)for(int i = 0; i < maxIntEvents; i++)entryListMC.push_back(i);
+
   EventList_type events(dataFile, evtType, Branches(bNames), ExtraBranches(bExtraNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList));
-    
-  double nSig = events.sumWeights();
   EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
-  //EventList_type eventsMC(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListMC));
-    
+  double nSig = events.sumWeights();
+
   if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") {
     INFO("Changing data units from MeV -> GeV");
     events.transform( scale_transform );
@@ -1452,7 +1482,7 @@ int main( int argc, char* argv[])
                   EventList_type eventsPlotMC;
                   if(maxIntEvents == -1) eventsPlotMC = eventsMC;
                   else {
-                      eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), WeightBranch(weightMC), GetGenPdf(true),EntryList(entryListPlotMC));
+                      eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true), EntryList(entryListPlotMC));
                   }
                   sig.setMC( eventsPlotMC );
                   sig.prepare();

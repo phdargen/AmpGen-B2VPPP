@@ -7,19 +7,18 @@ EventType B+ K+ pi+ pi- mu+ mu-
 #IntegrationSample   SignalIntegrationEvents_Acc.root
 
 ## Bkg model
-#useBkgBDT   0
-#DataSample        psi_data_reduced.root:DecayTree
-#weightData        noWeight
-#IntegrationSample   SignalIntegrationEvents_Acc.root
+useBkgBDT   0
+DataSample        psi_data_reduced.root:DecayTree
+weightData        noWeight
+IntegrationSample   SignalIntegrationEvents_Acc.root
 
 ## Bkg BDT
-useBkgBDT   1
-"ExtraBranches" "bkgPdf"
-"ExtraBranchesMC" "bkgPdf"
-DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/psi_data_bkgPdf.root:DecayTree
-weightData        noWeight
-IntegrationSample   /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/SignalIntegrationEvents_Acc_bkgPdf.root
-
+#useBkgBDT   1
+#"ExtraBranches" "bkgPdf"
+#"ExtraBranchesMC" "bkgPdf"
+#DataSample        psi_data_bkgPdf.root:DecayTree
+#weightData        noWeight
+#IntegrationSample   SignalIntegrationEvents_Acc_bkgPdf.root
 
 DataUnits	 	MeV
 Branches FullDTFCP_K_PX FullDTFCP_K_PY FullDTFCP_K_PZ FullDTFCP_K_PE FullDTFCP_pip_PX FullDTFCP_pip_PY FullDTFCP_pip_PZ FullDTFCP_pip_PE FullDTFCP_pim_PX FullDTFCP_pim_PY FullDTFCP_pim_PZ FullDTFCP_pim_PE FullDTFCP_mup_PX FullDTFCP_mup_PY FullDTFCP_mup_PZ FullDTFCP_mup_PE FullDTFCP_mum_PX FullDTFCP_mum_PY FullDTFCP_mum_PZ FullDTFCP_mum_PE
@@ -33,7 +32,7 @@ BranchesMC Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ pip
 "Minimiser::Tolerance"  1.0
 "Minimiser::PrintLevel" 1
 "Minimiser::Normalise"	1
-"nCores"        6
+"nCores"        8
 Fit::nReTries	 0
 nFits		 1
 addAmpList  addAmpListExotic_v3.txt

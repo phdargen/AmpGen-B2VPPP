@@ -1,0 +1,7 @@
+"doBootstrap"	 0
+"N_bootstrap"   -1
+
+"doBootstrapMC"    1
+"N_bootstrapMC"   -1
+
+addAmpList ""
