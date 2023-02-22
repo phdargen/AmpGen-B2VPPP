@@ -1,7 +1,8 @@
 "baseLineFit" "log_bestNoExotic.txt"
+"baseLineToy" "toy_bestNoExotic/log.txt"
 
-"includeSys" "Acc" "Bkg" "FF" "NR" "LS" "Res" "AltAmp"
-#"includeSys" "Acc" "Bkg" "FF" "LS" "Res" 
+"includeSys" "Toys" "MC" "Acc" "Bkg" "FF" "NR" "LS" "Res" "AltAmp"
+#"includeSys" "Toys" "MC" "Acc" "Bkg" "FF" "LS" "Res" 
 #"includeSys" "Bkg" 
 
 "sysNameAcc" "Acc"
@@ -31,3 +32,12 @@
 "sysNameAltAmp" "Alt. Amp."
 "sysFilesAltAmp" "modelSelNoExotic/v14/log_" 1 50
 "sysMethodAltAmp" "Bias"
+
+
+"sysNameMC" "MC Integ."
+"sysFilesMC" "sys_mc/log_" 0 99
+"sysMethodMC" "Var"
+
+"sysNameToys" "Fit bias"
+"sysFilesToys" "sys_toy/log_" 0 149
+"sysMethodToys" "PullBias"

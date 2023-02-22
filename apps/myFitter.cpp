@@ -1405,7 +1405,12 @@ int main( int argc, char* argv[])
           auto nFits = NamedParameter<int>("nFits", 1);
           double min_LL = 99999;
           auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
-
+          if(!performFit){
+              for(int i=0;i<MPS.size();i++){
+                  MPS[i]->fix();
+              }
+          }
+      
           for (unsigned int i = 0; i< nFits; ++i) {
 
               cout << "==============================================" << endl;
