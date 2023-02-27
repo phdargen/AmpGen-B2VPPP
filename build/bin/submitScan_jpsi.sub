@@ -45,8 +45,8 @@ request_cpus   = 2
 #RequestCpus = 8
 request_disk   = 800000
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(INDIR)/scan_baseline.txt, $(INDIR)/$(OPTIONFILE), psi_data_reduced.root, SignalIntegrationEvents_Acc.root, mass_width.csv, MintDalitzSpecialParticles.csv
-arguments = $(Process) main_psi.txt scan_baseline.txt $(OPTIONFILE)
+transfer_input_files = myFitter.exe, myPlotter.exe, main_jpsi.txt, $(INDIR)/scan_baseline.txt, $(INDIR)/$(OPTIONFILE), Jpsi_data_bkgPdf.root, SignalIntegrationEvents_jpsiAcc_bkgPdf.root, mass_width.csv, MintDalitzSpecialParticles.csv
+arguments = $(Process) main_jpsi.txt scan_baseline.txt $(OPTIONFILE)
  
 output      = $(INDIR)/$(OUTDIR)/out.out
 error       = $(INDIR)/$(OUTDIR)/error.err

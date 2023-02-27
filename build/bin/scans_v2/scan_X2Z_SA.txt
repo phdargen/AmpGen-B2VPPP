@@ -1,0 +1,22 @@
+X(S)0_mass    2 4.500 0.05  3.5   5.5
+X(S)0_width   2 0.050 0.10  0.01  0.8
+Z(A)+_mass    2 4.239 0.05  3.5   5.5
+Z(A)+_width   2 0.22 0.10  0.01  0.8
+
+X(S)0[GSpline]{Z(A)+{psi(2S)0,pi+},pi-}                  0 0.5 0.001 0 10     0 0.0 0.1 -360 360
+X(S)0[GSpline]{Z(A)-{psi(2S)0,pi-},pi+}                  0 0.5 0.001 0 1     0 0.0 0.1 -360 360
+
+#X(S)0[GSpline]{rhoOmega10,psi(2S)0}   0 0.5 0.001 0 1     0 0.0 0.1 -360 360
+#rhoOmega10_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
+#rhoOmega10_deltaOmegaPhase   2   -12.6 0.001 -180 180
+
+"scanParam"	"X(S)0_mass" 4.1 4.8 30
+addAmpList	""
+Fit::nReTries     0
+nFits         2
+
+#X(4630)T0[GSpline]{Z(4430)+{psi(2S)0,pi+},pi-}  2 0. 0.01552 0 10    2 9.254 7.834 -360 360 
+#B+{X(4500)0,K+}  2 0 0 0 0    2 0 0 0 0 
+#B+{X(4630)T0,K+} 2 0 0 0 0    2 0 0 0 0 
+#B+{X(4685)0,K+}  2 0 0 0 0    2 0 0 0 0 
+#B+{X(4700)0,K+}  2 0 0 0 0    2 0 0 0 0 

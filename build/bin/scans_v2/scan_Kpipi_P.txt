@@ -1,0 +1,12 @@
+K(1460)+_mass    2 1.500 0.05  3.5   5.5
+K(1460)+_width   2 0.050 0.10  0.01  0.8
+
+B+{psi(2S)0,K(1460)+}  0 0.3 0.01233 0 2    0 233.1 2.991 -360 360 
+K(1460)+[GSpline.EFF]{K*(892)0{K+,pi-},pi+}  2 1 0 0 0    2 0 0 0 0 
+K(1460)+[GSpline.EFF]{PiPi30,K+}  0 1 0.001 0 10    0 0 1 -360 360 
+K(1460)+[GSpline]{rho(770)0[GounarisSakurai.Omega]{pi+,pi-},K+}  0 1 0.001 0 10   0 0.0 0.1 -360 360                    
+
+"scanParam"	"K(1460)+_mass" 1.15 1.65 33
+addAmpList	""
+Fit::nReTries     0
+nFits         3
