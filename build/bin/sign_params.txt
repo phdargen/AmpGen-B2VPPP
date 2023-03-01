@@ -1,0 +1,4 @@
+"ParamsToRelease"       "K(1)(1270)+_mass" "K(1)(1400)+_mass" "K(1460)+_mass" "K*(1410)+_mass" "K*(1680)+_mass" 
+"AmpsToRemove"          ""
+addAmpList              ""
+saveWeights             0
