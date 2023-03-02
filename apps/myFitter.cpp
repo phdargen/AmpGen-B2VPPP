@@ -1319,314 +1319,354 @@ int main( int argc, char* argv[])
 
   auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
   if(pdfType==pdfTypes::PolarisedSum){
-          // Signal pdf
-          PolarisedSum sig(evtType, MPS);
-          sig.setMC( eventsMC );
-          checkAmps(sig, MPS);
         
-          // Bkg pdf
-          IncoherentSum bkg( evtType, MPS, "Inco" );
-          bkg.setMC( eventsMC );
-
-          // Bkg pdf from BDT
-          BkgPDF bkgBDT( evtType );
-          bkgBDT.setMC( eventsMC );
-
-          sig.setWeight( MPS["f_sig"] );
-          bkg.setWeight( MPS["f_bkg"] );
-          bkgBDT.setWeight( MPS["f_bkg"] );
-
-          sanityChecks(MPS);
-          cout << "Number of amplitudes = " << sig.numAmps() << endl;
-
-          if(doSystematic=="Res"){
-              std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
-              int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
-              if(paramIndex >= paramsToVary.size()) FATAL("Nothing to vary");
+          vector<string> replaceAmpAwithB = NamedParameter<string>("replaceAmpAwithB",vector<string>() ).getVector();
+          vector<FitResult*> replaceAmpAwithBResults;
+          for(int n=0; n<replaceAmpAwithB.size();n++){
           
-              INFO("Have " << paramsToVary.size() << " params to vary +/- 1 sigma " );
-              vary(MPS,paramsToVary[ paramIndex ], seed < paramsToVary.size() ? -1 : +1);
-              doSystematic += paramsToVary[ paramIndex ] + seed < paramsToVary.size() ? (string) "_m" : (string) "_p"  + "1sigma" ;
-          }
-        
-          if(doSystematic=="ResAll"){
-              std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
-              INFO("Have " << paramsToVary.size() << " params to vary within uncertainties" );
-              varyGauss(MPS, paramsToVary );
-          }
+              // Signal pdf
+              PolarisedSum sig(evtType, MPS);
+              sig.setMC( eventsMC );
+              checkAmps(sig, MPS);
               
-          unsigned int useBkgBDT = NamedParameter<unsigned int>("useBkgBDT",1);
-          if(useBkgBDT){
-              if(bExtraNames.size()==0) ERROR("No bkgPdf branch set for data");
-              if(bExtraNamesMC.size()==0) ERROR("No bkgPdf branch set for MC");
-          }
-          auto ll = make_likelihood(events, sig, bkg) ;
-          auto ll_bdt = make_likelihood(events, sig, bkgBDT) ;
-          sig.prepare();
-          bkg.prepare();
-          bkgBDT.prepare();
-
-          if(normAmps){
-              if(phspFile == ""){
-                  sig.normaliseAmps(excludeNorm);
-              }
-              else{
-                  auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
-                  std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
-                  EventList_type eventsPhspMC = EventList_type(phspFile, evtType, GetGenPdf(true), Branches(bNamesPhsp), WeightBranch(weightPhsp));
-                  sig.setMC( eventsPhspMC );
-                  sig.prepare();
-                  sig.normaliseAmps(excludeNorm);
-                  sig.setMC( eventsMC );
-                  sig.prepare();
-              }
-          }
-      
-          if(useBkgBDT){
-              events[0].print();
-              cout << "bkgBDT.prob_unnormalisedNoCache(events[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(events[0]) << endl;
-              eventsMC[0].print();
-              cout << "bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) << endl;
+              // Bkg pdf
+              IncoherentSum bkg( evtType, MPS, "Inco" );
+              bkg.setMC( eventsMC );
               
-              cout << "bkgBDT.norm() = " << bkgBDT.norm() << endl;
-              cout << "bkg.norm() = " << bkg.norm() << endl;
-              cout << "sig.norm() = " << sig.norm() << endl;
-
-              double norm_sum(0.),norm_sumBkg(0.), norm_sumBkgBDT(0.);
-              for(auto& evt : events){
-                  norm_sumBkgBDT += bkgBDT(evt);
-                  norm_sumBkg += bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight()/bkg.norm();
-                  norm_sum += sig(evt);
-              }
-              cout << "norm_sumBDT = " << norm_sumBkgBDT << endl;
-              cout << "norm_sumBkg = " << norm_sumBkg << endl;
-              cout << "norm_sum = " << norm_sum << endl;
-              //throw "";
-          }
+              // Bkg pdf from BDT
+              BkgPDF bkgBDT( evtType );
+              bkgBDT.setMC( eventsMC );
               
-          // Do fit
-          auto nFits = NamedParameter<int>("nFits", 1);
-          auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
-          if(!performFit){
-              for(int i=0;i<MPS.size();i++){
-                  MPS[i]->fix();
-              }
-          }
-
-          double min_LL = 99999;
-          double minChi2 = 999;
-          double minChi2Dalitz = 999;
-          int nParams = 0;
-      
-          FitResult* fr_best;
-          for (unsigned int i = 0; i< nFits; ++i) {
+              sig.setWeight( MPS["f_sig"] );
+              bkg.setWeight( MPS["f_bkg"] );
+              bkgBDT.setWeight( MPS["f_bkg"] );
               
-              cout << "==============================================" << endl;
-              INFO("Start fit number " << i);
-              
-              if(i>0){
-                  if(scanParam.size()==4)perturb(MPS,i);
-                  else randomizeStartingPoint(MPS,rndm);
-                  
-                  sig.setMC( eventsMC );
-                  sig.prepare();
-                  //sig.normaliseAmps(excludeNorm);
-              }
-              FitResult* fr;
-              if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-              else fr = doFit(ll, events, eventsMC, MPS );
-              
-              if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
-                  INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
-                  continue;
-              }
-              else {
-                  INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
-                  min_LL=fr->LL();
-                  fr_best = fr;
-              }
-              
-              auto ep = fr->getErrorPropagator();
-              auto fitFractions = sig.fitFractions( ep );
-              fr->addFractions( fitFractions );
-              vector<double> thresholds{0.1,0.5,1,2,5};
-              vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
-              
-              // Plot spline
-              string head = NamedParameter<std::string>("Head","");
-              if(head!="")fr->plotSpline(head,outDir);
-              
-              // Estimate the chi2
-              auto evaluator_sig = sig.evaluator();
-              auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
-              
-              INFO("Calculating chi2 ...");
-              vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
-              INFO("Calculating chi2 Dalitz ...");
-              vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
-              
-              minChi2 = chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams);
-              minChi2Dalitz = chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams);
-              fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
-
-              nParams = fr->floating().size();
+              sanityChecks(MPS);
               cout << "Number of amplitudes = " << sig.numAmps() << endl;
-              cout << "Number of parameters = " << nParams << endl;
               
-              int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
-              TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
-              fr->setSystematic(doSystematic);
-              fr->print();
-              fr->writeToFile(logFile);
-              fr->printToLatexTable(tableFile);
-              fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
-              fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
-              output->cd();
-              output->Close();
+              if(doSystematic=="Res"){
+                  std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
+                  int paramIndex = seed < paramsToVary.size() ? seed : seed - paramsToVary.size() ;
+                  if(paramIndex >= paramsToVary.size()) FATAL("Nothing to vary");
+                  
+                  INFO("Have " << paramsToVary.size() << " params to vary +/- 1 sigma " );
+                  vary(MPS,paramsToVary[ paramIndex ], seed < paramsToVary.size() ? -1 : +1);
+                  doSystematic += paramsToVary[ paramIndex ] + seed < paramsToVary.size() ? (string) "_m" : (string) "_p"  + "1sigma" ;
+              }
               
-              unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
-              if( saveWeights ){
-                  EventList_type eventsPlotMC;
-                  if(maxIntEvents == -1) eventsPlotMC = eventsMC;
-                  else {
-                      eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true), EntryList(entryListPlotMC));
-                  }
-                  sig.setMC( eventsPlotMC );
-                  sig.prepare();
-                  if(useBkgBDT){
-                      bkgBDT.setMC( eventsPlotMC );
-                      bkgBDT.prepare();
-                      makePlotWeightFile(sig, bkgBDT, eventsPlotMC, ep, rndm);
+              if(doSystematic=="ResAll"){
+                  std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
+                  INFO("Have " << paramsToVary.size() << " params to vary within uncertainties" );
+                  varyGauss(MPS, paramsToVary );
+              }
+              
+              unsigned int useBkgBDT = NamedParameter<unsigned int>("useBkgBDT",1);
+              if(useBkgBDT){
+                  if(bExtraNames.size()==0) ERROR("No bkgPdf branch set for data");
+                  if(bExtraNamesMC.size()==0) ERROR("No bkgPdf branch set for MC");
+              }
+              auto ll = make_likelihood(events, sig, bkg) ;
+              auto ll_bdt = make_likelihood(events, sig, bkgBDT) ;
+              sig.prepare();
+              bkg.prepare();
+              bkgBDT.prepare();
+              
+              if(normAmps){
+                  if(phspFile == ""){
+                      sig.normaliseAmps(excludeNorm);
                   }
                   else{
-                      bkg.setMC( eventsPlotMC );
-                      bkg.prepare();
-                      makePlotWeightFile(sig, bkg, eventsPlotMC, ep, rndm);
+                      auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
+                      std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
+                      EventList_type eventsPhspMC = EventList_type(phspFile, evtType, GetGenPdf(true), Branches(bNamesPhsp), WeightBranch(weightPhsp));
+                      sig.setMC( eventsPhspMC );
+                      sig.prepare();
+                      sig.normaliseAmps(excludeNorm);
+                      sig.setMC( eventsMC );
+                      sig.prepare();
                   }
-                  //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
-                  //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
-                  //fr->print();
               }
               
-          }
-      
-          vector<string> paramsToRelease = NamedParameter<string>("ParamsToRelease",vector<string>() ).getVector();
-          vector<FitResult*> paramsToReleaseResults;
-          vector<int> paramsToReleaseNParams;
-          for(auto& param: paramsToRelease){
-              auto it = MPS.find( param );
-              if(it == nullptr) continue;
-              it->setFree();
-              auto it_width = MPS.find( replaceAll(it->name(),"_mass","_width") );
-              if(it_width != nullptr){
-                  it_width->setFree();
-                  INFO("Refit with released " << replaceAll(it->name(),"_mass","") << " mass and width" );
+              if(useBkgBDT){
+                  events[0].print();
+                  cout << "bkgBDT.prob_unnormalisedNoCache(events[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(events[0]) << endl;
+                  eventsMC[0].print();
+                  cout << "bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) << endl;
+                  
+                  cout << "bkgBDT.norm() = " << bkgBDT.norm() << endl;
+                  cout << "bkg.norm() = " << bkg.norm() << endl;
+                  cout << "sig.norm() = " << sig.norm() << endl;
+                  
+                  double norm_sum(0.),norm_sumBkg(0.), norm_sumBkgBDT(0.);
+                  for(auto& evt : events){
+                      norm_sumBkgBDT += bkgBDT(evt);
+                      norm_sumBkg += bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight()/bkg.norm();
+                      norm_sum += sig(evt);
+                  }
+                  cout << "norm_sumBDT = " << norm_sumBkgBDT << endl;
+                  cout << "norm_sumBkg = " << norm_sumBkg << endl;
+                  cout << "norm_sum = " << norm_sum << endl;
+                  //throw "";
               }
-              else INFO("Refit with released " << it->name() );
-              FitResult* fr;
-              if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-              else fr = doFit(ll, events, eventsMC, MPS );
-
-              auto evaluator_sig = sig.evaluator();
-              auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
-              vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
-              vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
               
-              int dParams = abs((int)fr->floating().size() - nParams);
-              double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob( abs(fr->LL() - min_LL),dParams ));
-              if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
-              if(fr->LL() > min_LL) LL_sig *= -1.;
-              INFO( "LL = " << fr->LL() );
-              INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
-              INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
-              INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
-              
-              fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
-              paramsToReleaseResults.push_back(fr);
-              paramsToReleaseNParams.push_back((int)fr->floating().size());
-
-              it->resetToInit();
-              it->fix();
-              if(it_width != nullptr){
-                  it_width->resetToInit();
-                  it_width->fix();
+              // Do fit
+              auto nFits = NamedParameter<int>("nFits", 1);
+              auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
+              if(!performFit){
+                  for(int i=0;i<MPS.size();i++){
+                      MPS[i]->fix();
+                  }
               }
-          }
-      
-          if(paramsToRelease.size()>0){
-              INFO("----SUMMARY::ParamsToRelease----");
-              for(int i=0;i<paramsToRelease.size();i++){
-                  FitResult* fr = paramsToReleaseResults[i];
-                  int dParams = abs(paramsToReleaseNParams[i] - nParams);
-                  double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
-                  if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
-                  if(fr->LL() > min_LL) LL_sig *= -1.;
-                  double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)paramsToReleaseNParams[i]);
-                  INFO("Param= " << paramsToRelease[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
-              }
-          }
-      
-          vector<string> ampsToRemove = NamedParameter<string>("AmpsToRemove",vector<string>() ).getVector();
-          vector<FitResult*> ampsToRemoveResults;
-          vector<int> ampsToRemoveNParams;
-          for(auto& amp: ampsToRemove){
               
-              vector<MinuitParameter*> removedParams;
-              vector<bool> removedParamIsFixed;
-              for(int i=0;i<MPS.size();i++){
-                  auto param = MPS[i];
-                  if(param->name().find(amp) != std::string::npos)
-                      if(param->name().find("_Re") != std::string::npos || param->name().find("_Im") != std::string::npos){
-                          removedParams.push_back(param);
-                          removedParamIsFixed.push_back(param->isFixed());
-                          param->setCurrentFitVal(0.);
-                          param->fix();
-                          INFO("Refit and fix parameter " << param->name() << " to 0");
+              double min_LL = 99999;
+              double minChi2 = 999;
+              double minChi2Dalitz = 999;
+              int nParams = 0;
+              
+              FitResult* fr_best;
+              for (unsigned int i = 0; i< nFits; ++i) {
+                  
+                  cout << "==============================================" << endl;
+                  INFO("Start fit number " << i);
+                  
+                  if(i>0){
+                      if(scanParam.size()==4)perturb(MPS,i);
+                      else randomizeStartingPoint(MPS,rndm);
+                      
+                      sig.setMC( eventsMC );
+                      sig.prepare();
+                      //sig.normaliseAmps(excludeNorm);
+                  }
+                  FitResult* fr;
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
+                  else fr = doFit(ll, events, eventsMC, MPS );
+                  
+                  if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
+                      INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                      continue;
+                  }
+                  else {
+                      INFO("Fit did improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
+                      min_LL=fr->LL();
+                      fr_best = fr;
+                  }
+                  
+                  auto ep = fr->getErrorPropagator();
+                  auto fitFractions = sig.fitFractions( ep );
+                  fr->addFractions( fitFractions );
+                  vector<double> thresholds{0.1,0.5,1,2,5};
+                  vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
+                  
+                  // Plot spline
+                  string head = NamedParameter<std::string>("Head","");
+                  if(head!="")fr->plotSpline(head,outDir);
+                  
+                  // Estimate the chi2
+                  auto evaluator_sig = sig.evaluator();
+                  auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
+                  
+                  INFO("Calculating chi2 ...");
+                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
+                  INFO("Calculating chi2 Dalitz ...");
+                  vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
+                  
+                  minChi2 = chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams);
+                  minChi2Dalitz = chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams);
+                  fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
+                  
+                  nParams = fr->floating().size();
+                  cout << "Number of amplitudes = " << sig.numAmps() << endl;
+                  cout << "Number of parameters = " << nParams << endl;
+                  
+                  int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
+                  TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
+                  fr->setSystematic(doSystematic);
+                  fr->print();
+                  fr->writeToFile(logFile);
+                  fr->printToLatexTable(tableFile);
+                  fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
+                  fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+                  output->cd();
+                  output->Close();
+                  
+                  unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
+                  if( saveWeights ){
+                      EventList_type eventsPlotMC;
+                      if(maxIntEvents == -1) eventsPlotMC = eventsMC;
+                      else {
+                          eventsPlotMC = EventList_type(intFile, evtType, Branches(bNamesMC), ExtraBranches(bExtraNamesMC), WeightBranch(weightMC), GetGenPdf(true), EntryList(entryListPlotMC));
                       }
+                      sig.setMC( eventsPlotMC );
+                      sig.prepare();
+                      if(useBkgBDT){
+                          bkgBDT.setMC( eventsPlotMC );
+                          bkgBDT.prepare();
+                          makePlotWeightFile(sig, bkgBDT, eventsPlotMC, ep, rndm);
+                      }
+                      else{
+                          bkg.setMC( eventsPlotMC );
+                          bkg.prepare();
+                          makePlotWeightFile(sig, bkg, eventsPlotMC, ep, rndm);
+                      }
+                      //Chi2Estimator chi2Plot( events, eventsPlotMC, evaluator, MinEvents(MinEventsChi2), Dim(3*(pNames.size()-1)-7));
+                      //fr->addChi2( chi2Plot.chi2(), chi2Plot.nBins() );
+                      //fr->print();
+                  }
+                  
               }
               
-              FitResult* fr;
-              if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-              else fr = doFit(ll, events, eventsMC, MPS );
+              replaceAmpAwithBResults.push_back(fr_best);
               
-              auto evaluator_sig = sig.evaluator();
-              auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
-              vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
-              vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
-              
-              int dParams = abs((int)fr->floating().size() - nParams);
-              double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
-              if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
-              if(fr->LL() > min_LL) LL_sig *= -1.;
-              INFO( "LL = " << fr->LL() );
-              INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
-              INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
-              INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
-              
-              fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
-              ampsToRemoveResults.push_back(fr);
-              ampsToRemoveNParams.push_back((int)fr->floating().size());
-              
-              for(int i=0;i<removedParams.size();i++){
-                  removedParams[i]->resetToInit();
-                  if(!removedParamIsFixed[i])removedParams[i]->setFree();
+              vector<string> paramsToRelease = NamedParameter<string>("ParamsToRelease",vector<string>() ).getVector();
+              vector<FitResult*> paramsToReleaseResults;
+              vector<int> paramsToReleaseNParams;
+              for(auto& param: paramsToRelease){
+                  auto it = MPS.find( param );
+                  if(it == nullptr) continue;
+                  it->setFree();
+                  auto it_width = MPS.find( replaceAll(it->name(),"_mass","_width") );
+                  if(it_width != nullptr){
+                      it_width->setFree();
+                      INFO("Refit with released " << replaceAll(it->name(),"_mass","") << " mass and width" );
+                  }
+                  else INFO("Refit with released " << it->name() );
+                  FitResult* fr;
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
+                  else fr = doFit(ll, events, eventsMC, MPS );
+                  
+                  auto evaluator_sig = sig.evaluator();
+                  auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
+                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
+                  vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
+                  
+                  int dParams = abs((int)fr->floating().size() - nParams);
+                  double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob( abs(fr->LL() - min_LL),dParams ));
+                  if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
+                  if(fr->LL() > min_LL) LL_sig *= -1.;
+                  INFO( "LL = " << fr->LL() );
+                  INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
+                  INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
+                  INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
+                  
+                  fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
+                  paramsToReleaseResults.push_back(fr);
+                  paramsToReleaseNParams.push_back((int)fr->floating().size());
+                  
+                  it->resetToInit();
+                  it->fix();
+                  if(it_width != nullptr){
+                      it_width->resetToInit();
+                      it_width->fix();
+                  }
               }
               
-          }
-
-          if(ampsToRemove.size()>0){
-              INFO("----SUMMARY::AmpsToRemove----");
-              for(int i=0;i<ampsToRemove.size();i++){
-                  FitResult* fr = ampsToRemoveResults[i];
-                  int dParams = abs(ampsToRemoveNParams[i] - nParams);
+              if(paramsToRelease.size()>0){
+                  INFO("----SUMMARY::ParamsToRelease----");
+                  for(int i=0;i<paramsToRelease.size();i++){
+                      FitResult* fr = paramsToReleaseResults[i];
+                      int dParams = abs(paramsToReleaseNParams[i] - nParams);
+                      double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
+                      if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
+                      if(fr->LL() > min_LL) LL_sig *= -1.;
+                      double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)paramsToReleaseNParams[i]);
+                      INFO("Param= " << paramsToRelease[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                  }
+              }
+              
+              vector<string> ampsToRemove = NamedParameter<string>("AmpsToRemove",vector<string>() ).getVector();
+              vector<FitResult*> ampsToRemoveResults;
+              vector<int> ampsToRemoveNParams;
+              for(auto& amp: ampsToRemove){
+                  
+                  vector<MinuitParameter*> removedParams;
+                  vector<bool> removedParamIsFixed;
+                  for(int i=0;i<MPS.size();i++){
+                      auto param = MPS[i];
+                      if(param->name().find(amp) != std::string::npos)
+                          if(param->name().find("_Re") != std::string::npos || param->name().find("_Im") != std::string::npos){
+                              removedParams.push_back(param);
+                              removedParamIsFixed.push_back(param->isFixed());
+                              param->setCurrentFitVal(0.);
+                              param->fix();
+                              INFO("Refit and fix parameter " << param->name() << " to 0");
+                          }
+                  }
+                  
+                  FitResult* fr;
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
+                  else fr = doFit(ll, events, eventsMC, MPS );
+                  
+                  auto evaluator_sig = sig.evaluator();
+                  auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
+                  vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
+                  vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
+                  
+                  int dParams = abs((int)fr->floating().size() - nParams);
                   double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
                   if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
                   if(fr->LL() > min_LL) LL_sig *= -1.;
-                  double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)ampsToRemoveNParams[i]);
-                  INFO("Amp= " << ampsToRemove[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                  INFO( "LL = " << fr->LL() );
+                  INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
+                  INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
+                  INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
+                  
+                  fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
+                  ampsToRemoveResults.push_back(fr);
+                  ampsToRemoveNParams.push_back((int)fr->floating().size());
+                  
+                  for(int i=0;i<removedParams.size();i++){
+                      removedParams[i]->resetToInit();
+                      if(!removedParamIsFixed[i])removedParams[i]->setFree();
+                  }
+                  
+              }
+              
+              if(ampsToRemove.size()>0){
+                  INFO("----SUMMARY::AmpsToRemove----");
+                  for(int i=0;i<ampsToRemove.size();i++){
+                      FitResult* fr = ampsToRemoveResults[i];
+                      int dParams = abs(ampsToRemoveNParams[i] - nParams);
+                      double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
+                      if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
+                      if(fr->LL() > min_LL) LL_sig *= -1.;
+                      double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)ampsToRemoveNParams[i]);
+                      INFO("Amp= " << ampsToRemove[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                  }
+              }
+              
+              //Replace amp A with B and refit
+              if(replaceAmpAwithB.size()>=2 && n+1 < replaceAmpAwithB.size()){
+                  for(int i=0;i<MPS.size();i++){
+                      auto param = MPS[i];
+                      if(param->name().find(replaceAmpAwithB[n]) != std::string::npos){
+                          auto name = param->name();
+                          auto new_name = replaceAll(name,replaceAmpAwithB[n],replaceAmpAwithB[n+1]);
+                          if(MPS.find(new_name) != nullptr)MPS.unregister(MPS.find(new_name));
+                          MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
+                          MPS.unregister(param);
+                          i=0;
+                          INFO("Replaced param " << name << " with " << new_name);
+                      }
+                  }
+              }
+              
+          }
+          if(replaceAmpAwithB.size()>0){
+              INFO("----SUMMARY::replaceAmpAwithB----");
+              FitResult* fr_base = replaceAmpAwithBResults[0];
+              INFO("Replaced amp = " << replaceAmpAwithB[0]);
+              fr_base->print();
+              for(int i=1;i<replaceAmpAwithB.size();i++){
+                  FitResult* fr = replaceAmpAwithBResults[i];
+                  double dLL = fr->LL() - fr_base->LL();
+                  double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(dLL),1));
+                  if(abs(dLL)>0 && TMath::Prob(abs(dLL),1) == 0 ) LL_sig = 100;
+                  if(dLL>0) LL_sig *= -1.;
+                  double dChi2 = fr_base->chi2()/((double)fr_base->nBins()-1.-fr_base->nParam()) - fr->chi2()/((double)fr->nBins()-1.-fr->nParam());
+                  INFO("Amp= " << replaceAmpAwithB[i] << ":: dLL = " << dLL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
               }
           }
-      
+  //
   }
 
   else if(pdfType==pdfTypes::IncoherentSum){
