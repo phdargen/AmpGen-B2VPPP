@@ -1,1 +1,4 @@
-"replaceAmpAwithB"      "Z(4055)V" "Z(P)" "Z(A)" "Z(T)" "Z(PT)" 
+"replaceAmpAwithB"      "Z(4055)V" Z(P)"
+#"Z(A)" "Z(T)" "Z(PT)" 
+addAmpList              ""
+saveWeights             0

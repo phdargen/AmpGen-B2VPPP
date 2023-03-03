@@ -1320,7 +1320,7 @@ int main( int argc, char* argv[])
   auto pdfType = NamedParameter<pdfTypes>( "Type", pdfTypes::PolarisedSum);
   if(pdfType==pdfTypes::PolarisedSum){
         
-          vector<string> replaceAmpAwithB = NamedParameter<string>("replaceAmpAwithB",vector<string>() ).getVector();
+          vector<string> replaceAmpAwithB = NamedParameter<string>("replaceAmpAwithB",vector<string>({""}) ).getVector();
           vector<FitResult*> replaceAmpAwithBResults;
           for(int n=0; n<replaceAmpAwithB.size();n++){
           
@@ -1641,8 +1641,25 @@ int main( int argc, char* argv[])
                       if(param->name().find(replaceAmpAwithB[n]) != std::string::npos){
                           auto name = param->name();
                           auto new_name = replaceAll(name,replaceAmpAwithB[n],replaceAmpAwithB[n+1]);
+                          
+                          // fix particle ordering
+                          if(new_name.find("Z(P)+{psi(2S)0,pi+},K*(892)0{K+,pi-}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"Z(P)+{psi(2S)0,pi+},K*(892)0{K+,pi-}","K*(892)0{K+,pi-},Z(P)+{psi(2S)0,pi+}");
+                          if(new_name.find("Z(P)+{psi(2S)0,pi+},KPi40")!= std::string::npos)
+                              new_name = replaceAll(new_name,"Z(P)+{psi(2S)0,pi+},KPi40","KPi40,Z(P)+{psi(2S)0,pi+}");
+                          if(new_name.find("rhoOmega20,Zs(A)+{psi(2S)0,K+}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"rhoOmega20,Zs(A)+{psi(2S)0,K+}","rhoOmega20,Zs(P)+{psi(2S)0,K+}");
+                          if(new_name.find("Zs(P)+{psi(2S)0,K+},PiPi40")!= std::string::npos)
+                              new_name = replaceAll(new_name,"Zs(P)+{psi(2S)0,K+},PiPi40","PiPi40,Zs(P)+{psi(2S)0,K+}");
+                          
                           if(MPS.find(new_name) != nullptr)MPS.unregister(MPS.find(new_name));
-                          MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
+                          
+                          //check for not allowed decays
+                          if(new_name.find("X(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("PiPi")!= std::string::npos) )INFO(new_name << " not allowed");
+                          else if(new_name.find("Xs(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("KPi")!= std::string::npos) )INFO(new_name << " not allowed");
+                          else if(new_name.find("X(S)")!= std::string::npos && (new_name.find("Z(4055)V")!= std::string::npos || new_name.find("Z(4100)")!= std::string::npos || new_name.find("Z(V)")!= std::string::npos ) )INFO(new_name << " not allowed");
+                          else if(new_name.find("X(P)")!= std::string::npos && ( new_name.find("Z(4055)A")!= std::string::npos || new_name.find("Z(A)")!= std::string::npos || new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos ) )INFO(new_name << " not allowed");
+                          else MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
                           MPS.unregister(param);
                           i=0;
                           INFO("Replaced param " << name << " with " << new_name);
@@ -1651,7 +1668,7 @@ int main( int argc, char* argv[])
               }
               
           }
-          if(replaceAmpAwithB.size()>0){
+          if(replaceAmpAwithB.size()>=2){
               INFO("----SUMMARY::replaceAmpAwithB----");
               FitResult* fr_base = replaceAmpAwithBResults[0];
               INFO("Replaced amp = " << replaceAmpAwithB[0]);
