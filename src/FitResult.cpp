@@ -584,15 +584,15 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
     g_amp->SetMarkerColor(4);
     g_amp->SetMarkerStyle(20);
     g_amp->Draw("APC");
-    c->Print((outDir+"/"+name+"_amp.eps").c_str());
+    c->Print((outDir+"/"+name+"_amp.pdf").c_str());
     g_phase->SetMarkerColor(4);
     g_phase->SetMarkerStyle(20);
     g_phase->Draw("APC");
-    c->Print((outDir+"/"+name+"_phase.eps").c_str());
+    c->Print((outDir+"/"+name+"_phase.pdf").c_str());
     g_argand->SetMarkerColor(4);
     g_argand->SetMarkerStyle(20);
     g_argand->Draw("APC");
-    c->Print((outDir+"/"+name+"_argand.eps").c_str());
+    c->Print((outDir+"/"+name+"_argand.pdf").c_str());
 }
 
 

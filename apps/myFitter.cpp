@@ -578,12 +578,33 @@ void scan( MinuitParameterSet& MPS, string name, double min, double max, int ste
     }
 }
 
+void setSplineVals(MinuitParameterSet& mps, string& head){
+    auto spline_params = NamedParameter<double>( head + "::Spline").getVector();
+    int nBins = int( spline_params[0] );
+    double min = spline_params.size() == 4 ? spline_params[1] * spline_params[1] : spline_params[1];
+    double max = spline_params.size() == 4 ? spline_params[2] * spline_params[2] : spline_params[2];
+
+    INFO("Set spline vals for " << head);
+    double m = mps.find(head+"_mass")->mean();
+    double gamma = mps.find(head+"_width")->mean();
+    INFO("Use BW with m = " << m << " g= " << gamma);
+
+    for(int i=0; i<nBins; i++){
+        double s = min + (max-min)* i/((double)nBins-1.);
+        complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
+        mps.find(head+"::Spline::Re::"+to_string(i))->setInit(abs(BW));
+        mps.find(head+"::Spline::Im::"+to_string(i))->setInit(arg(BW)*180./3.141);
+    }
+}
+
 void sanityChecks(MinuitParameterSet& mps){
 
    for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "cut_dim" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
 
    // check 
-   for(int i=0;i<mps.size();++i)if(mps[i]->name().find( "::Spline" ) != std::string::npos){ mps.unregister( mps.at(i)); i=0; }
+   for(int i=0;i<mps.size();++i)
+       if(mps[i]->name().find( "::Spline" ) != std::string::npos)
+           if(mps[i]->name().find( "::Re" ) == std::string::npos && mps[i]->name().find( "::Im" ) == std::string::npos){ mps.unregister( mps.at(i)); i=0; }
     
    string head = NamedParameter<std::string>("Head","");
    int nBins = 0;
@@ -1216,6 +1237,7 @@ int main( int argc, char* argv[])
   MinuitParameterSet MPS;
   MPS.loadFromStream();
 
+  // Add amps from list
   auto addAmpList = NamedParameter<string>("addAmpList","");
   if(addAmpList != ""){
         MinuitParameterSet* addAmp = new MinuitParameterSet();
@@ -1235,7 +1257,19 @@ int main( int argc, char* argv[])
         }
         else ERROR("Not enough amplitudes in list");
         delete addAmp;
-  }  
+  }
+    
+  //Remove amps from list
+  vector<string> removeAmps = NamedParameter<string>("removeAmps",vector<string>() ).getVector();
+  for(int n=0; n<removeAmps.size();n++){
+      for(int i=0;i<MPS.size();i++){
+          if(MPS[i]->name().find(removeAmps[n]) != std::string::npos){
+              INFO("Removing parameter " << MPS[i]->name());
+              MPS.unregister(MPS[i]);
+              i=0;
+          }
+      }
+  }
     
   //Randomize start values   
   auto randomizeStartVals = NamedParameter<int>("randomizeStartVals", 0);
@@ -1343,6 +1377,10 @@ int main( int argc, char* argv[])
               
               sanityChecks(MPS);
               cout << "Number of amplitudes = " << sig.numAmps() << endl;
+              
+              // Set spline start vals
+              string head = NamedParameter<std::string>("Head","");
+              if(head!="")setSplineVals(MPS,head);
               
               if(doSystematic=="Res"){
                   std::vector<std::string> paramsToVary = NamedParameter<std::string>( "ParamsToVary",std::vector<std::string>() ).getVector();
@@ -1458,7 +1496,6 @@ int main( int argc, char* argv[])
                   vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
                   
                   // Plot spline
-                  string head = NamedParameter<std::string>("Head","");
                   if(head!="")fr->plotSpline(head,outDir);
                   
                   // Estimate the chi2

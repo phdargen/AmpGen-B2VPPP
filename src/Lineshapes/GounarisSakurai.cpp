@@ -54,13 +54,12 @@ DEFINE_LINESHAPE( GounarisSakurai )
   ADD_DEBUG( D, dbexpressions);
   Expression GS = kFactor( mass, width0, dbexpressions ) * FormFactor / (D-s);
   if(lineshapeModifier.find("Omega") != std::string::npos){
-                // this implements rho/omega mixing from https://arxiv.org/pdf/hep-ex/0112031.pdf
                 auto props_omega = ParticlePropertiesList::get("omega(782)0");
                 Expression mass_omega = Parameter("omega(782)0_mass", props_omega->mass() );
                 //Expression radius_omega = Parameter("omega(782)0_radius", props_omega->radius() );
                 Expression width0_omega = Parameter("omega(782)0_width", props_omega->width() );
                 
-                const Expression kF_omega = 1.;//kFactor( mass_omega, width0_omega ) ;
+                const Expression kF_omega = mass_omega*mass_omega;//kFactor( mass_omega, width0_omega ) ;
                 const Expression BW_omega = kF_omega / ( mass_omega * mass_omega - s - 1i*mass_omega * width0_omega );
                 
                 //Expression delta_Re = Parameter( "RhoOmega::deltaRe", 0. );
@@ -71,7 +70,11 @@ DEFINE_LINESHAPE( GounarisSakurai )
                 Expression delta_Phase = Parameter( particleName + "_deltaOmegaPhase", 12.6 );
                 Expression delta = delta_Amp * exp(1i* M_PI / 180 * delta_Phase);
                 
-                return GS * (1.+s/(mass_omega*mass_omega) * delta * BW_omega);
+                size_t mode = NamedParameter<size_t>( "GounarisSakurai::mode", 1);
+                // mode==1 implements rho/omega mixing from https://arxiv.org/pdf/hep-ex/0112031.pdf
+                // mode==2 implements rho/omega mixing from https://arxiv.org/pdf/1205.2228.pdf
+
+                return mode==1 ? GS * (1.+s/(mass_omega*mass_omega) * delta * BW_omega) : GS * (1.+ delta * BW_omega) / (1.+delta);
            }
 return GS;
 }
