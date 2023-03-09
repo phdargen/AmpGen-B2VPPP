@@ -576,8 +576,8 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
             g_amp->SetPointError( c, 0, amp_err );
             g_phase->SetPointError( c, 0, phase_err );
         
-            g_argand->SetPoint( c, amp * cos(phase), amp * sin(phase)  );
-            g_argand->SetPointError( c, sqrt( pow(amp_err * cos(phase),2) + pow(amp*sin(phase)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase),2) + pow(amp*cos(phase)*phase_err/180.*M_PI, 2) )   );
+            g_argand->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+            g_argand->SetPointError( c, sqrt( pow(amp_err * cos(phase/180.*M_PI),2) + pow(amp*sin(phase/180.*M_PI)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase/180.*M_PI),2) + pow(amp*cos(phase/180.*M_PI)*phase_err/180.*M_PI, 2) )   );
     }
     
     TCanvas* c = new TCanvas();

@@ -606,31 +606,31 @@ Z4(P)+_width   0 0.200 0.010  0.050  0.350
 
 Z(A)+_mass     0 4.200 0.001  4.15   4.25
 Z(A)+_width    0 0.100 0.005  0.020  0.250
-#Z2(A)+_mass    0 4.250 0.001  4.2   4.3
-#Z2(A)+_width   0 0.100 0.005  0.020  0.250
-#Z3(A)+_mass    0 4.250 0.001  4.2   5.5
-#Z3(A)+_width   0 0.100 0.005  0.020  0.250
+Z2(A)+_mass    0 4.250 0.001  4.2   4.3
+Z2(A)+_width   0 0.100 0.005  0.020  0.250
+Z3(A)+_mass    0 4.250 0.001  4.2   5.5
+Z3(A)+_width   0 0.100 0.005  0.020  0.250
 
 Z(V)+_mass     0 3.900 0.001  3.85   3.95
 Z(V)+_width    0 0.100 0.005  0.020  0.250
 Z2(V)+_mass    0 4.450 0.001  4.4  4.5
 Z2(V)+_width   0 0.200 0.010  0.050  0.350
-#Z3(V)+_mass    0 4.250 0.001  3.5   5.5
-#Z3(V)+_width   0 0.100 0.005  0.020  0.250
+Z3(V)+_mass    0 4.250 0.001  3.5   5.5
+Z3(V)+_width   0 0.100 0.005  0.020  0.250
 
 Z(T)+_mass     0 4.125 0.001  4.   4.2
 Z(T)+_width    0 0.200 0.010  0.050  0.350
 Z2(T)+_mass    0 4.400 0.001  4.35   4.45
 Z2(T)+_width   0 0.200 0.010  0.050  0.350
-#Z3(T)+_mass    0 4.250 0.001  3.5   5.5
-#Z3(T)+_width   0 0.100 0.005  0.020  0.250
+Z3(T)+_mass    0 4.250 0.001  3.5   5.5
+Z3(T)+_width   0 0.100 0.005  0.020  0.250
 
 Z(PT)+_mass     0 4.100 0.001  4.05   4.15
 Z(PT)+_width    0 0.200 0.010  0.050  0.350
-#Z2(PT)+_mass   0 4.250 0.001  4.2   4.3
-#Z2(PT)+_width  0 0.100 0.005  0.020  0.250
-#Z3(PT)+_mass   0 4.250 0.001  3.5   5.5
-#Z3(PT)+_width  0 0.100 0.005  0.020  0.250
+Z2(PT)+_mass   0 4.250 0.001  4.2   4.3
+Z2(PT)+_width  0 0.100 0.005  0.020  0.250
+Z3(PT)+_mass   0 4.250 0.001  3.5   5.5
+Z3(PT)+_width  0 0.100 0.005  0.020  0.250
 
 Zs(P)+_mass     0 4.000 0.001  3.95   4.1
 Zs(P)+_width    0 0.200 0.010  0.050  0.350
@@ -668,78 +668,78 @@ Zs3(PT)+_mass   0 4.850 0.001  4.75   5.
 Zs3(PT)+_width  0 0.100 0.005  0.020  0.250
 
 
-Z(P)-_mass=Z(P)+_mass
-Z(P)-_width=Z(P)+_width
-Z2(P)-_mass=Z2(P)+_mass
-Z2(P)-_width=Z2(P)+_width
-Z3(P)-_mass=Z3(P)+_mass
-Z3(P)-_width=Z3(P)+_width
-Z4(P)-_mass=Z4(P)+_mass
-Z4(P)-_width=Z4(P)+_width
+Z(P)-_mass = Z(P)+_mass
+Z(P)-_width = Z(P)+_width
+Z2(P)-_mass = Z2(P)+_mass
+Z2(P)-_width = Z2(P)+_width
+Z3(P)-_mass = Z3(P)+_mass
+Z3(P)-_width = Z3(P)+_width
+Z4(P)-_mass = Z4(P)+_mass
+Z4(P)-_width = Z4(P)+_width
 
-Z(A)-_mass=Z(A)+_mass
-Z(A)-_width=Z(A)+_width
-Z2(A)-_mass=Z2(A)+_mass
-Z2(A)-_width=Z2(A)+_width
-Z3(A)-_mass=Z3(A)+_mass
-Z3(A)-_width=Z3(A)+_width
+Z(A)-_mass = Z(A)+_mass
+Z(A)-_width = Z(A)+_width
+Z2(A)-_mass = Z2(A)+_mass
+Z2(A)-_width = Z2(A)+_width
+Z3(A)-_mass = Z3(A)+_mass
+Z3(A)-_width = Z3(A)+_width
 
-Z(V)-_mass=Z(V)+_mass
-Z(V)-_width=Z(V)+_width
-Z2(V)-_mass=Z2(V)+_mass
-Z2(V)-_width=Z2(V)+_width
-Z3(V)-_mass=Z3(V)+_mass
-Z3(V)-_width=Z3(V)+_width
+Z(V)-_mass = Z(V)+_mass
+Z(V)-_width = Z(V)+_width
+Z2(V)-_mass = Z2(V)+_mass
+Z2(V)-_width = Z2(V)+_width
+Z3(V)-_mass = Z3(V)+_mass
+Z3(V)-_width = Z3(V)+_width
 
-Z(T)-_mass=Z(T)+_mass
-Z(T)-_width=Z(T)+_width
-Z2(T)-_mass=Z2(T)+_mass
-Z2(T)-_width=Z2(T)+_width
-Z3(T)-_mass=Z3(T)+_mass
-Z3(T)-_width=Z3(T)+_width
+Z(T)-_mass = Z(T)+_mass
+Z(T)-_width = Z(T)+_width
+Z2(T)-_mass = Z2(T)+_mass
+Z2(T)-_width = Z2(T)+_width
+Z3(T)-_mass = Z3(T)+_mass
+Z3(T)-_width = Z3(T)+_width
 
-Z(PT)-_mass=Z(PT)+_mass
-Z(PT)-_width=Z(PT)+_width
-Z2(PT)-_mass=Z2(PT)+_mass
-Z2(PT)-_width=Z2(PT)+_width
-Z3(PT)-_mass=Z3(PT)+_mass
-Z3(PT)-_width=Z3(PT)+_width
+Z(PT)-_mass = Z(PT)+_mass
+Z(PT)-_width = Z(PT)+_width
+Z2(PT)-_mass = Z2(PT)+_mass
+Z2(PT)-_width = Z2(PT)+_width
+Z3(PT)-_mass = Z3(PT)+_mass
+Z3(PT)-_width = Z3(PT)+_width
 
 
-Zs(P)-_mass=Zs(P)+_mass
-Zs(P)-_width=Zs(P)+_width
-Zs2(P)-_mass=Zs2(P)+_mass
-Zs2(P)-_width=Zs2(P)+_width
-Zs3(P)-_mass=Zs3(P)+_mass
-Zs3(P)-_width=Zs3(P)+_width
+Zs(P)-_mass = Zs(P)+_mass
+Zs(P)-_width = Zs(P)+_width
+Zs2(P)-_mass = Zs2(P)+_mass
+Zs2(P)-_width = Zs2(P)+_width
+Zs3(P)-_mass = Zs3(P)+_mass
+Zs3(P)-_width = Zs3(P)+_width
 
-Zs(A)-_mass=Zs(A)+_mass
-Zs(A)-_width=Zs(A)+_width
-Zs2(A)-_mass=Zs2(A)+_mass
-Zs2(A)-_width=Zs2(A)+_width
-Zs3(A)-_mass=Zs3(A)+_mass
-Zs3(A)-_width=Zs3(A)+_width
+Zs(A)-_mass = Zs(A)+_mass
+Zs(A)-_width = Zs(A)+_width
+Zs2(A)-_mass = Zs2(A)+_mass
+Zs2(A)-_width = Zs2(A)+_width
+Zs3(A)-_mass = Zs3(A)+_mass
+Zs3(A)-_width = Zs3(A)+_width
 
-Zs(V)-_mass=Zs(V)+_mass
-Zs(V)-_width=Zs(V)+_width
-Zs2(V)-_mass=Zs2(V)+_mass
-Zs2(V)-_width=Zs2(V)+_width
-Zs3(V)-_mass=Zs3(V)+_mass
-Zs3(V)-_width=Zs3(V)+_width
+Zs(V)-_mass = Zs(V)+_mass
+Zs(V)-_width = Zs(V)+_width
+Zs2(V)-_mass = Zs2(V)+_mass
+Zs2(V)-_width = Zs2(V)+_width
+Zs3(V)-_mass = Zs3(V)+_mass
+Zs3(V)-_width = Zs3(V)+_width
 
-Zs(T)-_mass=Zs(T)+_mass
-Zs(T)-_width=Zs(T)+_width
-Zs2(T)-_mass=Zs2(T)+_mass
-Zs2(T)-_width=Zs2(T)+_width
-Zs3(T)-_mass=Zs3(T)+_mass
-Zs3(T)-_width=Zs3(T)+_width
+Zs(T)-_mass = Zs(T)+_mass
+Zs(T)-_width = Zs(T)+_width
+Zs2(T)-_mass = Zs2(T)+_mass
+Zs2(T)-_width = Zs2(T)+_width
+Zs3(T)-_mass = Zs3(T)+_mass
+Zs3(T)-_width = Zs3(T)+_width
 
-Zs(PT)-_mass=Zs(PT)+_mass
-Zs(PT)-_width=Zs(PT)+_width
-Zs2(PT)-_mass=Zs2(PT)+_mass
-Zs2(PT)-_width=Zs2(PT)+_width
-Zs3(PT)-_mass=Zs3(PT)+_mass
-Zs3(PT)-_width=Zs3(PT)+_width
+Zs(PT)-_mass = Zs(PT)+_mass
+Zs(PT)-_width = Zs(PT)+_width
+Zs2(PT)-_mass = Zs2(PT)+_mass
+Zs2(PT)-_width = Zs2(PT)+_width
+Zs3(PT)-_mass = Zs3(PT)+_mass
+Zs3(PT)-_width = Zs3(PT)+_width
 
 ## Decay heads
 ## --------------------

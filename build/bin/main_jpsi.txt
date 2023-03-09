@@ -11,9 +11,9 @@ decayMuMu "J/psi0"
 useBkgBDT   1
 "ExtraBranches" "bkgPdf"
 "ExtraBranchesMC" "bkgPdf"
-DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/Jpsi_data_bkgPdf.root:DecayTree
+DataSample        Jpsi_data_bkgPdf.root:DecayTree
 weightData        noWeight
-IntegrationSample   /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/BkgBDT/SignalIntegrationEvents_jpsiAcc_bkgPdf.root
+IntegrationSample   SignalIntegrationEvents_jpsiAcc_bkgPdf.root
 
 
 DataUnits	 	MeV
@@ -39,7 +39,7 @@ normAmps 1
 "fixParamsOptionsFile"      1
 
 saveWeights 	1
-nBins       100
+nBins       60
 MinEventsChi2	25
 
 nPermErrorBands   0
@@ -406,6 +406,78 @@ Z(4430)+_width 2 0.181 0.031  0.01  0.5
 Z(4430)-_mass = Z(4430)+_mass
 Z(4430)-_width = Z(4430)+_width
 
+Z(P)-_mass = Z(P)+_mass
+Z(P)-_width = Z(P)+_width
+Z2(P)-_mass = Z2(P)+_mass
+Z2(P)-_width = Z2(P)+_width
+Z3(P)-_mass = Z3(P)+_mass
+Z3(P)-_width = Z3(P)+_width
+Z4(P)-_mass = Z4(P)+_mass
+Z4(P)-_width = Z4(P)+_width
+
+Z(A)-_mass = Z(A)+_mass
+Z(A)-_width = Z(A)+_width
+Z2(A)-_mass = Z2(A)+_mass
+Z2(A)-_width = Z2(A)+_width
+Z3(A)-_mass = Z3(A)+_mass
+Z3(A)-_width = Z3(A)+_width
+
+Z(V)-_mass = Z(V)+_mass
+Z(V)-_width = Z(V)+_width
+Z2(V)-_mass = Z2(V)+_mass
+Z2(V)-_width = Z2(V)+_width
+Z3(V)-_mass = Z3(V)+_mass
+Z3(V)-_width = Z3(V)+_width
+
+Z(T)-_mass = Z(T)+_mass
+Z(T)-_width = Z(T)+_width
+Z2(T)-_mass = Z2(T)+_mass
+Z2(T)-_width = Z2(T)+_width
+Z3(T)-_mass = Z3(T)+_mass
+Z3(T)-_width = Z3(T)+_width
+
+Z(PT)-_mass = Z(PT)+_mass
+Z(PT)-_width = Z(PT)+_width
+Z2(PT)-_mass = Z2(PT)+_mass
+Z2(PT)-_width = Z2(PT)+_width
+Z3(PT)-_mass = Z3(PT)+_mass
+Z3(PT)-_width = Z3(PT)+_width
+
+
+Zs(P)-_mass = Zs(P)+_mass
+Zs(P)-_width = Zs(P)+_width
+Zs2(P)-_mass = Zs2(P)+_mass
+Zs2(P)-_width = Zs2(P)+_width
+Zs3(P)-_mass = Zs3(P)+_mass
+Zs3(P)-_width = Zs3(P)+_width
+
+Zs(A)-_mass = Zs(A)+_mass
+Zs(A)-_width = Zs(A)+_width
+Zs2(A)-_mass = Zs2(A)+_mass
+Zs2(A)-_width = Zs2(A)+_width
+Zs3(A)-_mass = Zs3(A)+_mass
+Zs3(A)-_width = Zs3(A)+_width
+
+Zs(V)-_mass = Zs(V)+_mass
+Zs(V)-_width = Zs(V)+_width
+Zs2(V)-_mass = Zs2(V)+_mass
+Zs2(V)-_width = Zs2(V)+_width
+Zs3(V)-_mass = Zs3(V)+_mass
+Zs3(V)-_width = Zs3(V)+_width
+
+Zs(T)-_mass = Zs(T)+_mass
+Zs(T)-_width = Zs(T)+_width
+Zs2(T)-_mass = Zs2(T)+_mass
+Zs2(T)-_width = Zs2(T)+_width
+Zs3(T)-_mass = Zs3(T)+_mass
+Zs3(T)-_width = Zs3(T)+_width
+
+Zs(PT)-_mass = Zs(PT)+_mass
+Zs(PT)-_width = Zs(PT)+_width
+Zs2(PT)-_mass = Zs2(PT)+_mass
+Zs2(PT)-_width = Zs2(PT)+_width
+Zs3(PT)-_mass = Zs3(PT)+_mass
+Zs3(PT)-_width = Zs3(PT)+_width
 
 Zs(4000)+_mass   2 4.003 0.011  4.2 4.8
 Zs(4000)+_width  2 0.131 0.030  0.01  0.8
@@ -661,6 +733,9 @@ B+{J/psi0,K(1630)+}              2 1.00 0.001        2 0.0 0.1
 B+{J/psi0,K(1)(1650)+}           2 1.00 0.001        2 0.0 0.1
 B+{J/psi0,K*(1680)+}             0 0.50 0.001 0 5    0 0.0 0.1 -360 360
 B+{K(2)(1770)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{K(2)(1820)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{K(2)*(1980)+,J/psi0}          0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{K(2)(2250)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
 
 B+{psi(4160)0,K+}                  2 1.00 0.001        2 0.0 0.1
 B+{psi(4230)0,K+}                  2 1.00 0.001        2 0.0 0.1
@@ -742,60 +817,60 @@ B+{X9(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
 B+{X9(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
 B+{X9(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
 
-B+{Xs(S)0,K+}                       2 1.00 0.001        2 0.0 0.1
-B+{Xs(P)0,K+}                       2 1.00 0.001        2 0.0 0.1
-B+{Xs(V)0,K+}                       2 1.00 0.001        2 0.0 0.1
-B+{Xs(A)0,K+}                       2 1.00 0.001        2 0.0 0.1
-B+{Xs(T)0,K+}                       2 1.00 0.001        2 0.0 0.1
-B+{Xs(PT)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs2(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs3(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs3(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs3(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs3(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs3(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs3(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs4(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs4(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs4(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs4(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs4(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs4(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs5(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs5(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs5(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs5(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs5(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs5(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs6(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs6(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs6(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs6(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs6(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs6(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs7(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs7(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs7(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs7(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs7(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs7(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs8(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs8(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs8(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs8(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs8(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs8(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
-B+{Xs9(S)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs9(P)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs9(V)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs9(A)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs9(T)0,K+}                      2 1.00 0.001        2 0.0 0.1
-B+{Xs9(PT)0,K+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs(S)0,pi+}                       2 1.00 0.001        2 0.0 0.1
+B+{Xs(P)0,pi+}                       2 1.00 0.001        2 0.0 0.1
+B+{Xs(V)0,pi+}                       2 1.00 0.001        2 0.0 0.1
+B+{Xs(A)0,pi+}                       2 1.00 0.001        2 0.0 0.1
+B+{Xs(T)0,pi+}                       2 1.00 0.001        2 0.0 0.1
+B+{Xs(PT)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs2(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs3(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs3(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs3(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs3(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs3(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs3(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs4(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs4(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs4(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs4(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs4(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs4(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs5(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs5(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs5(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs5(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs5(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs5(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs6(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs6(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs6(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs6(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs6(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs6(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs7(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs7(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs7(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs7(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs7(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs7(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs8(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs8(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs8(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs8(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs8(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs8(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
+B+{Xs9(S)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs9(P)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs9(V)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs9(A)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs9(T)0,pi+}                      2 1.00 0.001        2 0.0 0.1
+B+{Xs9(PT)0,pi+}                     2 1.00 0.001        2 0.0 0.1
 
 #"GaussianConstraint"          "X(S)0_mass" "X(S)0_width" "X(P)0_mass" "X(P)0_width" "X(V)0_mass" "X(V)0_width" "X(A)0_mass" "X(A)0_width" "X(T)0_mass" "X(T)0_width" "X(PT)0_mass" "X(PT)0_width" "X2(S)0_mass" "X2(S)0_width" "X2(P)0_mass" "X2(P)0_width" "X2(V)0_mass" "X2(V)0_width" "X2(A)0_mass" "X2(A)0_width" "X2(T)0_mass" "X2(T)0_width" "X2(PT)0_mass" "X2(PT)0_width" "X3(S)0_mass" "X3(S)0_width" "X3(P)0_mass" "X3(P)0_width" "X3(V)0_mass" "X3(V)0_width" "X3(A)0_mass" "X3(A)0_width" "X3(T)0_mass" "X3(T)0_width" "X3(PT)0_mass" "X3(PT)0_width" "X4(S)0_mass" "X4(S)0_width" "X4(P)0_mass" "X4(P)0_width" "X4(V)0_mass" "X4(V)0_width" "X4(A)0_mass" "X4(A)0_width" "X4(T)0_mass" "X4(T)0_width" "X4(PT)0_mass" "X4(PT)0_width" "X5(S)0_mass" "X5(S)0_width" "X5(P)0_mass" "X5(P)0_width" "X5(V)0_mass" "X5(V)0_width" "X5(A)0_mass" "X5(A)0_width" "X5(T)0_mass" "X5(T)0_width" "X5(PT)0_mass" "X5(PT)0_width" "X6(S)0_mass" "X6(S)0_width" "X6(P)0_mass" "X6(P)0_width" "X6(V)0_mass" "X6(V)0_width" "X6(A)0_mass" "X6(A)0_width" "X6(T)0_mass" "X6(T)0_width" "X6(PT)0_mass" "X6(PT)0_width" "X7(S)0_mass" "X7(S)0_width" "X7(P)0_mass" "X7(P)0_width" "X7(V)0_mass" "X7(V)0_width" "X7(A)0_mass" "X7(A)0_width" "X7(T)0_mass" "X7(T)0_width" "X7(PT)0_mass" "X7(PT)0_width" "X8(S)0_mass" "X8(S)0_width" "X8(P)0_mass" "X8(P)0_width" "X8(V)0_mass" "X8(V)0_width" "X8(A)0_mass" "X8(A)0_width" "X8(T)0_mass" "X8(T)0_width" "X8(PT)0_mass" "X8(PT)0_width" "X9(S)0_mass" "X9(S)0_width" "X9(P)0_mass" "X9(P)0_width" "X9(V)0_mass" "X9(V)0_width" "X9(A)0_mass" "X9(A)0_width" "X9(T)0_mass" "X9(T)0_width" "X9(PT)0_mass" "X9(PT)0_width" "Xs(S)0_mass" "Xs(S)0_width" "Xs(P)0_mass" "Xs(P)0_width" "Xs(V)0_mass" "Xs(V)0_width" "Xs(A)0_mass" "Xs(A)0_width" "Xs(T)0_mass" "Xs(T)0_width" "Xs(PT)0_mass" "Xs(PT)0_width" "Xs2(S)0_mass" "Xs2(S)0_width" "Xs2(P)0_mass" "Xs2(P)0_width" "Xs2(V)0_mass" "Xs2(V)0_width" "Xs2(A)0_mass" "Xs2(A)0_width" "Xs2(T)0_mass" "Xs2(T)0_width" "Xs2(PT)0_mass" "Xs2(PT)0_width" "Xs3(S)0_mass" "Xs3(S)0_width" "Xs3(P)0_mass" "Xs3(P)0_width" "Xs3(V)0_mass" "Xs3(V)0_width" "Xs3(A)0_mass" "Xs3(A)0_width" "Xs3(T)0_mass" "Xs3(T)0_width" "Xs3(PT)0_mass" "Xs3(PT)0_width" "Xs4(S)0_mass" "Xs4(S)0_width" "Xs4(P)0_mass" "Xs4(P)0_width" "Xs4(V)0_mass" "Xs4(V)0_width" "Xs4(A)0_mass" "Xs4(A)0_width" "Xs4(T)0_mass" "Xs4(T)0_width" "Xs4(PT)0_mass" "Xs4(PT)0_width" "Z(S)0_mass" "Z(S)0_width" "Z(P)0_mass" "Z(P)0_width" "Z(V)0_mass" "Z(V)0_width" "Z(A)0_mass" "Z(A)0_width" "Z(T)0_mass" "Z(T)0_width" "Z(PT)0_mass" "Z(PT)0_width" "Z2(S)0_mass" "Z2(S)0_width" "Z2(P)0_mass" "Z2(P)0_width" "Z2(V)0_mass" "Z2(V)0_width" "Z2(A)0_mass" "Z2(A)0_width" "Z2(T)0_mass" "Z2(T)0_width" "Z2(PT)0_mass" "Z2(PT)0_width" "Zs(S)0_mass" "Zs(S)0_width" "Zs(P)0_mass" "Zs(P)0_width" "Zs(V)0_mass" "Zs(V)0_width" "Zs(A)0_mass" "Zs(A)0_width" "Zs(T)0_mass" "Zs(T)0_width" "Zs(PT)0_mass" "Zs(PT)0_width" "Zs2(S)0_mass" "Zs2(S)0_width" "Zs2(P)0_mass" "Zs2(P)0_width" "Zs2(V)0_mass" "Zs2(V)0_width" "Zs2(A)0_mass" "Zs2(A)0_width" "Zs2(T)0_mass" "Zs2(T)0_width" "Zs2(PT)0_mass" "Zs2(PT)0_width"
 
