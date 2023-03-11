@@ -21,12 +21,13 @@
 
 using namespace AmpGen;
 using namespace AmpGen::fcn;
-namespace AmpGen{ make_enum(PA_TYPE, PVec, PVecPDG, PVecACCMOR, QVec); }
+using namespace std::complex_literals;
+namespace AmpGen{ make_enum(PA_TYPE, PVec, PVecPole, PVecPDG, PVecACCMOR, QVec); }
 
 DEFINE_LINESHAPE(GenericKmatrix)
 {
   auto props         = ParticlePropertiesList::get( particleName );
-  Expression mass    = Parameter( particleName + "_mass", props->mass() );
+  Expression mass0    = Parameter( particleName + "_mass", props->mass() );
   Expression radius           = Parameter( particleName + "_radius", props->radius() );
   unsigned nPoles    = NamedParameter<unsigned>(particleName+"::kMatrix::nPoles");
   auto channels      = NamedParameter<std::string>(particleName+"::kMatrix::channels").getVector();
@@ -35,34 +36,34 @@ DEFINE_LINESHAPE(GenericKmatrix)
   auto pVector_formFactor = NamedParameter<std::string>(particleName+"::kMatrix::pVector_formFactor","NFF");
   auto const pa_type = NamedParameter<PA_TYPE>(particleName+"::kMatrix::production_amplitude",PA_TYPE::PVec);
   auto nChannels     = channels.size();
-  auto s0            = mass*mass;
             
   DEBUG( "GenericKmatrix modifier " << lineshapeModifier << " particle = " << particleName );
   auto tokens = split( lineshapeModifier, '.' );
   DEBUG( "GenericKmatrix modifier = " << lineshapeModifier << " nTokens = " << tokens.size() );
-  unsigned int cTerm                = tokens.size() > 1 ? stoi( tokens[1] )-1 : 0;
-    
+  unsigned int pTerm = tokens.size() > 1 ? stoi( tokens[1] )-1 : 999;
+  unsigned int cTerm = tokens.size() > 3 ? stoi( tokens[3] )-1 : 0;
+
   std::vector<Expression> phsps, bw_phase_space, Bls;
   ADD_DEBUG(s, dbexpressions );
-  ADD_DEBUG(s0, dbexpressions );
+  ADD_DEBUG(mass0*mass0, dbexpressions );
   INFO("Initialising K-matrix with [nChannels = " << nChannels << ", nPoles = " << nPoles << "]");
   //phase-space
   for( unsigned i = 0 ; i < channels.size(); i+=1 ){
     Particle p( channels[i] );
     INFO( p.decayDescriptor() );
     phsps.emplace_back( phaseSpace(s, p, p.L() ) );
-    bw_phase_space.emplace_back( phaseSpace(s0, p, p.L() ) );
-    if( dbexpressions != nullptr ) dbexpressions->emplace_back("phsp_"+p.decayDescriptor(), *phsps.rbegin() ); //ADD_DEBUG( *phsps.rbegin(), dbexpressions);
-//    ADD_DEBUG( phaseSpace(s0,p,p.L()), dbexpressions );
+    bw_phase_space.emplace_back( phaseSpace(mass0*mass0, p, p.L() ) );
+    if( dbexpressions != nullptr ) dbexpressions->emplace_back("phsp_"+p.decayDescriptor(), *phsps.rbegin() );
   }
   //pole configuration for kMatrix (see e.g. eq. (48.25) in http://pdg.lbl.gov/2019/reviews/rpp2019-rev-resonances.pdf)
   std::vector<poleConfig> poleConfigs;
+  bool addImaginaryMass = NamedParameter<bool>("GenericKmatrix::fp", true );
   for (unsigned pole = 1; pole <= nPoles; ++pole ){
     std::string stub = particleName+"::pole::" + std::to_string(pole);
     Expression mass  = Parameter(stub + "::mass");
-    Expression gamma  = Parameter(stub + "::gamma");
+    Expression gamma  = Parameter(stub + "::width");
     DEBUG( "Will link to parameter: " << stub + "::mass");
-    poleConfig thisPole(mass*mass,{},gamma,type);
+    poleConfig thisPole(mass*mass + addImaginaryMass * (1i)*(1.e-6),{},type);
     if( dbexpressions != nullptr ) dbexpressions->emplace_back(stub+"::mass", mass);
     Expression bw_width  = 0;
     Expression bw_width0 = 0;
@@ -71,6 +72,17 @@ DEFINE_LINESHAPE(GenericKmatrix)
       DEBUG("Will link to parameter: " << stub+"::g::"+std::to_string(channel) );
         
       Expression Bl = 1;
+      if(kMatrix_formFactor == "RescaledBL2Body"){
+            Particle p( channels[channel-1] );
+            auto s1 = p.daughter(0)->massSq();
+            auto s2 = p.daughter(1)->massSq();
+            auto s_cse = make_cse(s);
+            Expression runningWidth = width( s_cse, s1, s2, mass, gamma, radius, p.L() );
+            Expression rho = phaseSpace(s, p, 0 );
+            Bl = sqrt( mass * runningWidth / rho);
+            //Bl = sqrt( mass * gamma / rho);
+      }
+
       if(kMatrix_formFactor == "BL"){
             Particle p( channels[channel-1] );
             //Taken from arXiv:1111.6307v1 Eqs. (41), (45)
@@ -85,7 +97,7 @@ DEFINE_LINESHAPE(GenericKmatrix)
             Particle p( channels[channel-1] );
             //Taken from https://arxiv.org/pdf/0909.2171v1.pdf Eqs. (41), (45)
             Expression k2 = norm(phsps[channel-1]) *s/4.;
-            Expression k20 = norm( phaseSpace(mass*mass, p, p.L() )   ) *s0/4.;
+            Expression k20 = norm( phaseSpace(mass*mass, p, p.L() )   ) *mass*mass/4.;
             Bl = sqrt( fpow(k2/(1+k2),p.L()) );
             Bl = Bl / sqrt( fpow(k20/(1+k20),p.L()) );
             if(pole==1)Bls.push_back(Bl);
@@ -136,11 +148,11 @@ DEFINE_LINESHAPE(GenericKmatrix)
   
   //Form factor
   const Expression q2         = make_cse( Q2( s, s1, s2 ) );
-  const Expression q20        = make_cse( Q2( s0, s1, s2 ) );
+  //const Expression q20        = make_cse( Q2( s0, s1, s2 ) );
   Expression FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) );
   if ( pVector_formFactor == "BL" ) FormFactor = sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
   if ( pVector_formFactor == "NFF" ) FormFactor = 1;
-  if ( pVector_formFactor == "BELLE2018" ) FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, q20 * radius * radius, L ) );
+  //if ( pVector_formFactor == "BELLE2018" ) FormFactor = sqrt( BlattWeisskopf_Norm( q2 * radius * radius, q20 * radius * radius, L ) );
 
   Expression I = Constant(0,1);
     
@@ -165,6 +177,24 @@ DEFINE_LINESHAPE(GenericKmatrix)
       F_0 += propagator[{cTerm,k}] * P[k];
     }
     return F_0*FormFactor;
+  }
+  else if(pa_type==PA_TYPE::PVecPole){
+      INFO("Using PVecPole to build the production amplitude");
+      Expression F_0 = 0;
+      
+      if ( tokens[0] == "pole" ){
+          auto pole = poleConfigs[pTerm];
+          for(unsigned i = 0 ; i < nChannels; ++i) {
+              F_0 += propagator[{cTerm,i}] * pole.g(i)/pole.pole(s) * FormFactor;
+          }
+          return F_0;
+      }
+      else if ( tokens[0] == "prod" ){
+            F_0 = propagator[{cTerm,pTerm}] ; // * FormFactor; ??
+            return F_0;
+      }
+      ERROR( "Modifier not found: " << lineshapeModifier << ", expecting one of {pole, prod}, tokens[0] = " << tokens[0] << "  tokens[1] = " << tokens[1] );
+      return F_0;
   }
   //P-vector from http://pdg.lbl.gov/2019/reviews/rpp2019-rev-resonances.pdf
   else if(pa_type==PA_TYPE::PVecPDG){

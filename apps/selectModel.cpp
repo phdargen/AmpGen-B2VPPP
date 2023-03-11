@@ -265,7 +265,6 @@ void selectModel(){
     
 }
 
-
 void scan(){
 
   string resultsFile = NamedParameter<std::string>("ResultsFile", "result.root", "");
@@ -515,14 +514,51 @@ void scan(){
     
 }
 
+void analyzeFits(){
+    INFO("Analyze fit results ... ");
+
+    string baseLineFit = NamedParameter<string>("baseLineFit", "log.txt");
+    string outDir = NamedParameter<string>("outDir", "out/");
+
+    FitResult fr_base(baseLineFit);
+    fr_base.print();
+    
+    auto fitFiles = NamedParameter<string>("fitFiles", vector<string>()).getVector(); // basename, first file number, last file number
+
+    vector<FitResult> fits;
+    for(unsigned int i = stoi(fitFiles[1]) ; i <= stoi(fitFiles[2]) ; ++i){
+      if(! std::ifstream((fitFiles[0] + to_string(i)+".txt").c_str()).good()){
+          ERROR("File " << fitFiles[0] + to_string(i)+".txt" << " not found");
+          continue;
+      }
+      FitResult fr(fitFiles[0] + to_string(i)+".txt");
+      fits.push_back(fr);
+      
+      //fr.print();
+      double dLL = fr.LL() - fr_base.LL();
+      //double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(dLL),1));
+      //if(abs(dLL)>0 && TMath::Prob(abs(dLL),1) == 0 ) LL_sig = 100;
+      //if(dLL>0) LL_sig *= -1.;
+      int dParams = fr.floating().size() - fr_base.floating().size();
+      double dChi2 = fr.chi2()/((double)fr.nBins()-1.-fr.nParam()) - fr_base.chi2()/((double)fr_base.nBins()-1.-fr_base.nParam()) ;
+      double chi2 = fr.chi2()/((double)fr.nBins()-1.);
+      INFO("Fit " << i << ":: dLL = " << dLL << " chi2/bin = " << chi2 << " dChi2 = " << dChi2 << " dParams =  " << dParams << endl );
+    }
+    
+}
+
 int main( int argc, char* argv[] ){
 
   OptionsParser::setArgs( argc, argv );
 
   gStyle->SetOptStat(0);
   LHCbStyle();
-  //selectModel();
-  scan();
+    
+  auto mode = NamedParameter<int>("selectModel::mode", 1);
+
+  if(mode==0)selectModel();
+  if(mode==1)scan();
+  if(mode==2)analyzeFits();
     
   return 0;
 }

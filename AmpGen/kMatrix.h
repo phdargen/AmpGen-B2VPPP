@@ -27,12 +27,11 @@ namespace AmpGen
 
   struct poleConfig {
     Expression s;
-    Expression gamma;
     std::string type;
     std::vector<Expression> couplings;
     std::vector<Expression> bl_factors;
-    poleConfig(const Expression& s, const std::vector<Expression>& c = {}, const Expression& g = 0, const std::string& type = "")
-        : s(s), gamma(g), couplings(c), bl_factors(c.size(), 1), type(type){};
+    poleConfig(const Expression& s, const std::vector<Expression>& c = {}, const std::string& type = "")
+        : s(s), couplings(c), bl_factors(c.size(), 1), type(type){};
 
     void add(const Expression& coupling, const Expression& bl_factor = 1)
     {
@@ -43,9 +42,8 @@ namespace AmpGen
     const Expression g(const unsigned& i) const { return couplings[i]; }
       
     const Expression pole(const Expression& this_s) const {
-        Expression I = Constant(0,1);
         if(type=="ACCMOR") return fcn::sqrt(s) - fcn::sqrt(this_s); //Implements K-Matrix definition from https://arxiv.org/pdf/0909.2171v1.pdf
-        return s - this_s - I * s * gamma;
+        return s - this_s;
     }
       
   };
