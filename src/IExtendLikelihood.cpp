@@ -10,16 +10,16 @@
 #include "AmpGen/ParticlePropertiesList.h"
 #include "AmpGen/Utilities.h"
 #include "AmpGen/CoherentSum.h"
-
+#include "AmpGen/PolarisedSum.h"
 using namespace AmpGen;
 
-double GaussianConstraint::getVal() const
+double GaussianConstraint::getVal() 
 {
   return -( m_param->mean() - m_mean ) * ( m_param->mean() - m_mean ) / ( 2 * m_sigma * m_sigma );
 }
 
 void GaussianConstraint::configure( const std::string& configString, 
-                                    const CoherentSum& pdf,
+                                    PolarisedSum& pdf,
                                     const MinuitParameterSet& mps )
 {
   auto tokens            = split( configString, ' ' );
@@ -64,13 +64,13 @@ void GaussianConstraint::configure( const std::string& configString,
 }
 
 
-double ExtendedNormalisation::getVal() const
+double ExtendedNormalisation::getVal()
 {
     return m_pdf->norm();
 }
 
 void ExtendedNormalisation::configure( const std::string& configString, 
-                      const CoherentSum& pdf,
+                       PolarisedSum& pdf,
                       const MinuitParameterSet& mps )
 {
     m_pdf       = &pdf;

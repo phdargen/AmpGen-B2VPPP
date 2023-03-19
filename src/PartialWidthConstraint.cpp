@@ -5,6 +5,7 @@
 
 #include "AmpGen/Factory.h"
 #include "AmpGen/CoherentSum.h"
+#include "AmpGen/PolarisedSum.h"
 #include "AmpGen/IExtendLikelihood.h"
 #include "AmpGen/MsgService.h"
 #include "AmpGen/NamedParameter.h"
@@ -14,7 +15,7 @@
 
 using namespace AmpGen;
 
-double PartialWidthConstraint::getVal() const
+double PartialWidthConstraint::getVal() 
 {
 
   std::complex<double> numerator( 0, 0 );
@@ -36,7 +37,7 @@ double PartialWidthConstraint::getVal() const
 }
 
 void PartialWidthConstraint::configure( const std::string& configString, 
-                                        const CoherentSum& pdf,
+                                        PolarisedSum& pdf,
                                         const MinuitParameterSet& mps )
 {
 

@@ -579,6 +579,7 @@ void scan( MinuitParameterSet& MPS, string name, double min, double max, int ste
 }
 
 void setSplineVals(MinuitParameterSet& mps, string& head){
+    auto fixBoundaries = NamedParameter<int>( "setSplineVals::fixBoundaries", 0);
     auto spline_params = NamedParameter<double>( head + "::Spline").getVector();
     int nBins = int( spline_params[0] );
     double min = spline_params.size() == 4 ? spline_params[1] * spline_params[1] : spline_params[1];
@@ -588,13 +589,28 @@ void setSplineVals(MinuitParameterSet& mps, string& head){
     double m = mps.find(head+"_mass")->mean();
     double gamma = mps.find(head+"_width")->mean();
     INFO("Use BW with m = " << m << " g= " << gamma);
-
-    for(int i=0; i<nBins; i++){
+    
+    int from = fixBoundaries==1 ? 1 : 0;
+    int to = fixBoundaries==1 ? nBins-1 : nBins;
+    for(int i= from; i<to; i++){
         double s = min + (max-min)* i/((double)nBins-1.);
         complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
         mps.find(head+"::Spline::Re::"+to_string(i))->setInit(abs(BW));
         mps.find(head+"::Spline::Im::"+to_string(i))->setInit(arg(BW)*180./3.141);
     }
+    
+    if(fixBoundaries==2){
+        mps.find(head+"::Spline::Re::"+to_string(0))->setInit(0.);
+        //mps.find(head+"::Spline::Im::"+to_string(0))->setInit( mps.find(head+"::Spline::Im::"+to_string(1))->mean() );
+        mps.find(head+"::Spline::Re::"+to_string(0))->fix();
+        //mps.find(head+"::Spline::Im::"+to_string(0))->fix();
+
+        mps.find(head+"::Spline::Re::"+to_string(nBins-1))->setInit(0.);
+        //mps.find(head+"::Spline::Im::"+to_string(nBins-1))->setInit( mps.find(head+"::Spline::Im::"+to_string(nBins-2))->mean() );
+        mps.find(head+"::Spline::Re::"+to_string(nBins-1))->fix();
+        //mps.find(head+"::Spline::Im::"+to_string(nBins-1))->fix();
+    }
+    
 }
 
 void sanityChecks(MinuitParameterSet& mps){
@@ -732,8 +748,16 @@ void addGaussianConstraint( Minimiser& mini, MinuitParameterSet& mps )
     }
 }
 
+void addLASSO( Minimiser& mini, PolarisedSum& sig, MinuitParameterSet& mps, double lambda )
+{
+    auto ll_term = new LASSO();
+    ll_term->configure( "lambda " + to_string(lambda), sig, mps );
+    mini.addExtendedTerm( ll_term );
+    INFO("Added LASSO term with lambda = " << lambda);
+}
+
 template <typename likelihoodType>
-FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_type& mc, MinuitParameterSet& MPS )
+FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_type& mc, MinuitParameterSet& MPS, PolarisedSum& sig, double lambda = -1 )
 {
     auto time_wall = std::chrono::high_resolution_clock::now();
     auto time      = std::clock();
@@ -742,6 +766,7 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
      (i.e. the likielihood, and a set of MinuitParameters. */
     Minimiser mini( likelihood, &MPS );
     addGaussianConstraint( mini, MPS );
+    if(lambda > 0)addLASSO( mini, sig, MPS, lambda );
 
     auto threeBodyShapes     = threeBodyCalculators( MPS );
     unsigned int updateWidth = NamedParameter<unsigned int>( "UpdateWidth", 0 );
@@ -1450,6 +1475,9 @@ int main( int argc, char* argv[])
               // Do fit
               auto nFits = NamedParameter<int>("nFits", 1);
               auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
+              auto performLASSO = NamedParameter<bool>("doLASSO", 0,"doLASSO");
+              double lambda = performLASSO ? seed + 0.1  : -1;
+              
               if(!performFit){
                   for(int i=0;i<MPS.size();i++){
                       MPS[i]->fix();
@@ -1476,8 +1504,8 @@ int main( int argc, char* argv[])
                       //sig.normaliseAmps(excludeNorm);
                   }
                   FitResult* fr;
-                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-                  else fr = doFit(ll, events, eventsMC, MPS );
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS, sig, lambda );
+                  else fr = doFit(ll, events, eventsMC, MPS, sig, lambda );
                   
                   if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                       INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
@@ -1522,10 +1550,13 @@ int main( int argc, char* argv[])
                   fr->writeToFile(logFile);
                   fr->printToLatexTable(tableFile);
                   fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
-                  fr->writeToRootFile( output, seed, 0, sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+                  fr->writeToRootFile( output, seed, 0, useBkgBDT ? ll_bdt.getVal() : ll.getVal(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
                   output->cd();
                   output->Close();
                   
+                  INFO("fr->LL() = " << fr->LL());
+                  INFO("ll_bdt.getVal() = " << ll_bdt.getVal());
+
                   unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
                   if( saveWeights ){
                       EventList_type eventsPlotMC;
@@ -1568,8 +1599,8 @@ int main( int argc, char* argv[])
                   }
                   else INFO("Refit with released " << it->name() );
                   FitResult* fr;
-                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-                  else fr = doFit(ll, events, eventsMC, MPS );
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS, sig );
+                  else fr = doFit(ll, events, eventsMC, MPS, sig );
                   
                   auto evaluator_sig = sig.evaluator();
                   auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
@@ -1630,8 +1661,8 @@ int main( int argc, char* argv[])
                   }
                   
                   FitResult* fr;
-                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS );
-                  else fr = doFit(ll, events, eventsMC, MPS );
+                  if(useBkgBDT) fr = doFit(ll_bdt, events, eventsMC, MPS, sig );
+                  else fr = doFit(ll, events, eventsMC, MPS, sig );
                   
                   auto evaluator_sig = sig.evaluator();
                   auto evaluator_bkg = useBkgBDT ? bkgBDT.evaluator() : bkg.evaluator();
@@ -1750,7 +1781,7 @@ int main( int argc, char* argv[])
                 sig.setMC( eventsMC );
                 //sig.prepare();
             }
-            FitResult* fr = doFit(ll, events, eventsMC, MPS );
+            FitResult* fr;// = doFit(ll, events, eventsMC, MPS );
             
             if(fr->LL()>min_LL || TMath::IsNaN(fr->LL())){
                 INFO("Fit did not improve: LL = " << fr->LL() << " ; min_LL = " << min_LL);
@@ -1782,7 +1813,7 @@ int main( int argc, char* argv[])
             fr->writeToFile(logFile);
             fr->printToLatexTable(tableFile);
             fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
-            fr->writeToRootFile( output, seed, 0, 0, nSig, {0}, {0} );
+            fr->writeToRootFile( output, seed, 0, fr->LL(), 0, nSig, {0}, {0} );
             output->cd();
             output->Close();
 

@@ -8,14 +8,15 @@ namespace AmpGen
 {
   class MinuitParameterSet;
   class MinuitParameter;
-  class CoherentSum;
+  //class CoherentSum;
+  class PolarisedSum;
 
   class IExtendLikelihood
   {
   public:
     virtual ~IExtendLikelihood() = default;
-    virtual double getVal() const = 0;
-    virtual void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+    virtual double getVal()  = 0;
+    virtual void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
                             const MinuitParameterSet& mps ) = 0;
     virtual IExtendLikelihood* create()                     = 0;
   };
@@ -23,8 +24,8 @@ namespace AmpGen
   class GaussianConstraint : public IExtendLikelihood
   {
   public:
-    double getVal() const override;
-    void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+    double getVal()  override;
+    void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
                     const MinuitParameterSet& mps ) override;
     void configure( const std::string& configString, const MinuitParameterSet& mps );
 
@@ -40,14 +41,14 @@ namespace AmpGen
   class PartialWidthConstraint : public IExtendLikelihood
   {
   public:
-    double getVal() const override;
-    void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+    double getVal()  override;
+    void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
                     const AmpGen::MinuitParameterSet& mps ) override;
     IExtendLikelihood* create() override { return new PartialWidthConstraint(); }
     static std::string _id;
 
   private:
-    const CoherentSum* m_pdf;
+    PolarisedSum* m_pdf;
     double m_ratio;
     double m_weight;
     std::vector<unsigned int> m_denComponents;
@@ -57,28 +58,28 @@ namespace AmpGen
   class LASSO : public IExtendLikelihood
   {
   public:
-    double getVal() const override;
-    void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+    double getVal()  override;
+    void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
                     const MinuitParameterSet& mps ) override;
     IExtendLikelihood* create() override { return new LASSO(); }
     static std::string _id;
 
   private:
     double m_lambda;
-    const CoherentSum* m_pdf;
+    PolarisedSum* m_pdf;
   };
     
   class ExtendedNormalisation : public IExtendLikelihood
     {
     public:
-        double getVal() const override;
-        void configure( const std::string& configString, const AmpGen::CoherentSum& pdf,
+        double getVal()  override;
+        void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
                        const MinuitParameterSet& mps ) override;
         IExtendLikelihood* create() override { return new ExtendedNormalisation(); }
         static std::string _id;
         
     private:
-        const CoherentSum* m_pdf;
+      PolarisedSum* m_pdf;
     };
 
     

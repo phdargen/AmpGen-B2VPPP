@@ -1506,7 +1506,7 @@ void makePlotsMuMu(){
     }
       
     for(unsigned int j=0;j<dims.size();j++){ 
-        plotHistos(histo_set[j], true, 0, true);
+        plotHistos(histo_set[j], true, 1, true);
         c->Print((outDir+"/"+labels[j]+".pdf").c_str());
         c->Print((outDir+"/"+labels[j]+".png").c_str());
         if(j==0)c->Print((outDir+"/"+labels[j]+".C").c_str());
