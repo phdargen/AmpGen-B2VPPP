@@ -1,0 +1,3 @@
+doLASSO		1
+saveWeights	0	
+addAmpList	""

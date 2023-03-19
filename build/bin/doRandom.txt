@@ -1,0 +1,3 @@
+randomizeStartVals	4
+saveWeights		0
+addAmpList		""

@@ -1,0 +1,61 @@
+executable  = doFitOnly.sh
+universe    = vanilla
+#getenv 	    = True
+#requirements = (OpSysAndVer =?= "CentOS7")
+requirements = ( (OpSysAndVer =?= "CentOS7") && (Machine =!= LastRemoteHost) )
+#requirements = ( (TARGET.has_avx2) && (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost) )
+#on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
+max_retries             = 5
+
+if defined i
+	INDIR = $(i)
+else 
+	INDIR = .
+endif
+
+if defined o
+	OPTIONFILE = $(o)
+else
+	OPTIONFILE = test.txt
+endif
+
+if defined d
+	OUTDIR = $(d)
+else 
+	OUTDIR = rnd
+endif
+
+if defined n
+	NJOBS = $(n)
+else 
+	NJOBS = 2
+endif
+
+
+#espresso     = 20 minutes
+#microcentury = 1 hour
+#longlunch    = 2 hours
+#workday      = 8 hours
+#tomorrow     = 1 day
+
++JobFlavour = "longlunch"
+#+MaxDuration = 300
+#request_memory = 8096
+request_cpus   = 2
+#RequestCpus = 8
+request_disk   = 800000
+
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, doLASSO.txt, $(OPTIONFILE), psi_data_bkgPdf.root, SignalIntegrationEvents_Acc_bkgPdf.root, mass_width.csv, MintDalitzSpecialParticles.csv
+arguments = $(Process) main_psi.txt doLASSO.txt $(OPTIONFILE)
+ 
+output      = $(INDIR)/$(OUTDIR)/out.out
+error       = $(INDIR)/$(OUTDIR)/error.err
+log         = $(INDIR)/$(OUTDIR)/log.log
+
+transfer_output_files = result.root
+transfer_output_remaps = "result.root = $(INDIR)/$(OUTDIR)/result_$(Process).root"
+
+#transfer_output_files = result.root, model.txt, log.txt, amp_plots3.pdf
+#transfer_output_remaps = "result.root = $(OUTDIR)/result_$(Process).root ; amp_plots3.pdf = $(OUTDIR)/amp_plots3_$(Process).pdf ; model.txt =  $(OUTDIR)/model_$(Process).txt; log.txt = $(OUTDIR)/log_$(Process).txt"
+
+queue $(NJOBS)

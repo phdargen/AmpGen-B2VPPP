@@ -15,10 +15,10 @@ double LASSO::getVal()
 {
   double sum( 0 );
   for ( unsigned int i = 0; i < m_pdf->numAmps(); ++i ) {
-    std::complex<double> c_i = (*m_pdf)[i].coefficient;
+      std::complex<double> c_i = (*m_pdf)[i].coefficient;
       sum += sqrt( std::norm(c_i) * m_pdf->norm(i, i).real() );
   }
-  return m_lambda * sum;
+  return - m_lambda/2. * sum;
 }
 
 void LASSO::configure( const std::string& configString,
@@ -28,13 +28,7 @@ void LASSO::configure( const std::string& configString,
   m_pdf       = &pdf;
   auto tokens = split( configString, ' ' );
   m_lambda    = stod( tokens[1] );
-  INFO("Configured LASSO with lambda = " << m_lambda << " m_pdf->size() = " << m_pdf->size() << " norm = " << m_pdf->norm());
-  INFO("getVal = " << getVal());
-
-    for ( unsigned int i = 0; i < m_pdf->numAmps(); ++i ){
-        INFO((*m_pdf)[i].name() << " c = " << (*m_pdf)[i].coefficient << " norm = " << m_pdf->norm(i, i).real());
-    }
-
+  INFO("Configured LASSO with lambda = " << m_lambda << " m_pdf->size() = " << m_pdf->numAmps() << " norm = " << m_pdf->norm());
 }
 
 REGISTER( IExtendLikelihood, LASSO );
