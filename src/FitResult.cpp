@@ -463,9 +463,9 @@ void FitResult::writeToOptionsFile( const std::string& fname, int fixParams )
     outlog.close();
 }
 
-void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsigned nAmps, double Ns, std::vector<double> thresholds, std::vector<double> numFracAboveThresholds){
+void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, double nll, unsigned nAmps, double Ns, std::vector<double> thresholds, std::vector<double> numFracAboveThresholds){
         
-        double nll,chi2;
+        double chi2;
         unsigned status, nPar;
         double res[m_fitFractions.size()*2];
         double par[m_mps->size()*2];
@@ -505,10 +505,10 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsi
         }
     
         for (unsigned int i = 0; i < thresholds.size(); i++ ){
-            AIC[i] = m_LL + 2 * numFracAboveThresholds[i];
-            BIC[i] = m_LL + numFracAboveThresholds[i] * log(Ns);
-            AIC2[i] = m_LL + 4 * numFracAboveThresholds[i];
-            BIC2[i] = m_LL + 2 * numFracAboveThresholds[i] * log(Ns);
+            AIC[i] = nll + 2 * numFracAboveThresholds[i];
+            BIC[i] = nll + numFracAboveThresholds[i] * log(Ns);
+            AIC2[i] = nll + 4 * numFracAboveThresholds[i];
+            BIC2[i] = nll + 2 * numFracAboveThresholds[i] * log(Ns);
             r[i] = numFracAboveThresholds[i];
             
             outputTree->Branch(("AIC_" + std::to_string((int)(thresholds[i]*10))).c_str(), &AIC[i]);
@@ -518,7 +518,6 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsi
             outputTree->Branch(("r_" + std::to_string((int)(thresholds[i]*10))).c_str(), &r[i]);            
         }    
             
-        nll = m_LL;
         chi2 = m_chi2 / dof();
         status = m_status;
         nPar = nParam();
@@ -527,8 +526,14 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, unsi
         outputTree->Write();
 }
 
+std::complex<double> BW_val(const double& s, const double& m, const double& gamma){
+    //std::complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
+    std::complex<double> BW = -std::complex<double>(0,1) * m * gamma/(m*m - s -  std::complex<double>(0,1) * sqrt(s) * gamma);
+    return BW;
+}
+
 void FitResult::plotSpline( const std::string& name, const std::string& outDir ) {
-    
+        
     double min, max, nBins( 0 );
     auto spline_params = NamedParameter<double>( name + "::Spline").getVector();
     if( spline_params.size() == 3 ){
@@ -550,9 +555,80 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
     TGraphErrors* g_amp = new TGraphErrors();
     TGraphErrors* g_phase = new TGraphErrors();
     TGraphErrors* g_argand = new TGraphErrors();
+    
+    TGraphErrors* g_amp_bw = new TGraphErrors();
+    TGraphErrors* g_phase_bw = new TGraphErrors();
+    TGraphErrors* g_argand_bw = new TGraphErrors();
+
+    double amp,phase,amp_err,phase_err;
+    
+    std::ofstream outlog;
+    outlog << std::setprecision( 4 );
+    outlog.open( (outDir+"/"+name+"_spline.txt").c_str() );
+    outlog << "Head " + name  << std::endl;
+    outlog << name + "::Spline";
+    for(auto& p : spline_params)outlog << " " << p;
+    outlog << std::endl;
+    
+    auto mass = m_mps->find(name+"_mass");
+    auto gamma = m_mps->find(name+"_width");
+    
+    outlog << mass->name() << "  " << (int)mass->flag() << " "
+    << mass->mean() << " " << mass->stepInit()  << " "
+    << mass->minInit() << " " << mass->maxInit() << "    " ;
+    outlog << std::endl;
+    
+    outlog << gamma->name() << "  " << (int)gamma->flag() << " "
+    << gamma->mean() << " " << gamma->stepInit()  << " "
+    << gamma->minInit() << " " << gamma->maxInit() << "    " ;
+    outlog << std::endl;
+    
+    int nBins_bw = 100;
+    double min_bw = min; //pow(m - 2 * gamma,2);
+    double max_bw = max;//pow(m + 2 * gamma,2);
+    double st_bw = (max_bw-min_bw)/double(nBins_bw-1);
+    for ( int c = 0; c < nBins_bw; ++c ) {
+            double s = min + double( c ) * st_bw;
+        
+            std::complex<double> BW = BW_val(s,mass->mean(),gamma->mean());
+
+            amp = std::abs(BW);
+            amp_err = 0;
+            
+            phase = std::arg(BW)*180./3.141;
+            phase_err = 0;
+            
+            g_amp_bw->SetPoint( c, sqrt(s), amp );
+            g_phase_bw->SetPoint( c, sqrt(s), phase );
+        
+            g_amp_bw->SetPointError( c, 0, amp_err );
+            g_phase_bw->SetPointError( c, 0, phase_err );
+        
+            g_argand_bw->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+            g_argand_bw->SetPointError( c, sqrt( pow(amp_err * cos(phase/180.*M_PI),2) + pow(amp*sin(phase/180.*M_PI)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase/180.*M_PI),2) + pow(amp*cos(phase/180.*M_PI)*phase_err/180.*M_PI, 2) )   );
+    }
 
     double st = (max-min)/double(nBins-1);
-    double amp,phase,amp_err,phase_err;
+
+    int c_norm = NamedParameter<int>( "Spline::NormBinBW"  , nBins/2 - 1 );
+    double s_norm = min + ( c_norm ) * st;
+
+    std::complex<double> BW_norm = BW_val(s_norm,mass->mean(),gamma->mean());
+    double amp_bw_norm = std::abs(BW_norm);
+    double phase_bw_norm = std::arg(BW_norm)*180./3.141;
+
+    double amp_norm, phase_norm;
+    for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+        auto param = m_mps->at(i);
+        if(param->name().find( name + "::Spline::") != std::string::npos){
+            if(param->name() == name + "::Spline::Re::" + std::to_string(c_norm)){
+                amp_norm = param->mean() ;
+            }
+            else if(param->name() == name + "::Spline::Im::" + std::to_string(c_norm)){
+                phase_norm = param->mean() ;
+            }
+        }
+    }
 
     for ( int c = 0; c < nBins; ++c ) {
             double s = min + double( c ) * st;
@@ -560,13 +636,21 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
             for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
                 auto param = m_mps->at(i);
                 if(param->name().find( name + "::Spline::") != std::string::npos){      
-                    if(param->name().find( "Re::" + std::to_string(c) ) != std::string::npos){
-                        amp = param->mean();
-                        amp_err = param->err();
+                    if(param->name() == name + "::Spline::Re::" + std::to_string(c)){
+                        amp = param->mean() / amp_norm * amp_bw_norm;
+                        amp_err = param->err() / amp_norm * amp_bw_norm;
+                        outlog << param->name() << "  " << (int)param->flag() << " "
+                        << param->mean() << " " << param->err()  << " "
+                        << param->minInit() << " " << param->maxInit() << "    " ;
+                        outlog << std::endl;
                     }
-                    else if(param->name().find( "Im::" + std::to_string(c) ) != std::string::npos){
-                        phase = param->mean();
+                    else if(param->name() == name + "::Spline::Im::" + std::to_string(c)){
+                        phase = param->mean() - phase_norm + phase_bw_norm;
                         phase_err = param->err();
+                        outlog << param->name() << "  " << (int)param->flag() << " "
+                        << param->mean() << " " << param->err()  << " "
+                        << param->minInit() << " " << param->maxInit() << "    " ;
+                        outlog << std::endl;
                     }
                 }
             }
@@ -579,6 +663,8 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
             g_argand->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
             g_argand->SetPointError( c, sqrt( pow(amp_err * cos(phase/180.*M_PI),2) + pow(amp*sin(phase/180.*M_PI)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase/180.*M_PI),2) + pow(amp*cos(phase/180.*M_PI)*phase_err/180.*M_PI, 2) )   );
     }
+    
+    outlog.close();
     
     TCanvas* c = new TCanvas();
     g_amp->SetMarkerColor(4);
@@ -593,6 +679,31 @@ void FitResult::plotSpline( const std::string& name, const std::string& outDir )
     g_argand->SetMarkerStyle(20);
     g_argand->Draw("APC");
     c->Print((outDir+"/"+name+"_argand.pdf").c_str());
+    
+    g_amp->SetMarkerColor(4);
+    g_amp->SetMarkerStyle(20);
+    g_amp->Draw("APL");
+    g_amp_bw->SetLineColor(kRed);
+    g_amp_bw->SetLineWidth(3);
+    g_amp_bw->Draw("CSAME");
+    c->Print((outDir+"/"+name+"_amp_bw.pdf").c_str());
+    
+    g_phase->SetMarkerColor(4);
+    g_phase->SetMarkerStyle(20);
+    g_phase->Draw("APL");
+    g_phase_bw->SetLineColor(kRed);
+    g_phase_bw->SetLineWidth(3);
+    g_phase_bw->Draw("CSAME");
+    c->Print((outDir+"/"+name+"_phase_bw.pdf").c_str());
+    
+    g_argand->SetMarkerColor(4);
+    g_argand->SetMarkerStyle(20);
+    g_argand->Draw("APL");
+    g_argand_bw->SetLineColor(kRed);
+    g_argand_bw->SetLineWidth(3);
+    g_argand_bw->Draw("CSAME");
+    c->Print((outDir+"/"+name+"_argand_bw.pdf").c_str());
+
 }
 
 

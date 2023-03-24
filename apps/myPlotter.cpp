@@ -254,7 +254,12 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
 }
 
 void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, bool computeErrorBands = false){
-
+  
+  if(style == 0){
+      histos[0]->SetLineWidth(1);
+      histos[0]->SetMarkerSize(1.25);
+      histos[0]->GetYaxis()->SetTitle("");
+  }
   if(style == 1){
     histos[0]->SetLineWidth(1);
     histos[0]->SetMarkerSize(.5);
@@ -414,7 +419,8 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   for (unsigned int i = (plotComponents == true ? histos.size()-nPermErrorBands-nAltModels-1 : 1); i >= 1 ; i--)
   {
       histos[i]->SetMinimum(1);
-      if(style == 1)histos[i]->SetLineWidth(2);
+      histos[i]->SetLineWidth(2);
+      if(style == 0 && i==1)histos[i]->SetLineWidth(4);
       if(nPermErrorBands>3)histos[1]->SetLineWidth(1);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
@@ -1521,7 +1527,7 @@ void makePlotsMuMu(){
     c->SetCanvasSize(1000, 500);
     for(unsigned int j=0;j<6;j++){ 
         c->cd(j+1);
-        plotHistos(histo_set[j],false,1,false);
+        plotHistos(histo_set[j],false,0,false);
     }
     c->Print((outDir+"/"+"plots.pdf").c_str());
     

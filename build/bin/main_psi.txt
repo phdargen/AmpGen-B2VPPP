@@ -35,7 +35,7 @@ BranchesMC Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ pip
 "nCores"        8
 Fit::nReTries	 0
 nFits		 1
-addAmpList  addAmpListExotic_v3.txt
+#addAmpList  addAmpListExotic_v3.txt
 "randomizeStartVals"     0
 normAmps 1
 "fixParamsOptionsFile"      1

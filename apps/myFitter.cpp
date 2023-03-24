@@ -1520,7 +1520,7 @@ int main( int argc, char* argv[])
                   auto ep = fr->getErrorPropagator();
                   auto fitFractions = sig.fitFractions( ep );
                   fr->addFractions( fitFractions );
-                  vector<double> thresholds{0.1,0.5,1,2,5};
+                  vector<double> thresholds{0.01,0.05,0.1,0.5,1,2};
                   vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
                   
                   // Plot spline
@@ -1550,13 +1550,10 @@ int main( int argc, char* argv[])
                   fr->writeToFile(logFile);
                   fr->printToLatexTable(tableFile);
                   fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
-                  fr->writeToRootFile( output, seed, 0, useBkgBDT ? ll_bdt.getVal() : ll.getVal(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+                  fr->writeToRootFile( output, seed, 0, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
                   output->cd();
                   output->Close();
                   
-                  INFO("fr->LL() = " << fr->LL());
-                  INFO("ll_bdt.getVal() = " << ll_bdt.getVal());
-
                   unsigned int saveWeights   = NamedParameter<unsigned int>("saveWeights",1);
                   if( saveWeights ){
                       EventList_type eventsPlotMC;
@@ -1710,15 +1707,46 @@ int main( int argc, char* argv[])
                           auto name = param->name();
                           auto new_name = replaceAll(name,replaceAmpAwithB[n],replaceAmpAwithB[n+1]);
                           
+                          // fix L
+                          if(new_name.find("B+[P]{Z(T)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[P]","");
+                          if(new_name.find("B+[D]{Z(T)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[D]","");
+                          if(new_name.find("B+[P]{rhoOmega20,Zs(P)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[P]","");
+                          if(new_name.find("B+[D]{rhoOmega20,Zs(P)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[D]","");
+                          
                           // fix particle ordering
                           if(new_name.find("Z(P)+{psi(2S)0,pi+},K*(892)0{K+,pi-}")!= std::string::npos)
                               new_name = replaceAll(new_name,"Z(P)+{psi(2S)0,pi+},K*(892)0{K+,pi-}","K*(892)0{K+,pi-},Z(P)+{psi(2S)0,pi+}");
                           if(new_name.find("Z(P)+{psi(2S)0,pi+},KPi40")!= std::string::npos)
                               new_name = replaceAll(new_name,"Z(P)+{psi(2S)0,pi+},KPi40","KPi40,Z(P)+{psi(2S)0,pi+}");
-                          if(new_name.find("rhoOmega20,Zs(A)+{psi(2S)0,K+}")!= std::string::npos)
-                              new_name = replaceAll(new_name,"rhoOmega20,Zs(A)+{psi(2S)0,K+}","rhoOmega20,Zs(P)+{psi(2S)0,K+}");
+
+                          if(new_name.find("K*(892)0{K+,pi-},Z(T)+{psi(2S)0,pi+}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"K*(892)0{K+,pi-},Z(T)+{psi(2S)0,pi+}","Z(T)+{psi(2S)0,pi+},K*(892)0{K+,pi-}");
+                          if(new_name.find("KPi40,Z(T)+{psi(2S)0,pi+}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"KPi40,Z(T)+{psi(2S)0,pi+}","Z(T)+{psi(2S)0,pi+},KPi40");
+
+                          if(new_name.find("K*(892)0{K+,pi-},Z(PT)+{psi(2S)0,pi+}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"K*(892)0{K+,pi-},Z(PT)+{psi(2S)0,pi+}","Z(PT)+{psi(2S)0,pi+},K*(892)0{K+,pi-}");
+                          if(new_name.find("KPi40,Z(PT)+{psi(2S)0,pi+}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"KPi40,Z(PT)+{psi(2S)0,pi+}","Z(PT)+{psi(2S)0,pi+},KPi40");
+                          
                           if(new_name.find("Zs(P)+{psi(2S)0,K+},PiPi40")!= std::string::npos)
                               new_name = replaceAll(new_name,"Zs(P)+{psi(2S)0,K+},PiPi40","PiPi40,Zs(P)+{psi(2S)0,K+}");
+                          if(new_name.find("Zs(P)+{psi(2S)0,K+},rhoOmega20")!= std::string::npos)
+                              new_name = replaceAll(new_name,"Zs(P)+{psi(2S)0,K+},rhoOmega20","rhoOmega20,Zs(P)+{psi(2S)0,K+}");
+
+                          if(new_name.find("B+{rhoOmega20,Zs(T)+{psi(2S)0,K+}}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"B+{rhoOmega20,Zs(T)+{psi(2S)0,K+}}","B+{Zs(T)+{psi(2S)0,K+},rhoOmega20}");
+                          if(new_name.find("B+{PiPi40,Zs(T)+{psi(2S)0,K+}}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"B+{PiPi40,Zs(T)+{psi(2S)0,K+}}","B+{Zs(T)+{psi(2S)0,K+},PiPi40}");
+
+                          if(new_name.find("B+{rhoOmega20,Zs(PT)+{psi(2S)0,K+}}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"B+{rhoOmega20,Zs(PT)+{psi(2S)0,K+}}","B+{Zs(PT)+{psi(2S)0,K+},rhoOmega20}");
+                          if(new_name.find("B+{PiPi40,Zs(PT)+{psi(2S)0,K+}}")!= std::string::npos)
+                              new_name = replaceAll(new_name,"B+{PiPi40,Zs(PT)+{psi(2S)0,K+}}","B+{Zs(PT)+{psi(2S)0,K+},PiPi40}");
                           
                           if(MPS.find(new_name) != nullptr)MPS.unregister(MPS.find(new_name));
                           
@@ -1727,6 +1755,15 @@ int main( int argc, char* argv[])
                           else if(new_name.find("Xs(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("KPi")!= std::string::npos) )INFO(new_name << " not allowed");
                           else if(new_name.find("X(S)")!= std::string::npos && (new_name.find("Z(4055)V")!= std::string::npos || new_name.find("Z(4100)")!= std::string::npos || new_name.find("Z(V)")!= std::string::npos ) )INFO(new_name << " not allowed");
                           else if(new_name.find("X(P)")!= std::string::npos && ( new_name.find("Z(4055)A")!= std::string::npos || new_name.find("Z(A)")!= std::string::npos || new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos ) )INFO(new_name << " not allowed");
+                          
+                          else if( (new_name.find("X(4500)")!= std::string::npos || new_name.find("X(4700)") != std::string::npos || new_name.find("X(S)") != std::string::npos) && new_name.find("Z(V)")!= std::string::npos )INFO(new_name << " not allowed");
+                          
+                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Zs(V)")!= std::string::npos )INFO(new_name << " not allowed");
+                          
+                          else if( (new_name.find("Xs3(P)")!= std::string::npos || new_name.find("Xs3(PT)") != std::string::npos)
+                                  && ( new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos || new_name.find("Zs(4000)")!= std::string::npos || new_name.find("Zs(4220)A")!= std::string::npos  ) )INFO(new_name << " not allowed");
+
+                          
                           else MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
                           MPS.unregister(param);
                           i=0;

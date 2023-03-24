@@ -6,7 +6,8 @@
 #include <complex>
 
 //// ROOT ////
-#include "TGraph.h"
+#include <TGraph.h>
+#include <TGraphErrors.h>
 #include "TCanvas.h"
 #include "TAxis.h"
 #include "TH2D.h"
@@ -462,6 +463,199 @@ void prepareRunningWidthFromFiles(){
     
 }
 
+complex<double> BW_val(const double& s, const double& m, const double& gamma){
+    //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
+    complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
+    return BW;
+}
+
+void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, const std::string& outDir ) {
+        
+    double min, max, nBins( 0 );
+    auto spline_params = NamedParameter<double>( name + "::Spline").getVector();
+    if( spline_params.size() == 3 ){
+        nBins = int( spline_params[0] );
+        min   =         spline_params[1] ;
+        max   =         spline_params[2];
+    }
+    else if( spline_params.size() == 4 ){
+        nBins = size_t( spline_params[0] );
+        min   =       spline_params[1] * spline_params[1] ;
+        max   =       spline_params[2] * spline_params[2];
+    }
+    else {
+        nBins = NamedParameter<int>( name + "::Spline::N"  , 0. );
+        min   = NamedParameter<double>( name + "::Spline::Min", 0. );
+        max   = NamedParameter<double>( name + "::Spline::Max", 0. );
+    }
+    
+    double m = m_mps.find(name+"_mass")->mean();
+    double gamma = m_mps.find(name+"_width")->mean();
+        
+    TGraphErrors* g_amp = new TGraphErrors();
+    TGraphErrors* g_phase = new TGraphErrors();
+    TGraphErrors* g_argand = new TGraphErrors();
+    TGraphErrors* g_amp2 = new TGraphErrors();
+    TGraphErrors* g_phase2 = new TGraphErrors();
+    TGraphErrors* g_argand2 = new TGraphErrors();
+
+    TGraphErrors* g_amp_bw = new TGraphErrors();
+    TGraphErrors* g_phase_bw = new TGraphErrors();
+    TGraphErrors* g_argand_bw = new TGraphErrors();
+
+    double amp,phase,amp_err,phase_err;
+    
+    int nBins_bw = 100;
+    double min_bw = min; //pow(m - 2 * gamma,2);
+    double max_bw = max;//pow(m + 2 * gamma,2);
+    double st_bw = (max_bw-min_bw)/double(nBins_bw-1);
+    
+    for ( int c = 0; c < nBins_bw; ++c ) {
+            double s = min + double( c ) * st_bw;
+        
+            complex<double> BW = BW_val(s,m,gamma);
+
+            amp = abs(BW);
+            amp_err = 0;
+            
+            phase = arg(BW)*180./3.141;
+            phase_err = 0;
+            
+            g_amp_bw->SetPoint( c, sqrt(s), amp );
+            g_phase_bw->SetPoint( c, sqrt(s), phase );
+        
+            g_amp_bw->SetPointError( c, 0, amp_err );
+            g_phase_bw->SetPointError( c, 0, phase_err );
+        
+            g_argand_bw->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+            g_argand_bw->SetPointError( c, sqrt( pow(amp_err * cos(phase/180.*M_PI),2) + pow(amp*sin(phase/180.*M_PI)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase/180.*M_PI),2) + pow(amp*cos(phase/180.*M_PI)*phase_err/180.*M_PI, 2) )   );
+    }
+
+    double st = (max-min)/double(nBins-1);
+
+    int c_norm = NamedParameter<int>( "Spline::NormBinBW"  , nBins/2 - 1 );
+    double s_norm = min + ( c_norm ) * st;
+
+    complex<double> BW_norm = BW_val(s_norm,m,gamma);
+    double amp_bw_norm = abs(BW_norm);
+    double phase_bw_norm = arg(BW_norm)*180./3.141;
+
+    double amp_norm, phase_norm;
+    for (size_t i = 0; i < (size_t)m_mps.size(); ++i ) {
+        auto param = m_mps.at(i);
+        if(param->name().find( name + "::Spline::") != std::string::npos){
+            if(param->name() == name + "::Spline::Re::" + std::to_string(c_norm)){
+                amp_norm = param->mean() ;
+            }
+            else if(param->name() == name + "::Spline::Im::" + std::to_string(c_norm)){
+                phase_norm = param->mean() ;
+            }
+        }
+    }
+    
+    for ( int c = 0; c < nBins; ++c ) {
+            double s = min + double( c ) * st;
+            
+            for (size_t i = 0; i < (size_t)m_mps.size(); ++i ) {
+                auto param = m_mps.at(i);
+                if(param->name().find( name + "::Spline::") != std::string::npos){
+                    if(param->name() == name + "::Spline::Re::" + std::to_string(c)){
+                        amp = param->mean() / amp_norm * amp_bw_norm;
+                        amp_err = param->err() / amp_norm * amp_bw_norm;
+                    }
+                    else if(param->name() == name + "::Spline::Im::" + std::to_string(c)){
+                        phase = param->mean() - phase_norm + phase_bw_norm;
+                        phase_err = param->err();
+                    }
+                }
+            }
+            g_amp->SetPoint( c, sqrt(s), amp );
+            g_phase->SetPoint( c, sqrt(s), phase );
+        
+            g_amp->SetPointError( c, 0, amp_err );
+            g_phase->SetPointError( c, 0, phase_err );
+        
+            g_argand->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+            g_argand->SetPointError( c, sqrt( pow(amp_err * cos(phase/180.*M_PI),2) + pow(amp*sin(phase/180.*M_PI)*phase_err/180.*M_PI, 2) ) , sqrt( pow(amp_err * sin(phase/180.*M_PI),2) + pow(amp*cos(phase/180.*M_PI)*phase_err/180.*M_PI, 2) )   );
+        
+            g_amp2->SetPoint( c, sqrt(s), amp );
+            g_phase2->SetPoint( c, sqrt(s), phase );
+            g_argand2->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+    }
+    
+//    double amp_norm = abs(BW_norm);
+//    double phase_norm = arg(BW_norm)*180./3.141;
+//
+//    for ( int c = 0; c < nBins; ++c ) {
+//        double s = min + double( c ) * st;
+//
+//    }
+        
+    TCanvas* c = new TCanvas();
+    
+    g_amp->SetTitle(";#sqrt{s} [GeV]; |A| ");
+    g_phase->SetTitle(";#sqrt{s} [GeV]; arg(A) [degrees] ");
+    g_argand->SetTitle(";Re A; Im A ");
+
+    auto amp_max = NamedParameter<double>( "AmpMax",  1.25);
+    g_amp->SetMinimum(0);
+    g_amp->SetMaximum(amp_max);
+    
+    g_amp->SetMarkerColor(4);
+    g_amp->SetLineColor(4);
+    g_amp->SetMarkerStyle(20);
+    g_amp->SetMarkerSize(1.2);
+    g_amp->SetLineWidth(3);
+    g_amp->Draw("AP");
+    g_amp_bw->SetLineColor(kRed);
+    g_amp_bw->SetLineWidth(3);
+    g_amp_bw->Draw("C");
+    g_amp2->SetLineWidth(3);
+    g_amp2->Draw("C");
+    g_amp->Draw("P");
+    c->Print((outDir+"/"+name+"_amp.pdf").c_str());
+    
+    g_phase->SetMarkerColor(4);
+    g_phase->SetLineColor(4);
+    g_phase->SetMarkerStyle(20);
+    g_phase->SetMarkerSize(1.2);
+    g_phase->SetLineWidth(3);
+    g_phase->Draw("AP");
+    g_phase_bw->SetLineColor(kRed);
+    g_phase_bw->SetLineWidth(3);
+    g_phase_bw->Draw("C");
+    g_phase2->SetLineWidth(3);
+    g_phase2->Draw("C");
+    g_phase->Draw("P");
+    c->Print((outDir+"/"+name+"_phase.pdf").c_str());
+    
+    auto argand_x_min = NamedParameter<double>( "ArgandMinX",  -0.25);
+    auto argand_x_max = NamedParameter<double>( "ArgandMaxX",  1.25);
+    auto argand_y_min = NamedParameter<double>( "ArgandMinY",  -1.25);
+    auto argand_y_max = NamedParameter<double>( "ArgandMaxY",  1.25);
+
+    g_argand->GetXaxis()->SetLimits(argand_x_min,argand_x_max);
+    g_argand->SetMinimum(argand_y_min);
+    g_argand->SetMaximum(argand_y_max);
+    
+    auto argand_line = NamedParameter<string>( "ArgandLine",  "C");
+
+    g_argand->SetMarkerColor(4);
+    g_argand->SetLineColor(4);
+    g_argand->SetMarkerStyle(20);
+    g_argand->SetMarkerSize(1.2);
+    g_argand->SetLineWidth(3);
+    g_argand->Draw("AP");
+    g_argand_bw->SetLineColor(kRed);
+    g_argand_bw->SetLineWidth(3);
+    g_argand_bw->Draw("C");
+    g_argand2->SetLineWidth(3);
+    g_argand2->Draw(((string)argand_line).c_str());
+    g_argand->Draw("P");
+    c->Print((outDir+"/"+name+"_argand.pdf").c_str());
+}
+
+
 int main(int argc , char* argv[] ){
 
       OptionsParser::setArgs(argc,argv);
@@ -480,17 +674,26 @@ int main(int argc , char* argv[] ){
       auto plotRw = NamedParameter<bool>("plotRunningWidths", 0);
       auto calculateRw = NamedParameter<bool>("calculateRunningWidths", 0);
       auto prepareRw = NamedParameter<bool>("prepareRunningWidthFromFiles", 0);
-      auto plotSpline = NamedParameter<bool>("plotSpline", 0);
+      auto plotSpline = NamedParameter<int>("plotSpline", 0);
 
       if(plotRw)plotRunningWidths();
       if(calculateRw)calculateRunningWidths();
       if(prepareRw)prepareRunningWidthFromFiles();
     
-      if(plotSpline){
+      if(plotSpline==1){
         string logFile = NamedParameter<std::string>("LogFile", "log.txt", "Name of the output log file");
         string head = NamedParameter<std::string>("Head","X(A)0");
 
         FitResult fr(logFile);
         fr.plotSpline(head);    
-    }
+      }
+      if(plotSpline==2){
+        std::string outDir = NamedParameter<std::string>("outDir", ".");
+        string head = NamedParameter<std::string>("Head","X(A)0");
+          
+        MinuitParameterSet m_mps;
+        m_mps.loadFromStream();
+        plotSplineFromFile(m_mps,(string)head,(string)outDir);
+      }
+    
 }
