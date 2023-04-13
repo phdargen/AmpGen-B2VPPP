@@ -274,11 +274,29 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   auto FitWeightFileNames = NamedParameter<std::string>("AltFitWeightFileNames", std::vector<std::string>(),"AltFitWeightFileNames" ).getVector();
   unsigned int nAltModels = FitWeightFileNames.size();
   unsigned int addSysErrBand   = NamedParameter<unsigned int>("addSysErrBand",0);  
-  
+  unsigned int plotAltModels   = NamedParameter<unsigned int>("plotAltModels",0);
+
 //  INFO("nPermErrorBands = " << nPermErrorBands);  
 //  INFO("nAltModels = " << nAltModels);  
 //  INFO("addSysErrBand = " << addSysErrBand);  
 
+  // Plot alt models
+  if(plotAltModels){
+        histos[1]->SetLineColor(kRed);
+        histos[1]->SetMarkerColor(kRed);
+        histos[histos.size()-1]->SetLineColor(kAzure - 4);
+        histos[histos.size()-1]->SetMarkerColor(kAzure - 4);
+        histos[histos.size()-1]->SetFillColorAlpha(kAzure - 4, 1);
+        histos[histos.size()-1]->SetMarkerSize(0.);
+        histos[histos.size()-1]->DrawNormalized("histsame",1);
+//        for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
+//            histos[i]->SetLineColor(i);
+//            histos[i]->SetMarkerColor(i);
+//            histos[i]->DrawNormalized("e1same",1);
+//        }
+        computeErrorBands = false;
+  }
+    
   // Only compute once for every histo set !  
   if(computeErrorBands){
       
@@ -364,14 +382,8 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
 
       }  
         
-      //Compute err bands from alternative fit  
+      //Compute err bands from alternative fit
       if(nAltModels>0){
-          
-//              for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
-//                  histos[i]->SetLineColor(i);                    
-//                  histos[i]->SetMarkerColor(i);
-//                  histos[i]->DrawNormalized("e1same",1);
-//              }
           
               for(unsigned int b = 1; b <= histos[0]->GetXaxis()->GetNbins(); b++){
                   
@@ -404,17 +416,18 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
               histos[histos.size()-2]->SetFillColor(862);
               histos[histos.size()-2]->SetFillColorAlpha(kAzure - 4, 1);        
       } 
-   
+      
+      // Plot error bands
+      if(nAltModels>0){
+          histos[histos.size()-2]->DrawNormalized("e5same",1);
+      }
+      if(nPermErrorBands>3){
+            if(addSysErrBand)histos[histos.size()-2-nAltModels]->DrawNormalized("e5same",1);
+            histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->DrawNormalized("e5same",1);
+      }
+          
   }
-   
-  // Plot error bands
-  if(nAltModels>0){
-      histos[histos.size()-2]->DrawNormalized("e5same",1);
-  }
-  if(nPermErrorBands>3){
-        if(addSysErrBand)histos[histos.size()-2-nAltModels]->DrawNormalized("e5same",1);
-        histos[histos.size()-2-nAltModels-nPermErrorBands*addSysErrBand]->DrawNormalized("e5same",1);
-  }
+
   // Plot fit projections
   for (unsigned int i = (plotComponents == true ? histos.size()-nPermErrorBands-nAltModels-1 : 1); i >= 1 ; i--)
   {

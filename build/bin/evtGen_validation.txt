@@ -1,0 +1,239 @@
+EventType B+ K+ pi+ pi- mu+ mu-
+#EventType psi(2S)0 mu+ mu-
+saveWeights     1
+
+useBkgBDT   0
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2XK.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2psiK1_3.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2psiK1_P.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2psiKS.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2XSK.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2ZPKs.root:MCDecayTreeTuple/MCDecayTree
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2ZKs_S.root:MCDecayTreeTuple/MCDecayTree
+DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/EvtGen/Gen_B2ZKs_P.root:MCDecayTreeTuple/MCDecayTree
+
+###
+psi(2S)0[helAmp=Vll]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+#psi(2S)0{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+
+Particle::SpinFormalism Canonical
+Particle::DefaultModifier       BL
+#helicityAmplitude::MovingParent 1
+
+"FitWeightFileName" "Fit_weights_hel.root"
+
+###
+#DataSample        psi_data_reduced.root:DecayTree
+#DataUnits               MeV
+#Branches FullDTFCP_K_PX FullDTFCP_K_PY FullDTFCP_K_PZ FullDTFCP_K_PE FullDTFCP_pip_PX FullDTFCP_pip_PY FullDTFCP_pip_PZ FullDTFCP_pip_PE FullDTFCP_pim_PX FullDTFCP_pim_PY FullDTFCP_pim_PZ FullDTFCP_pim_PE FullDTFCP_mup_PX FullDTFCP_mup_PY FullDTFCP_mup_PZ FullDTFCP_mup_PE FullDTFCP_mum_PX FullDTFCP_mum_PY FullDTFCP_mum_PZ FullDTFCP_mum_PE
+
+weightData        noWeight
+
+IntegrationSample   toy_coreStart.root
+ExtraBranches        ""
+ExtraBranchesMC        ""
+#maxIntEvents        600000
+
+DataUnits               MeV
+Branches	Kplus_TRUEP_X Kplus_TRUEP_Y Kplus_TRUEP_Z Kplus_TRUEP_E piplus_TRUEP_X piplus_TRUEP_Y piplus_TRUEP_Z piplus_TRUEP_E piminus_TRUEP_X piminus_TRUEP_Y piminus_TRUEP_Z piminus_TRUEP_E muminus_TRUEP_X muminus_TRUEP_Y muminus_TRUEP_Z muminus_TRUEP_E muplus_TRUEP_X muplus_TRUEP_Y muplus_TRUEP_Z muplus_TRUEP_E	
+BranchesMC      ""
+
+#IntegrationSample /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/EvtGenTest/SignalIntegrationEventsCP_Acc_trueP.root
+#BranchesMC Kplus_PX Kplus_PY Kplus_PZ piplus_PX piplus_PY piplus_PZ piminus_PX piminus_PY piminus_PZ muminus_PX muminus_PY muminus_PZ muplus_PX muplus_PY muplus_PZ
+
+f_sig       2  1.0 0.001
+f_bkg       2  0.0 0.001
+
+#
+Z(P)+_mass   2 4.2 0 4.4 5.5
+Z(P)+_width  2 0.1 0 0.01 0.55
+Z(A)+_mass   2 4.2 0 4.4 5.5
+Z(A)+_width  2 0.1 0 0.01 0.55
+#B+{K*(892)0{K+,pi-},Z(P)+{psi(2S)0,pi+}}                           0 0.5 0.001  0 2     0 0.0 0.1 -360 360
+#B+{Z(A)+,K*(892)0{K+,pi-}}                           2 0.5 0.001  0 2     2 0.0 0.1 -360 360
+B+[P]{Z(A)+,K*(892)0{K+,pi-}}                        0 0.25 0.001 0 2     0 0.0 0.1 -360 360
+#B+[D]{Z(A)+,K*(892)0{K+,pi-}}                           0 0.5 0.001  0 2     0 0.0 0.1 -360 360
+
+Z(A)+{psi(2S)0,pi+}						      2 1.00 0.001        2 0.0 0.1
+#Z(A)+[D]{psi(2S)0,pi+}                                                0 0.10 0.001     0 0.0 0.1
+
+
+##
+#B+{X(4685)0,K+}                    2 1.00 0.001        2 0.0 0.1
+#X(4685)0{psi(2S)0,rho(770)0{pi+,pi-}}  2 0.3856 0.02161 0 2    2 -146.2 3.427 -360 360
+#X(4685)0[D]{psi(2S)0,rho(770)0{pi+,pi-}}  0 0.03856 0.02161 0 2    0  2 3.427 -360 360
+X(4685)0_mass  2 4.65 0 4.4 5.5
+X(4685)0_width  2 0.15 0 0.01 0.55
+#rho(770)0_radius 0 3 0.1 
+
+B+_radius 2 3 0.1
+K*(892)0_radius 2 3 0.1
+
+##
+K(1)(1270)+_mass  2 1.272 0 0 0
+K(1)(1270)+_width  2 0.09 0 0 0
+#K(1)(1270)+{K*(892)0{K+,pi-},pi+}  2 0.4899 0.03138 0 2    2 66.97 4.173 -360 360
+#K(1)(1270)+[D]{K*(892)0{K+,pi-},pi+}  0 0.14899 0.03138 0 2    0 0 4.173 -360 360
+#B+{psi(2S)0,K(1)(1270)+}  2 1 0 0 0    2 0 0 0 0
+B+{psi(2S)0,K(1)(1400)+}  2 1 0 0 0    2 0 0 0 0
+
+#B+[P]{psi(2S)0,K(1)(1270)+}  0 0.1 0.01   0 0 1
+#B+[D]{psi(2S)0,K(1)(1270)+}  0 0.1 0.01   0 0 1
+#B+[D;BW.NFF]{psi(2S)0,K(1)(1270)+}  0 0.1 0.01   0 0 1
+
+###
+K(1460)+_mass  2 1.45 0 0 0
+K(1460)+_width  2 0.1 0 0 0
+#B+{psi(2S)0,K(1460)+}  2 0.3652 0.01338 0 2    2 236.1 2.579 -360 360
+#K(1460)+{K*(892)0{K+,pi-},pi+}  2 1 0 0 0    2 0 0 0 0
+
+##
+#B+{X(4500)0,K+}                    2 1.00 0.001        2 0.0 0.1
+#X(4500)0{psi(2S)0,rho(770)0[SpinFormalism=Canonical]{pi+,pi-}}  2 0.3856 0.02161 0 2    2 -146.2 3.427 -360 360
+X(4500)0_mass  2 4.7 0 4.4 5.5
+X(4500)0_width  2 0.15 0 0.01 0.55
+rho(770)0_radius 2 1.5 0.1
+
+B+{X(S)0,K+}                    2 1.00 0.001        2 0.0 0.1
+#X(S)0{psi(2S)0,rho(770)0{pi+,pi-}}  2 0.3856 0.02161 0 2    2 -146.2 3.427 -360 360
+#X(S)0[D]{psi(2S)0,rho(770)0{pi+,pi-}}  0 0.3856 0.02161 0 2    0 -146.2 3.427 -360 360
+X(S)0_mass  2 4.7 0 4.4 5.5
+X(S)0_width  2 0.15 0 0.01 0.55
+
+#B+{X(P)0,K+}                    2 1.00 0.001        2 0.0 0.1
+#X(P)0{psi(2S)0,rho(770)0{pi+,pi-}}  2 0.3856 0.02161 0 2    2 -146.2 3.427 -360 360
+X(P)0_mass  2 4.7 0 4.4 5.5
+X(P)0_width  2 0.15 0 0.01 0.55
+
+###
+B+{psi(2S)0,K(1630)+}  2 1 0 0 0    2 0 0 0 0
+B+{psi(2S)0,K*(1410)+}  2 0.3534 0.02416 0 5    2 441 4.135 -360 600
+#K*(1410)+{K*(892)0{K+,pi-},pi+}  2 1 0 0 0    2 0 0 0 0
+
+B+{psi(2S)0,K*(1680)+}  2 0.3142 0.0173 0 5    2 230.9 4.143 -360 360
+B+{psi(4360)0,K+}  2 1 0 0 0    2 0 0 0 0
+#psi(2S)0[helAmp=Vll]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+#psi(2S)0{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+#psi(2S)0[D;BW.NFF]{mu-,mu+}       0 1.0 0.01          0 0.0 0.1
+
+#removeAmps "psi(2S)0[SBW]{mu-,mu+}"
+
+Vll {
+    1.0 +0.5 -0.5
+    1.0 -0.5 +0.5 
+#    0.0 +0.5 +0.5
+#    0.0 -0.5 -0.5
+}
+
+
+#psi(2S)0[helAmp=Vll1]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+#psi(2S)0[helAmp=Vll2]{mu-,mu+}       0 1.0 0.01          2 0.0 0.0
+
+Vll1 {
+    1.0 +0.5 -0.5
+    1.0 -0.5 +0.5
+}
+
+Vll2 {
+    1.0 +0.5 +0.5
+    1.0 -0.5 -0.5
+}
+
+
+"useFilter"     0
+"invertCut"     1
+"cut_dim"       0 2
+"cut_limits"    0.8 0.95
+
+#B+  K+ pi+ pi- mu+ mu-
+#-   0  1   2   3   4
+
+#K pi
+"invertCut_plot1"     0
+"cut_dim_plot1"       0 2
+"cut_limits_plot1"    0.8 0.95
+
+"invertCut_plot2"     1
+"cut_dim_plot2"       0 2
+"cut_limits_plot2"    0.8 0.95
+
+#Kpipi
+"invertCut_plot3"     0
+"cut_dim_plot3"       0 1 2
+"cut_limits_plot3"    1.4 2
+#"cut_limits_plot3"    1.35 2
+
+"invertCut_plot4"     1
+"cut_dim_plot4"       0 1 2
+"cut_limits_plot4"    1.4 2
+
+#pipi
+"invertCut_plot5"     0
+"cut_dim_plot5"       1 2
+"cut_limits_plot5"    0.6 0.85
+
+"invertCut_plot6"     1
+"cut_dim_plot6"       1 2
+"cut_limits_plot6"    0.6 0.85
+
+#K pi
+"invertCut_plot7"     0
+"cut_dim_plot7"       0 2
+"cut_limits_plot7"    1. 3
+
+"invertCut_plot8"     1
+"cut_dim_plot8"       0 2
+"cut_limits_plot8"    1. 3
+
+#psipipi
+"invertCut_plot9"     0
+"cut_dim_plot9"       1 2 3 4
+"cut_limits_plot9"    4.55 6
+
+"invertCut_plot10"     1
+"cut_dim_plot10"       1 2 3 4
+"cut_limits_plot10"    4.55 6
+
+#psipi
+"invertCut_plot11"     0
+"cut_dim_plot11"       1 3 4
+"cut_limits_plot11"    4.1 4.3
+
+"invertCut_plot12"     1
+"cut_dim_plot12"       1 3 4
+"cut_limits_plot12"    4.1 4.3
+
+"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ NonRes Z(_Z2(_Z3( Zs(_Zs2(_Zs3( X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9( Xs(_Xs2(_Xs3(_Xs4(
+"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6 weight_7 weight_8
+"plot_legend" "Data" "Fit" "#it{B#rightarrow}#psi(2S)#it{K}_{1}" "#it{B}#rightarrow#psi(2S)#it{K^{*}}" "#it{B}#rightarrow#psi(2S)#it{K/K}_{2}" "#it{B#rightarrow}NonRes" "#it{B#rightarrowZK#pi}" "#it{B#rightarrowZ_{s}#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowX_{s}#pi}"
+
+# Flag to interpret complex numbers are (amp,phase) rather than real/imaginary, and angles in deg rather than rad.
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg
+
+Type PolarisedSum
+"PolarisedSum::InterferenceFractions"  true
+#Particle::SpinBasis Weyl
+#Particle::SpinFormalism Canonical
+#Particle::DefaultModifier       BL
+#normAmps 0
+#helicityAmplitude::MovingParent 1
+
+Inco_B+[Bkg;BgSpin0]{psi(2S)0,K+,pi+,pi-}  2 1 0 0 10    2 0 0 -360 360
+Bkg_a_cosTheta  2 0.2283 0.001 0 0
+Bkg_a_m01  2 -2.229 0.001 0 0
+Bkg_a_m012  2 3.623 0.001 0 0
+Bkg_a_m02  2 -2.498 0.001 0 0
+Bkg_a_m12  2 -2.473 0.001 0 0
+Bkg_a_m340  2 9.786 0.001 0 0
+Bkg_a_m3401  2 -9.092 0.001 0 0
+Bkg_a_m3402  2 -6.301 0.001 0 0
+Bkg_a_m341  2 5.588 0.001 0 0
+Bkg_a_m3412  2 -2.634 0.001 0 0
+Bkg_a_m342  2 3.101 0.001 0 0
+Bkg_b_cosTheta  2 -0.007668 0.001 0 0
+Bkg_b_m340  2 -6.988 0.001 0 0
+Bkg_b_m3412  2 -4.019 0.001 0 0
+Bkg_c_cosTheta  2 -0.8861 0.001 0 0
+Bkg_c_m340  2 1.711 0.001 0 0
+Bkg_c_m3412  2 1.151 0.001 0 0
