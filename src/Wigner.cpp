@@ -262,6 +262,7 @@ Expression AmpGen::helicityAmplitude(const Particle& particle,
       auto mzSpinorInLab   = inverseMyTransform( mzSpinor, Transform::Representation::Bispinor );
       mzSpinorInLab.st();
       ADD_DEBUG(Bar(mzSpinorInLab)(a)*labPol(a), db );
+      //if(particle.props()->pdgID() < 0) return make_cse( mzSpinorInLab(a)*Bar(labPol)(a) );
       return make_cse( Bar(mzSpinorInLab)(a)*labPol(a) );
     }
     if( particle.props()->twoSpin() == 2 ) // so a spin-one boson
@@ -286,13 +287,13 @@ Expression AmpGen::helicityAmplitude(const Particle& particle,
   auto mod = particle.attribute("helAmp");
   if( mod != stdx::nullopt ) recoupling_constants = userHelicityCouplings( *mod );
 
-  if( recoupling_constants.size() == 0 ){    
+  if( recoupling_constants.size() == 0 ){
     WARNING( particle.uniqueString() << " " << particle.spin() << " " << 
         particle.orbitalRange(false).first << " " << particle.orbitalRange(false).second 
         <<  " transition Mz="<< Mz << " to " << d1.spin() << " x " << d2.spin() << " cannot be coupled in (LS) = " << L << ", " << S ); 
     WARNING( "Possible (LS) combinations = " << 
       vectorToString( particle_couplings, ", ", []( auto& ls ){ return "("+std::to_string(int(ls.first)) + ", " + std::to_string(ls.second) +")";} ) );
-  } 
+  }
   Expression total = 0; 
   
   auto hco = angCoordinates( myFrame(d1.P()) , db);
@@ -304,7 +305,10 @@ Expression AmpGen::helicityAmplitude(const Particle& particle,
     auto term = wigner_D(hco, particle.spin(), Mz, dm, db); 
     auto h1   = helicityAmplitude(d1, myFrame, coupling.m1, db, +1, cachePtr);
     auto h2   = helicityAmplitude(d2, myFrame, coupling.m2, db, -1, cachePtr);
-    if( db != nullptr ){ 
+    if( db != nullptr ){
+      //db->emplace_back( "particle.uniqueString()" , particle.uniqueString() );
+      db->emplace_back( "coupling.m1" , coupling.m1 );
+      db->emplace_back( "coupling.m2" , coupling.m2 );
       db->emplace_back( "coupling" , coupling.factor );
       if( coupling.factor != 1 ) db->emplace_back( "C x DD'", coupling.factor * term * h1 * h2 );
     }

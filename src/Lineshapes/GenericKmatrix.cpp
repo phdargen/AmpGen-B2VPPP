@@ -82,6 +82,12 @@ DEFINE_LINESHAPE(GenericKmatrix)
             Bl = sqrt( mass * runningWidth / rho);
             //Bl = sqrt( mass * gamma / rho);
       }
+        
+      if(kMatrix_formFactor == "RescaleToWidth"){
+              Particle p( channels[channel-1] );
+              Expression rho = phaseSpace(mass*mass, p, p.L() );
+              Bl = sqrt( mass * gamma / rho);
+      }
 
       if(kMatrix_formFactor == "BL"){
             Particle p( channels[channel-1] );
@@ -185,12 +191,13 @@ DEFINE_LINESHAPE(GenericKmatrix)
       if ( tokens[0] == "pole" ){
           auto pole = poleConfigs[pTerm];
           for(unsigned i = 0 ; i < nChannels; ++i) {
-              F_0 += propagator[{cTerm,i}] * pole.g(i)/pole.pole(s) * FormFactor;
+              //F_0 += propagator[{cTerm,i}] * pole.g(i)/pole.pole(s) * FormFactor;
+              F_0 += propagator[{cTerm,i}] * pole.coupling(i)/pole.pole(s) * FormFactor;
           }
           return F_0;
       }
       else if ( tokens[0] == "prod" ){
-            F_0 = propagator[{cTerm,pTerm}] ; // * FormFactor; ??
+            F_0 = propagator[{cTerm,pTerm}] * FormFactor; //??
             return F_0;
       }
       ERROR( "Modifier not found: " << lineshapeModifier << ", expecting one of {pole, prod}, tokens[0] = " << tokens[0] << "  tokens[1] = " << tokens[1] );

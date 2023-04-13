@@ -47,7 +47,8 @@ namespace AmpGen{
       Spline( const std::string& name, 
           const size_t& nKnots, 
           const double& min, 
-          const double& max );
+          const double& max,
+          const bool& continueSpline = false  );
 
       Spline( const Spline& spline, const Expression& x, DebugSymbols* db =nullptr );
       void resolve( ASTResolver& resolver ) const override ;
@@ -63,7 +64,8 @@ namespace AmpGen{
       double                       m_min;
       double                       m_max;
       Expression                   m_x; 
-      Expression                   m_eval; 
+      Expression                   m_eval;
+      bool                         m_continueSpline;
   };
   Expression getSpline( const std::string& name, const AmpGen::Expression& x, const std::string& arrayName,
       AmpGen::DebugSymbols* dbexpressions = nullptr, const bool& continueSpline = false );

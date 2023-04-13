@@ -68,7 +68,20 @@ PolarisedSum::PolarisedSum(const EventType& type,
     auto prodPols        = polarisations(m_eventType.mother()); 
     std::vector<std::vector<int>> polStates; 
     for(const auto& pol : prodPols ) polStates.push_back({pol}); 
-    for(unsigned i = 0 ; i != type.size(); ++i ) polStates = indexProduct(polStates, polarisations( type[i] ) ); 
+    for(unsigned i = 0 ; i != type.size(); ++i ) polStates = indexProduct(polStates, polarisations( type[i] ) );
+    
+//    for(unsigned i = 0 ; i < polStates.size(); ++i )for(unsigned j = 0 ; j < polStates[i].size(); ++j ){
+//          WARNING("polstate i = " << i << " j = " << j << " = " << polStates[i][j]);
+//    }
+//    std::vector<std::vector<int>> polStatesMod;
+//    polStatesMod.push_back(polStates[1]);
+//    polStatesMod.push_back(polStates[2]);
+//    //polStates = polStatesMod;
+//    //m_dim.second = 2;
+//    for(unsigned i = 0 ; i < polStatesMod.size(); ++i )for(unsigned j = 0 ; j < polStatesMod[i].size(); ++j ){
+//            WARNING("polStatesMod i = " << i << " j = " << j << " = " << polStatesMod[i][j]);
+//    }
+      
     auto protoAmps       = m_rules.getMatchingRules(m_eventType);
     //for(const auto& m : protoAmps ) INFO( m.first.uniqueString() ); 
     for(const auto& m : protoAmps ) INFO( m.first.uniqueStringFull() ); 
@@ -429,8 +442,18 @@ Expression PolarisedSum::probExpression(const Tensor& T_matrix, const std::vecto
   ADD_DEBUG_TENSOR(TT , db);
   Expression rt = rho(a,b) * TT(b,a);
     
-    
-    
+  auto TT0 = T_matrix(0,0) * T_conj(0,0);
+    auto TT1 = T_matrix(0,1) * T_conj(0,1);
+    auto TT2 = T_matrix(0,2) * T_conj(0,2);
+    auto TT3 = T_matrix(0,3) * T_conj(0,3);
+    auto TT_sum = TT0 + TT1 + TT2 + TT3;
+
+    ADD_DEBUG(TT0 , db);
+    ADD_DEBUG(TT1 , db);
+    ADD_DEBUG(TT2 , db);
+    ADD_DEBUG(TT3 , db);
+    ADD_DEBUG(TT_sum , db);
+
   return Real(rt);  
 }
 

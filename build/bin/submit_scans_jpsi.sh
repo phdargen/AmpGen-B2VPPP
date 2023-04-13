@@ -1,39 +1,38 @@
 #!/bin/bash                                                                                                                                                                                                
-condor_submit i=scans_jspi_v1 o=scan_psipipi_S.txt d=scan_psipipi_S n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi_A.txt d=scan_psipipi_A n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi_V.txt d=scan_psipipi_V n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi_T.txt d=scan_psipipi_T n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi_PT.txt d=scan_psipipi_PT n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi_S.txt d=scan_psipipi_S n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi_A.txt d=scan_psipipi_A n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi_V.txt d=scan_psipipi_V n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi_T.txt d=scan_psipipi_T n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi_PT.txt d=scan_psipipi_PT n=90 submitScan_jpsi.sub
 
-condor_submit i=scans_jspi_v1 o=scan_psipipi2_S.txt d=scan_psipipi2_S n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi2_A.txt d=scan_psipipi2_A n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi2_V.txt d=scan_psipipi2_V n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi2_T.txt d=scan_psipipi2_T n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psipipi2_PT.txt d=scan_psipipi2_PT n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psipipi2_S.txt d=scan_psipipi2_S n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psipipi2_A.txt d=scan_psipipi2_A n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psipipi2_V.txt d=scan_psipipi2_V n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psipipi2_T.txt d=scan_psipipi2_T n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psipipi2_PT.txt d=scan_psipipi2_PT n=90 submitScan_jpsi.sub
 
-condor_submit i=scans_jspi_v1 o=scan_psipipi3_S.txt d=scan_psipipi3_S n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psipipi3_S.txt d=scan_psipipi3_S n=90 submitScan_jpsi.sub
+
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi_S.txt d=scan_psiKpi_S n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi_A.txt d=scan_psiKpi_A n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi_V.txt d=scan_psiKpi_V n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi_T.txt d=scan_psiKpi_T n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi_PT.txt d=scan_psiKpi_PT n=90 submitScan_jpsi.sub
+
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi2_S.txt d=scan_psiKpi2_S n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi2_A.txt d=scan_psiKpi2_A n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi2_V.txt d=scan_psiKpi2_V n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi2_T.txt d=scan_psiKpi2_T n=90 submitScan_jpsi.sub
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi2_PT.txt d=scan_psiKpi2_PT n=90 submitScan_jpsi.sub
+
+condor_submit i=scans_jpsi_v1 o=scan_psiKpi3_S.txt d=scan_psiKpi3_S n=90 submitScan_jpsi.sub
 
 
-condor_submit i=scans_jspi_v1 o=scan_psiKpi_S.txt d=scan_psiKpi_S n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi_A.txt d=scan_psiKpi_A n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi_V.txt d=scan_psiKpi_V n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi_T.txt d=scan_psiKpi_T n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi_PT.txt d=scan_psiKpi_PT n=90 submitScan_jpsi.sub
-
-condor_submit i=scans_jspi_v1 o=scan_psiKpi2_S.txt d=scan_psiKpi2_S n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi2_A.txt d=scan_psiKpi2_A n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi2_V.txt d=scan_psiKpi2_V n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi2_T.txt d=scan_psiKpi2_T n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiKpi2_PT.txt d=scan_psiKpi2_PT n=90 submitScan_jpsi.sub
-
-condor_submit i=scans_jspi_v1 o=scan_psiKpi3_S.txt d=scan_psiKpi3_S n=90 submitScan_jpsi.sub
-
-
-condor_submit i=scans_jspi_v1 o=scan_psiK_P.txt d=scan_psiK_P n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiK_A.txt d=scan_psiK_A n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiK_V.txt d=scan_psiK_V n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiK_T.txt d=scan_psiK_T n=90 submitScan_jpsi.sub
-condor_submit i=scans_jspi_v1 o=scan_psiK_PT.txt d=scan_psiK_PT n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psiK_P.txt d=scan_psiK_P n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psiK_A.txt d=scan_psiK_A n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psiK_V.txt d=scan_psiK_V n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psiK_T.txt d=scan_psiK_T n=90 submitScan_jpsi.sub
+#condor_submit i=scans_jpsi_v1 o=scan_psiK_PT.txt d=scan_psiK_PT n=90 submitScan_jpsi.sub
 
 
 #condor_submit o=scan_psiKpi_S.txt d=scan_psiKpi_S n=120 submitScan.sub

@@ -194,6 +194,9 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("rhoOmega40","rho(770)0");
     n.ReplaceAll("rhoOmega00","rho(770)0");
     
+    n.ReplaceAll("[D;GSpline]","[D]");
+    n.ReplaceAll("[D;GSpline.EFF]","[D]");
+    
     n.ReplaceAll("*","^{*}");
     n.ReplaceAll("+","^{+}");
     n.ReplaceAll("-","^{-}");
@@ -267,12 +270,14 @@ std::string FitResult::latexName(std::string name){
     n.ReplaceAll("KPi20","[K^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("KPi30","[K^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("KPi40","[K^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("KPi50","[K^{+}\\pi^{-}]_{\\text{S}}");
 
     n.ReplaceAll("PiPi00","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("PiPi10","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("PiPi20","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("PiPi30","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
     n.ReplaceAll("PiPi40","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
+    n.ReplaceAll("PiPi50","[\\pi^{+}\\pi^{-}]_{\\text{S}}");
 
     n.ReplaceAll("\\{NonResS0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{S}}");    
     n.ReplaceAll("\\{NonResP0\\{psi(2S)^{0}\\pi^{+}\\}","\\{[psi(2S)^{0}\\pi^{+}\\}_{\\text{P}}");    

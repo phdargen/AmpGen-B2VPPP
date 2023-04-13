@@ -14,6 +14,8 @@
 #include "TRandom3.h"
 #include "TMultiGraph.h"
 #include "TFile.h"
+#include "TFitResultPtr.h"
+#include "TFitResult.h"
 
 //// AMPGEN ////
 #include "AmpGen/Lineshapes.h"
@@ -465,7 +467,8 @@ void prepareRunningWidthFromFiles(){
 
 complex<double> BW_val(const double& s, const double& m, const double& gamma){
     //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
-    complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
+    //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
+    complex<double> BW =  m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
     return BW;
 }
 
@@ -590,8 +593,30 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
 //        double s = min + double( c ) * st;
 //
 //    }
+    
+    auto fitBW = NamedParameter<bool>( "fitBW", 1 );
+    if(fitBW){
+        auto f_bw_amp = new TF1("f_bw_amp",[&](double*x, double *p){ return p[0]*g_amp_bw->Eval(x[0]); }, min_bw, max_bw, 1);
+        auto f_bw_phase = new TF1("f_bw_phase",[&](double*x, double *p){ return g_phase_bw->Eval(x[0]) - p[0]; }, -360, 360, 1);
         
-    TCanvas* c = new TCanvas();
+        TFitResultPtr r_amp = g_amp->Fit(f_bw_amp,"SN");
+        TFitResultPtr r_phase = g_phase->Fit(f_bw_phase,"SN");
+        
+        for ( int c = 0; c < nBins_bw; ++c ) {
+            double s;
+            g_amp_bw->GetPoint(c,s,amp);
+            amp *= r_amp->Parameter(0);
+            
+            g_phase_bw->GetPoint(c,s,phase);
+            phase -= r_phase->Parameter(0);
+            
+            g_amp_bw->SetPoint( c, s, amp);
+            g_phase_bw->SetPoint( c, s, phase );
+            g_argand_bw->SetPoint( c, amp * cos(phase/180.*M_PI), amp * sin(phase/180.*M_PI)  );
+        }
+    }
+
+    TCanvas* c = new TCanvas("c","c",2);
     
     g_amp->SetTitle(";#sqrt{s} [GeV]; |A| ");
     g_phase->SetTitle(";#sqrt{s} [GeV]; arg(A) [degrees] ");
@@ -608,12 +633,17 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     g_amp->SetLineWidth(3);
     g_amp->Draw("AP");
     g_amp_bw->SetLineColor(kRed);
-    g_amp_bw->SetLineWidth(3);
+    g_amp_bw->SetLineWidth(5);
     g_amp_bw->Draw("C");
     g_amp2->SetLineWidth(3);
     g_amp2->Draw("C");
     g_amp->Draw("P");
     c->Print((outDir+"/"+name+"_amp.pdf").c_str());
+    
+    auto phase_min = NamedParameter<double>( "PhaseMin",  -999);
+    auto phase_max = NamedParameter<double>( "PhaseMax",  -999);
+    if(phase_min!=-999)g_phase->SetMinimum(phase_min);
+    if(phase_max!=-999)g_phase->SetMaximum(phase_max);
     
     g_phase->SetMarkerColor(4);
     g_phase->SetLineColor(4);
@@ -622,16 +652,16 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     g_phase->SetLineWidth(3);
     g_phase->Draw("AP");
     g_phase_bw->SetLineColor(kRed);
-    g_phase_bw->SetLineWidth(3);
+    g_phase_bw->SetLineWidth(5);
     g_phase_bw->Draw("C");
     g_phase2->SetLineWidth(3);
     g_phase2->Draw("C");
     g_phase->Draw("P");
     c->Print((outDir+"/"+name+"_phase.pdf").c_str());
     
-    auto argand_x_min = NamedParameter<double>( "ArgandMinX",  -0.25);
+    auto argand_x_min = NamedParameter<double>( "ArgandMinX",  -1.25);
     auto argand_x_max = NamedParameter<double>( "ArgandMaxX",  1.25);
-    auto argand_y_min = NamedParameter<double>( "ArgandMinY",  -1.25);
+    auto argand_y_min = NamedParameter<double>( "ArgandMinY",  -0.25);
     auto argand_y_max = NamedParameter<double>( "ArgandMaxY",  1.25);
 
     g_argand->GetXaxis()->SetLimits(argand_x_min,argand_x_max);
@@ -647,7 +677,7 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     g_argand->SetLineWidth(3);
     g_argand->Draw("AP");
     g_argand_bw->SetLineColor(kRed);
-    g_argand_bw->SetLineWidth(3);
+    g_argand_bw->SetLineWidth(5);
     g_argand_bw->Draw("C");
     g_argand2->SetLineWidth(3);
     g_argand2->Draw(((string)argand_line).c_str());
@@ -655,6 +685,20 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     c->Print((outDir+"/"+name+"_argand.pdf").c_str());
 }
 
+void testLineShape(){
+    
+    double mpi = ParticlePropertiesList::get("pi+")->mass();
+    int L = 0;
+    Expression bw = Lineshape::BW().get(Parameter("x1[0]", 0, true), mpi*mpi, mpi*mpi, "rho(770)0", L, "" );
+    
+    MinuitParameterSet MPS;
+    MPS.loadFromStream();
+    
+    auto compiled_expression = make_expression<std::complex<double>>( bw, "expression", MPS );
+    double norm = 1.0;
+    auto an =  compiled_expression(&norm);
+
+}
 
 int main(int argc , char* argv[] ){
 

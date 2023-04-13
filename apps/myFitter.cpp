@@ -680,6 +680,9 @@ void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
             vector<string>name_split = split(name,',');
             //INFO(name_split[0]);
             //INFO(name_split[1]);
+            //auto mod = NamedParameter<std::string>("Particle::DefaultModifier","");
+            if(name.find( "GSpline.BL" ) != std::string::npos)continue;
+            if(name.find( "Omega.BL" ) != std::string::npos)continue;
             if(sig.findAmp(name_split[0])==0){
                 INFO("Removing " << name);
                 mps.unregister(mps[i]);
@@ -1291,7 +1294,7 @@ int main( int argc, char* argv[])
           if(MPS[i]->name().find(removeAmps[n]) != std::string::npos){
               INFO("Removing parameter " << MPS[i]->name());
               MPS.unregister(MPS[i]);
-              i=0;
+              i=-1;
           }
       }
   }
@@ -1452,8 +1455,10 @@ int main( int argc, char* argv[])
               
               if(useBkgBDT){
                   events[0].print();
+                  cout << "sig.getValNoCache(evt) = " <<  sig.getValNoCache(events[0]) << endl;
                   cout << "bkgBDT.prob_unnormalisedNoCache(events[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(events[0]) << endl;
                   eventsMC[0].print();
+                  cout << "sig.getValNoCache(evt) = " <<  sig.getValNoCache(eventsMC[0]) << endl;
                   cout << "bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) = " <<  bkgBDT.prob_unnormalisedNoCache(eventsMC[0]) << endl;
                   
                   cout << "bkgBDT.norm() = " << bkgBDT.norm() << endl;
@@ -1465,12 +1470,31 @@ int main( int argc, char* argv[])
                       norm_sumBkgBDT += bkgBDT(evt);
                       norm_sumBkg += bkg.prob_unnormalisedNoCache(evt) * bkg.getWeight()/bkg.norm();
                       norm_sum += sig(evt);
+                      if(TMath::IsNaN(sig.getValNoCache(evt)))evt.print();
                   }
                   cout << "norm_sumBDT = " << norm_sumBkgBDT << endl;
                   cout << "norm_sumBkg = " << norm_sumBkg << endl;
                   cout << "norm_sum = " << norm_sum << endl;
                   //throw "";
               }
+              
+              int badEventsData = 0;
+              for(auto& evt : events){
+                  if(TMath::IsNaN(sig.getValNoCache(evt))){
+                      //evt.print();
+                      badEventsData++;
+                  }
+              }
+              WARNING("badEventsData = " << badEventsData);
+              
+              int badEventsMC = 0;
+              for(auto& evt : eventsMC){
+                  if(TMath::IsNaN(sig.getValNoCache(evt))){
+                      //evt.print();
+                      badEventsMC++;
+                  }
+              }
+              WARNING("badEventsMC = " << badEventsMC);
               
               // Do fit
               auto nFits = NamedParameter<int>("nFits", 1);
@@ -1701,8 +1725,10 @@ int main( int argc, char* argv[])
               
               //Replace amp A with B and refit
               if(replaceAmpAwithB.size()>=2 && n+1 < replaceAmpAwithB.size()){
-                  for(int i=0;i<MPS.size();i++){
+                  for(int i=0;i<MPS.size();++i){
                       auto param = MPS[i];
+                      //INFO("param " << i << " = " << param->name());
+                      //if(param->name().find("B+[D]{Z(4240)A+{psi(2S)0,pi+},K*(892)0{K+,pi-}}") != std::string::npos)INFO("Found " << param->name());
                       if(param->name().find(replaceAmpAwithB[n]) != std::string::npos){
                           auto name = param->name();
                           auto new_name = replaceAll(name,replaceAmpAwithB[n],replaceAmpAwithB[n+1]);
@@ -1711,6 +1737,10 @@ int main( int argc, char* argv[])
                           if(new_name.find("B+[P]{Z(T)")!= std::string::npos)
                               new_name = replaceAll(new_name,"[P]","");
                           if(new_name.find("B+[D]{Z(T)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[D]","");
+                          if(new_name.find("B+[P]{Z(P)")!= std::string::npos)
+                              new_name = replaceAll(new_name,"[P]","");
+                          if(new_name.find("B+[D]{Z(P)")!= std::string::npos)
                               new_name = replaceAll(new_name,"[D]","");
                           if(new_name.find("B+[P]{rhoOmega20,Zs(P)")!= std::string::npos)
                               new_name = replaceAll(new_name,"[P]","");
@@ -1751,23 +1781,30 @@ int main( int argc, char* argv[])
                           if(MPS.find(new_name) != nullptr)MPS.unregister(MPS.find(new_name));
                           
                           //check for not allowed decays
-                          if(new_name.find("X(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("PiPi")!= std::string::npos) )INFO(new_name << " not allowed");
-                          else if(new_name.find("Xs(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("KPi")!= std::string::npos) )INFO(new_name << " not allowed");
-                          else if(new_name.find("X(S)")!= std::string::npos && (new_name.find("Z(4055)V")!= std::string::npos || new_name.find("Z(4100)")!= std::string::npos || new_name.find("Z(V)")!= std::string::npos ) )INFO(new_name << " not allowed");
-                          else if(new_name.find("X(P)")!= std::string::npos && ( new_name.find("Z(4055)A")!= std::string::npos || new_name.find("Z(A)")!= std::string::npos || new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos ) )INFO(new_name << " not allowed");
+                          if(new_name.find("X(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("PiPi")!= std::string::npos) )WARNING(new_name << " not allowed");
+                          else if(new_name.find("Xs(P)")!= std::string::npos && (new_name.find("Z")!= std::string::npos || new_name.find("KPi")!= std::string::npos) )WARNING(new_name << " not allowed");
+                          else if(new_name.find("X(S)")!= std::string::npos && (new_name.find("Z(4055)V")!= std::string::npos || new_name.find("Z(4100)")!= std::string::npos || new_name.find("Z(V)")!= std::string::npos ) )WARNING(new_name << " not allowed");
+                          else if(new_name.find("X(P)")!= std::string::npos && ( new_name.find("Z(4055)A")!= std::string::npos || new_name.find("Z(A)")!= std::string::npos || new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos ) )WARNING(new_name << " not allowed");
                           
-                          else if( (new_name.find("X(4500)")!= std::string::npos || new_name.find("X(4700)") != std::string::npos || new_name.find("X(S)") != std::string::npos) && new_name.find("Z(V)")!= std::string::npos )INFO(new_name << " not allowed");
+                          else if(new_name.find("X(V)")!= std::string::npos && new_name.find("Z(P)")!= std::string::npos  )WARNING(new_name << " not allowed");
+                          else if(new_name.find("X(4685)")!= std::string::npos && new_name.find("Z(P)")!= std::string::npos  )WARNING(new_name << " not allowed");
+
+                          else if( (new_name.find("X(4500)")!= std::string::npos || new_name.find("X(4700)") != std::string::npos || new_name.find("X(S)") != std::string::npos) && new_name.find("Z(V)")!= std::string::npos )WARNING(new_name << " not allowed");
                           
-                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Zs(V)")!= std::string::npos )INFO(new_name << " not allowed");
+                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Zs(V)")!= std::string::npos )WARNING(new_name << " not allowed");
+                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Z(V)")!= std::string::npos )WARNING(new_name << " not allowed");
+                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Zs(P)")!= std::string::npos )WARNING(new_name << " not allowed");
+                          else if( (new_name.find("Xs(A)")!= std::string::npos || new_name.find("Xs2(A)") != std::string::npos) && new_name.find("Z(P)")!= std::string::npos )WARNING(new_name << " not allowed");
                           
                           else if( (new_name.find("Xs3(P)")!= std::string::npos || new_name.find("Xs3(PT)") != std::string::npos)
-                                  && ( new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos || new_name.find("Zs(4000)")!= std::string::npos || new_name.find("Zs(4220)A")!= std::string::npos  ) )INFO(new_name << " not allowed");
+                                  && ( new_name.find("Z(4240)A")!= std::string::npos || new_name.find("Z(4430)")!= std::string::npos || new_name.find("Zs(4000)")!= std::string::npos || new_name.find("Zs(4220)A")!= std::string::npos  ) )WARNING(new_name << " not allowed");
 
-                          
-                          else MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
+                          else{
+                              MPS.add(new_name,param->flag(),param->meanInit(),param->stepInit(),param->minInit(),param->maxInit());
+                              INFO("Replaced param " << name << " with " << new_name);
+                          }
                           MPS.unregister(param);
-                          i=0;
-                          INFO("Replaced param " << name << " with " << new_name);
+                          i=-1;
                       }
                   }
               }

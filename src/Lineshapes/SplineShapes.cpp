@@ -33,8 +33,10 @@ DEFINE_LINESHAPE( GSpline )
   bool useEFF            = lineshapeModifier.find( "EFF" ) != std::string::npos;
   bool useDispersiveTerm = lineshapeModifier.find( "Dis" ) != std::string::npos;
   bool useGFF            = lineshapeModifier.find( "GFF" ) != std::string::npos;
+  bool useBL             = lineshapeModifier.find( "BL"  ) != std::string::npos;
 
   Expression BF = fcn::sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) ) ;
+  if( useBL )  BF  = fcn::sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
   if( useEFF ) BF =  fcn::exp( -q2 * radius * radius / 2. );
   if ( useGFF ) {
     const Expression alpha = Parameter( particleName + "_alpha" );

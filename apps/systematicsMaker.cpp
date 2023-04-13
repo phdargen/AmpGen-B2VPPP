@@ -510,7 +510,7 @@ void analyzeResults(){
     FracResultFile2 << "\\hline" << "\n";
 
     for(int i =0 ; i < fracs.size() ; i++){
-        if( fracs[i].err()<0.0001)continue;
+        //if( fracs[i].err()<0.0001)continue;
         if( fracs[i].name().find( "B+" ) != string::npos ){
             double tot = 0.;
             FracSummaryFile << fixed << setprecision(2) << "$" << starterFit.latexName(fracs[i].name()) << "$ & " ;

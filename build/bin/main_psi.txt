@@ -181,19 +181,25 @@ K*(892)0_radius    1     3.0       0.5
 
 rho(770)0_mass      1    0.77526    0.00023
 rho(770)0_width     1     0.1474    0.0008
+rho(770)0_radius    1     1.5    0.0001
 omega(782)0_mass    1     0.78266    0.00013
 omega(782)0_width   1     0.00868    0.00013
 
 rhoOmega10_mass  =  rho(770)0_mass    
 rhoOmega10_width =  rho(770)0_width    
+rhoOmega10_radius =  rho(770)0_radius
 rhoOmega20_mass  =  rho(770)0_mass    
 rhoOmega20_width =  rho(770)0_width    
+rhoOmega20_radius =  rho(770)0_radius
 rhoOmega30_mass  =  rho(770)0_mass    
 rhoOmega30_width =  rho(770)0_width    
+rhoOmega30_radius =  rho(770)0_radius
 rhoOmega40_mass  =  rho(770)0_mass    
 rhoOmega40_width =  rho(770)0_width    
+rhoOmega40_radius =  rho(770)0_radius
 rhoOmega50_mass  =  rho(770)0_mass    
 rhoOmega50_width =  rho(770)0_width
+rhoOmega50_radius =  rho(770)0_radius
 
 rhoOmega10[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
 rhoOmega20[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
@@ -257,7 +263,7 @@ K(2)(1770)+_width         2               0.186      0.014  0.05 0.4
 K(2)(1770)+_radius        2               1.5        0.00000
 
 K(1830)+_mass  2 1.874 0 1.38 1.55
-K(1830)+_width  2 0.168 0 0.05 0.35
+K(1830)+_width  2 0.168 0 0.05 0.35
 
 ## X resonances
 ##

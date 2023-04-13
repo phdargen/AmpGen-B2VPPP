@@ -65,7 +65,8 @@ namespace AmpGen
       size_t size() const;
       size_t numAmps() const { return m_matrixElements.size(); }
       real_t norm() const;
-      complex_t norm(const size_t&, const size_t&, Integrator* = nullptr); 
+      complex_t norm(const size_t& x, const size_t& y, Integrator* = nullptr);
+
       real_t getValNoCache(const Event&) const;
       std::vector<FitFraction> fitFractions(const LinearErrorPropagator&);
       std::vector<TransitionMatrix<void>> matrixElements() const;

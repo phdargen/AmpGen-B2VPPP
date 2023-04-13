@@ -34,7 +34,7 @@ namespace AmpGen
     void writeToFile( const std::string& fname );
     void writeToFileMod( const std::string& fname );
     void writeToOptionsFile( const std::string& fname, int fixParams = 0 );
-    void writeToRootFile( TFile * output,  unsigned seed = 0, int verbose = 0, unsigned numAmps = 0, double Ns = 0, std::vector<double> thresholds = {}, std::vector<double> numFracAboveThresholds = {} );
+    void writeToRootFile( TFile * output,  unsigned seed = 0, int verbose = 0, double nll = 0, unsigned numAmps = 0, double Ns = 0, std::vector<double> thresholds = {}, std::vector<double> numFracAboveThresholds = {} );
 
     void plotSpline(const std::string& name, const std::string& outDir = ".");
       

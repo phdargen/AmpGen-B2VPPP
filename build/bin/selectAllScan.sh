@@ -48,9 +48,9 @@
 
 #./selectModel.exe scan_psipi_P.txt --ResultsFile=scan_psipi_P2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                              
 #./selectModel.exe scan_psipi_A.txt --ResultsFile=scan_psipi_A2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                   
-./selectModel.exe scan_psipi_V.txt --ResultsFile=scan_psipi_V2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                   
-./selectModel.exe scan_psipi_T.txt --ResultsFile=scan_psipi_T2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                      
-./selectModel.exe scan_psipi_PT.txt --ResultsFile=scan_psipi_PT2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                        
+#./selectModel.exe scan_psipi_V.txt --ResultsFile=scan_psipi_V2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                   
+#./selectModel.exe scan_psipi_T.txt --ResultsFile=scan_psipi_T2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                      
+#./selectModel.exe scan_psipi_PT.txt --ResultsFile=scan_psipi_PT2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=120                                                                        
 
 #./selectModel.exe scan_Kpipi_P.txt --ResultsFile=scan_Kpipi_P/result.root --ResultsBaseFile=scan_Kpipi_P/result.root --nScan=99
 #./selectModel.exe scan_Kpipi_V.txt --ResultsFile=scan_Kpipi_V/result.root --ResultsBaseFile=scan_Kpipi_P/result.root --nScan=99
@@ -83,26 +83,26 @@
 #./selectModel.exe scan_psipi2_T.txt --ResultsFile=scan_psipi2_T/result.root --ResultsBaseFile=scan_psipi_P/result.root --nScan=120
 #./selectModel.exe scan_psipi2_PT.txt --ResultsFile=scan_psipi2_PT/result.root --ResultsBaseFile=scan_psipi_P/result.root --nScan=120
 
-./selectModel.exe scan_X2Z_SP.txt --ResultsFile=scan_X2Z_SP/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_SA.txt --ResultsFile=scan_X2Z_SA/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_AA.txt --ResultsFile=scan_X2Z_AA/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_AV.txt --ResultsFile=scan_X2Z_AV/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_VP.txt --ResultsFile=scan_X2Z_VP/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_VV.txt --ResultsFile=scan_X2Z_VV/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
-./selectModel.exe scan_X2Z_VA.txt --ResultsFile=scan_X2Z_VA/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_SP.txt --ResultsFile=scan_X2Z_SP2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_SA.txt --ResultsFile=scan_X2Z_SA2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_AA.txt --ResultsFile=scan_X2Z_AA2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_AV.txt --ResultsFile=scan_X2Z_AV2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_VP.txt --ResultsFile=scan_X2Z_VP2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_VV.txt --ResultsFile=scan_X2Z_VV2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
+#./selectModel.exe scan_X2Z_VA.txt --ResultsFile=scan_X2Z_VA2/result.root --ResultsBaseFile=scan_X2Z_SP/result.root --nScan=90
                                                                          
-./selectModel.exe scan_Xs2Z_SP.txt --ResultsFile=scan_Xs2Z_SP/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_SA.txt --ResultsFile=scan_Xs2Z_SA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_AA.txt --ResultsFile=scan_Xs2Z_AA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_AV.txt --ResultsFile=scan_Xs2Z_AV/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_VP.txt --ResultsFile=scan_Xs2Z_VP/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_VV.txt --ResultsFile=scan_Xs2Z_VV/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Z_VA.txt --ResultsFile=scan_Xs2Z_VA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_SP.txt --ResultsFile=scan_Xs2Z_SP2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_SA.txt --ResultsFile=scan_Xs2Z_SA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_AA.txt --ResultsFile=scan_Xs2Z_AA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_AV.txt --ResultsFile=scan_Xs2Z_AV2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_VP.txt --ResultsFile=scan_Xs2Z_VP2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_VV.txt --ResultsFile=scan_Xs2Z_VV2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+./selectModel.exe scan_Xs2Z_VA.txt --ResultsFile=scan_Xs2Z_VA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
 
-./selectModel.exe scan_Xs2Zs_SP.txt --ResultsFile=scan_Xs2Zs_SP/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_SA.txt --ResultsFile=scan_Xs2Zs_SA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_AA.txt --ResultsFile=scan_Xs2Zs_AA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_AV.txt --ResultsFile=scan_Xs2Zs_AV/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_VP.txt --ResultsFile=scan_Xs2Zs_VP/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_VV.txt --ResultsFile=scan_Xs2Zs_VV/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
-./selectModel.exe scan_Xs2Zs_VA.txt --ResultsFile=scan_Xs2Zs_VA/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_SP.txt --ResultsFile=scan_Xs2Zs_SP2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_SA.txt --ResultsFile=scan_Xs2Zs_SA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_AA.txt --ResultsFile=scan_Xs2Zs_AA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_AV.txt --ResultsFile=scan_Xs2Zs_AV2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_VP.txt --ResultsFile=scan_Xs2Zs_VP2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_VV.txt --ResultsFile=scan_Xs2Zs_VV2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90
+#./selectModel.exe scan_Xs2Zs_VA.txt --ResultsFile=scan_Xs2Zs_VA2/result.root --ResultsBaseFile=scan_psiKpi/result.root --nScan=90

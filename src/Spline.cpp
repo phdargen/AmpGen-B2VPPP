@@ -17,12 +17,14 @@ using namespace AmpGen;
 Spline::Spline(const std::string& name, 
     const size_t& nKnots, 
     const double& min, 
-    const double& max ) :
+    const double& max,
+    const bool& continueSpline ) :
   m_points( Parameter(name), 2*nKnots ),
   m_name(name),
   m_nKnots(nKnots),
   m_min(min),
-  m_max(max) {}
+  m_max(max),
+  m_continueSpline(continueSpline) {}
 
 Spline::Spline(const Spline& spline, const Expression& x, DebugSymbols* db ) : 
     m_points( spline.m_points ),
@@ -30,6 +32,7 @@ Spline::Spline(const Spline& spline, const Expression& x, DebugSymbols* db ) :
     m_nKnots( spline.m_nKnots),
     m_min(    spline.m_min ),
     m_max(    spline.m_max ),
+    m_continueSpline( spline.m_continueSpline ),
     m_x  ( x ),
     m_eval( eval(db) )  {}
 
@@ -59,7 +62,7 @@ Expression AmpGen::getSpline( const std::string& name, const Expression& x, cons
     max   = NamedParameter<double>( name + "::Spline::Max", 0. );
   }
   std::string spline_name = name + "::Spline::"+arrayName;
-  return Spline(spline_name, nBins, min, max)(x, dbexpressions);
+  return Spline(spline_name, nBins, min, max, continueSpline)(x, dbexpressions);
 }
 
 Expression Spline::eval(DebugSymbols* db) const 
@@ -68,14 +71,18 @@ Expression Spline::eval(DebugSymbols* db) const
   double spacing = ( m_max - m_min ) / ( (double)m_nKnots - 1. );
   Expression dx  = Fmod( x - m_min, spacing );
   Expression bin = ( x - m_min ) / spacing;
-  Expression continuedValue            = m_points[m_nKnots-1];
+  //Expression continuedValue            = m_points[m_nKnots-1];
+  Expression continuedValue = Ternary( x > m_min, m_points[m_nKnots-1], m_points[0] );
 
   Expression returnValue = Ternary( x > m_min && x < m_max,
       m_points[bin] + ( ( m_points[bin + 1] - m_points[bin] ) / spacing 
         - ( m_points[bin + 1 + m_nKnots] + 2 * m_points[bin+m_nKnots] ) * spacing / 6. ) * dx 
       + m_points[bin+m_nKnots] * dx * dx / 2. 
       + dx * dx * dx * ( m_points[bin+1+m_nKnots] - m_points[bin+m_nKnots] ) / ( 6. * spacing ),
-      continuedValue );
+                                   continuedValue
+      //Ternary(m_continueSpline, continuedValue, 0.)
+                                  );
+                                   
   ADD_DEBUG(x, db );
   ADD_DEBUG(dx, db );
   ADD_DEBUG(bin, db );
