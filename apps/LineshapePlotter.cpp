@@ -257,7 +257,6 @@ void plotRunningWidths(){
         
 }
 
-
 void calculateRunningWidths(){
     
     MinuitParameterSet mps; 
@@ -472,7 +471,26 @@ complex<double> BW_val(const double& s, const double& m, const double& gamma){
     return BW;
 }
 
+Expression lineShapeBW(MinuitParameterSet& m_mps, const AmpGen::Particle& p, const std::string& lineshapeModifier = "", const unsigned int& L = 999){
+    Expression bw = Lineshape::BW().get(Parameter("x1[0]", 0, true), p.daughter(0)->massSq(), p.daughter(1)->massSq(), p.name(), L == 999 ? p.L() : L, lineshapeModifier );
+    return bw;
+}
+
+Expression lineShapeSpline(MinuitParameterSet& m_mps, const AmpGen::Particle& p, const std::string& lineshapeModifier = "", const unsigned int& L = 999){
+    Expression bw = Lineshape::GSpline().get(Parameter("x1[0]", 0, true), p.daughter(0)->massSq(), p.daughter(1)->massSq(), p.name(), L == 999 ? p.L() : L, lineshapeModifier );
+    return bw;
+}
+
 void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, const std::string& outDir ) {
+    
+    gStyle->SetTitleOffset(0.9,"X");
+    gStyle->SetTitleOffset(0.9,"Y");
+    gStyle->SetTitleSize(0.07,"x");
+    gStyle->SetTitleSize(0.07,"y");
+    gStyle->SetLabelOffset(0.005,"X");
+    gStyle->SetLabelOffset(0.005,"Y");
+    gStyle->SetLabelSize(0.05,"x");
+    gStyle->SetLabelSize(0.05,"y");
         
     double min, max, nBins( 0 );
     auto spline_params = NamedParameter<double>( name + "::Spline").getVector();
@@ -493,8 +511,16 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     }
     
     double m = m_mps.find(name+"_mass")->mean();
+    double m2 = m*m;
     double gamma = m_mps.find(name+"_width")->mean();
-        
+    
+    string decay = NamedParameter<std::string>("Decay","");
+    string lineshape = NamedParameter<std::string>("Lineshape","BW");
+
+    Particle p( decay );
+    auto bw_lineShape = lineshape=="BW" ? lineShapeBW(m_mps,p) : lineShapeSpline(m_mps,p);
+    auto bw = make_expression<std::complex<double>>( bw_lineShape, "expression", &m_mps );
+
     TGraphErrors* g_amp = new TGraphErrors();
     TGraphErrors* g_phase = new TGraphErrors();
     TGraphErrors* g_argand = new TGraphErrors();
@@ -517,6 +543,7 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
             double s = min + double( c ) * st_bw;
         
             complex<double> BW = BW_val(s,m,gamma);
+            if(decay!="") BW = bw(&s) / abs(bw(&m2));
 
             amp = abs(BW);
             amp_err = 0;
@@ -540,6 +567,8 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     double s_norm = min + ( c_norm ) * st;
 
     complex<double> BW_norm = BW_val(s_norm,m,gamma);
+    if(decay!="") BW_norm = bw(&s_norm)/ abs(bw(&m2));
+    
     double amp_bw_norm = abs(BW_norm);
     double phase_bw_norm = arg(BW_norm)*180./3.141;
 
@@ -685,20 +714,6 @@ void plotSplineFromFile(MinuitParameterSet& m_mps, const std::string& name, cons
     c->Print((outDir+"/"+name+"_argand.pdf").c_str());
 }
 
-void testLineShape(){
-    
-    double mpi = ParticlePropertiesList::get("pi+")->mass();
-    int L = 0;
-    Expression bw = Lineshape::BW().get(Parameter("x1[0]", 0, true), mpi*mpi, mpi*mpi, "rho(770)0", L, "" );
-    
-    MinuitParameterSet MPS;
-    MPS.loadFromStream();
-    
-    auto compiled_expression = make_expression<std::complex<double>>( bw, "expression", MPS );
-    double norm = 1.0;
-    auto an =  compiled_expression(&norm);
-
-}
 
 int main(int argc , char* argv[] ){
 
