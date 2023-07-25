@@ -1,3 +1,9 @@
+#DataSample        psi_data_bkgPdf_signalRegion_trueP.root:DecayTree
+IntegrationSample   SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root
+maxIntEvents        -1
+
+B+[D]{psi(2S)0,K(1)(1270)+}  0 0.512161 0.02539 0 2    0 0 143.786 -360 360
+#
 B+[D]{Z(4240)A+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.6195 0.03742 0 2    0 -47.95 3.997 -360 360 
 B+[D]{rhoOmega20,Zs(4000)+{psi(2S)0,K+}}  0 0.5306 0.02694 0 2    0 55.13 3.189 -360 360 
 B+[P]{Z(4240)A+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.8258 0.05177 0 2    0 -109.2 4.481 -360 360 

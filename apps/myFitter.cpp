@@ -594,7 +594,8 @@ void setSplineVals(MinuitParameterSet& mps, string& head){
     int to = fixBoundaries==1 ? nBins-1 : nBins;
     for(int i= from; i<to; i++){
         double s = min + (max-min)* i/((double)nBins-1.);
-        complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
+        //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
+        complex<double> BW =  m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
         mps.find(head+"::Spline::Re::"+to_string(i))->setInit(abs(BW));
         mps.find(head+"::Spline::Im::"+to_string(i))->setInit(arg(BW)*180./3.141);
     }
@@ -695,6 +696,7 @@ void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
 struct phsp_cut {
     phsp_cut(std::vector<unsigned int> dim, std::vector<double> limits, bool invertCut = false):_dim(dim),_limits(limits),_invertCut(invertCut){}
     bool operator()(const Event& evt){
+        if(_dim.size()==0)return true;
         if(sqrt(evt.s(_dim)) > _limits[0] && sqrt(evt.s(_dim)) < _limits[1] )return !_invertCut;
         else return _invertCut;
     }
@@ -1056,7 +1058,7 @@ vector<double> getChi2(const EventList_type& dataEvents, const EventList_type& m
     return vals;
 }
 
-vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const std::function<double( const Event& )>& fcn_bkg, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0 ){
+vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_type& mcEvents, const std::function<double( const Event& )>& fcn, const std::function<double( const Event& )>& fcn_bkg, const int dim = 7, const int minEventsPerBin = 25, double minBinWidth = 0., int mode = 0, unsigned int filter_plotN = 0 ){
     
     EventType pdg = dataEvents.eventType();
     //EventType B+ K+ pi+ pi- mu+ mu-
@@ -1096,7 +1098,15 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
     
     HyperCuboid limits(min, max );
     
+    auto invertCut_plot = NamedParameter<bool>("invertCut_plot"+to_string(filter_plotN), 0,"Invert cut logic");
+    auto cut_dim_plot = NamedParameter<unsigned int>("cut_dim_plot"+to_string(filter_plotN), std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits_plot = NamedParameter<double>("cut_limits_plot"+to_string(filter_plotN), std::vector<double>(),"cut window" ).getVector();
+    phsp_cut filter_plot(cut_dim_plot,cut_limits_plot,invertCut_plot);
+    
     for( auto& evt : dataEvents ){
+        
+        if(filter_plotN>0)if(!filter_plot(evt))continue;
+        
         HyperPoint point( dim );
         if(mode == 1 && dim==5){
             point.at(0)= evt.s(m012);
@@ -1126,6 +1136,9 @@ vector<double> getChi2MuMu(const EventList_type& dataEvents, const EventList_typ
 
     HyperPointSet pointsMC( dim);
     for( auto& evt : mcEvents ){
+        
+        if(filter_plotN>0)if(!filter_plot(evt))continue;
+        
         HyperPoint point( dim );
         if(mode == 1 && dim==5){
             point.at(0)= evt.s(m012);
@@ -1313,7 +1326,15 @@ int main( int argc, char* argv[])
   auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
   auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
   auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
+  auto invertCut2 = NamedParameter<bool>("invertCut2", 0,"Invert cut logic");
+  auto cut_dim2 = NamedParameter<unsigned int>("cut_dim2", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+  auto cut_limits2 = NamedParameter<double>("cut_limits2", std::vector<double>(),"cut window" ).getVector();
+  auto invertCut3 = NamedParameter<bool>("invertCut3", 0,"Invert cut logic");
+  auto cut_dim3 = NamedParameter<unsigned int>("cut_dim3", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+  auto cut_limits3 = NamedParameter<double>("cut_limits3", std::vector<double>(),"cut window" ).getVector();
   phsp_cut filter(cut_dim,cut_limits,invertCut);
+  phsp_cut filter2(cut_dim2,cut_limits2,invertCut2);
+  phsp_cut filter3(cut_dim3,cut_limits3,invertCut3);
 
   EventType evtType(pNames);
   vector<size_t> entryList,entryListMC,entryListPlotMC;
@@ -1333,8 +1354,10 @@ int main( int argc, char* argv[])
         if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") dummyEvents.transform( scale_transform );
         if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") dummyEventsMC.transform( scale_transform );
         
-        for(int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]))entryList.push_back(i);
-        for(int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])){
+        for(int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]) && filter2(dummyEvents[i]) && filter3(dummyEvents[i])){
+            if(entryList.size()<maxDataEvents)entryList.push_back(i);
+        }
+        for(int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])&& filter2(dummyEventsMC[i]) && filter3(dummyEventsMC[i])){
             if(entryListMC.size()<maxIntEvents)entryListMC.push_back(i);
             entryListPlotMC.push_back(i);
         }
@@ -1510,6 +1533,7 @@ int main( int argc, char* argv[])
               
               double min_LL = 99999;
               double minChi2 = 999;
+              double minChi2PerBin = 999;
               double minChi2Dalitz = 999;
               int nParams = 0;
               
@@ -1558,8 +1582,18 @@ int main( int argc, char* argv[])
                   vector<double> chi2Hyper = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0 );
                   INFO("Calculating chi2 Dalitz ...");
                   vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
-                  
+
+                  auto filter_plotN = NamedParameter<unsigned int>("filter_plotN", std::vector<unsigned int>()).getVector();
+                  if(filter_plotN.size()>0){
+                      INFO("Calculating chi2 in phsp slices ...");
+                      for(auto& cutN : filter_plotN){
+                          INFO("phsp slice " << to_string(cutN));
+                          vector<double> chi2HyperN = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 0, cutN );
+                      }
+                  }
+
                   minChi2 = chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams);
+                  minChi2PerBin = chi2Hyper[0]/(chi2Hyper[1]-1.);
                   minChi2Dalitz = chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams);
                   fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
                   
@@ -1571,10 +1605,16 @@ int main( int argc, char* argv[])
                   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
                   fr->setSystematic(doSystematic);
                   fr->print();
-                  fr->writeToFile(logFile);
                   fr->printToLatexTable(tableFile);
-                  fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
                   fr->writeToRootFile( output, seed, 0, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+                  if(replaceAmpAwithB.size()>0 && n>0){
+                      fr->writeToFile(replaceAll(logFile,".txt","_" + to_string(n-1) + ".txt"));
+                      fr->writeToOptionsFile(replaceAll(modelFile,".txt","_" +  to_string(n-1) + ".txt"), 0);
+                  }
+                  else{
+                      fr->writeToFile(logFile);
+                      fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
+                  }
                   output->cd();
                   output->Close();
                   
@@ -1634,10 +1674,12 @@ int main( int argc, char* argv[])
                   if(fr->LL() > min_LL) LL_sig *= -1.;
                   INFO( "LL = " << fr->LL() );
                   INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
-                  INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
-                  INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
+                  INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)fr->floating().size()) );
+                  INFO( "Chi2PerBin improvement = " << minChi2PerBin - chi2Hyper[0]/(chi2Hyper[1]-1.) );
+                  INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)fr->floating().size()) );
                   
                   fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
+                  fr->print();
                   paramsToReleaseResults.push_back(fr);
                   paramsToReleaseNParams.push_back((int)fr->floating().size());
                   
@@ -1658,24 +1700,32 @@ int main( int argc, char* argv[])
                       if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
                       if(fr->LL() > min_LL) LL_sig *= -1.;
                       double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)paramsToReleaseNParams[i]);
-                      INFO("Param= " << paramsToRelease[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                      double dChi2PerBin = minChi2PerBin - fr->chi2()/((double)fr->nBins()-1.);
+                      INFO("Param= " << paramsToRelease[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 << " ; dChi2PerBin = " << dChi2PerBin );
                   }
               }
               
               vector<string> ampsToRemove = NamedParameter<string>("AmpsToRemove",vector<string>() ).getVector();
               vector<FitResult*> ampsToRemoveResults;
               vector<int> ampsToRemoveNParams;
+              int counterAmpsToRemove = 0;
+              int scale_dParams = 1;
+
               for(auto& amp: ampsToRemove){
                   
                   vector<MinuitParameter*> removedParams;
                   vector<bool> removedParamIsFixed;
+                  
                   for(int i=0;i<MPS.size();i++){
                       auto param = MPS[i];
                       if(param->name().find(amp) != std::string::npos)
-                          if(param->name().find("_Re") != std::string::npos || param->name().find("_Im") != std::string::npos){
+                          if(param->name().find("_Re") != std::string::npos || param->name().find("_Im") != std::string::npos
+                             || param->name().find("_mass") != std::string::npos || param->name().find("_width") != std::string::npos
+                             ){
                               removedParams.push_back(param);
                               removedParamIsFixed.push_back(param->isFixed());
-                              param->setCurrentFitVal(0.);
+                              if(param->name().find("_mass") != std::string::npos || param->name().find("_width") != std::string::npos)scale_dParams=2;
+                              else param->setCurrentFitVal(0.);
                               param->fix();
                               INFO("Refit and fix parameter " << param->name() << " to 0");
                           }
@@ -1691,17 +1741,23 @@ int main( int argc, char* argv[])
                   vector<double> chi2HyperDalitz = getChi2MuMu(events, eventsMC, evaluator_sig, evaluator_bkg, 7, MinEventsChi2, 0., 1 );
                   
                   int dParams = abs((int)fr->floating().size() - nParams);
-                  double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
+                  double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),scale_dParams*dParams));
                   if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
                   if(fr->LL() > min_LL) LL_sig *= -1.;
                   INFO( "LL = " << fr->LL() );
                   INFO( "LL improvement = " << fr->LL() - min_LL << " (" << LL_sig << " sigma)" );
                   INFO( "Chi2 improvement = " << minChi2 - chi2Hyper[0]/(chi2Hyper[1]-1.-(double)nParams) );
+                  INFO( "Chi2PerBin improvement = " << minChi2PerBin - chi2Hyper[0]/(chi2Hyper[1]-1.) );
                   INFO( "Chi2Dalitz improvement = " << minChi2Dalitz - chi2HyperDalitz[0]/(chi2HyperDalitz[1]-1.-(double)nParams) );
                   
                   fr->addChi2(chi2Hyper[0],chi2Hyper[1]);
                   ampsToRemoveResults.push_back(fr);
                   ampsToRemoveNParams.push_back((int)fr->floating().size());
+                  
+                  fr->print();
+                  fr->writeToFile(replaceAll(logFile,".txt","_" + to_string(counterAmpsToRemove) + ".txt"));
+                  fr->writeToOptionsFile(replaceAll(modelFile,".txt","_" +  to_string(counterAmpsToRemove) + ".txt"), 0);
+                  counterAmpsToRemove++;
                   
                   for(int i=0;i<removedParams.size();i++){
                       removedParams[i]->resetToInit();
@@ -1715,11 +1771,12 @@ int main( int argc, char* argv[])
                   for(int i=0;i<ampsToRemove.size();i++){
                       FitResult* fr = ampsToRemoveResults[i];
                       int dParams = abs(ampsToRemoveNParams[i] - nParams);
-                      double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),dParams));
+                      double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(fr->LL() - min_LL),scale_dParams*dParams));
                       if(abs(fr->LL() - min_LL)>0 && TMath::Prob(abs(fr->LL() - min_LL),dParams) == 0 ) LL_sig = 100;
                       if(fr->LL() > min_LL) LL_sig *= -1.;
                       double dChi2 = minChi2 - fr->chi2()/((double)fr->nBins()-1.-(double)ampsToRemoveNParams[i]);
-                      INFO("Amp= " << ampsToRemove[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                      double dChi2PerBin = minChi2PerBin - fr->chi2()/((double)fr->nBins()-1.);
+                      INFO("Amp= " << ampsToRemove[i] << ":: dLL = " << fr->LL() - min_LL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 << " ; dChi2PerBin = " << dChi2PerBin  );
                   }
               }
               
@@ -1810,6 +1867,7 @@ int main( int argc, char* argv[])
               }
               
           }
+      
           if(replaceAmpAwithB.size()>=2){
               INFO("----SUMMARY::replaceAmpAwithB----");
               FitResult* fr_base = replaceAmpAwithBResults[0];
@@ -1822,7 +1880,8 @@ int main( int argc, char* argv[])
                   if(abs(dLL)>0 && TMath::Prob(abs(dLL),1) == 0 ) LL_sig = 100;
                   if(dLL>0) LL_sig *= -1.;
                   double dChi2 = fr_base->chi2()/((double)fr_base->nBins()-1.-fr_base->nParam()) - fr->chi2()/((double)fr->nBins()-1.-fr->nParam());
-                  INFO("Amp= " << replaceAmpAwithB[i] << ":: dLL = " << dLL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 );
+                  double dChi2PerBin = fr_base->chi2()/((double)fr_base->nBins()-1.) - fr->chi2()/((double)fr->nBins()-1.);
+                  INFO("Amp= " << replaceAmpAwithB[i] << ":: dLL = " << dLL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 << " ; dChi2PerBin = " << dChi2PerBin  );
               }
           }
   //

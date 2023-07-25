@@ -34,6 +34,7 @@ using namespace std;
 struct phsp_cut {
     phsp_cut(std::vector<unsigned int> dim, std::vector<double> limits, bool invertCut = false):_dim(dim),_limits(limits),_invertCut(invertCut){}
     bool operator()(const Event& evt){
+        if(_dim.size()==0)return true;
         if(sqrt(evt.s(_dim)) > _limits[0] && sqrt(evt.s(_dim)) < _limits[1] )return !_invertCut;
         else return _invertCut;
     }
@@ -167,11 +168,64 @@ inline double chiMuAngle(const Event& evt){
     return TMath::ATan2( sin, cos );
 }
 
+double calculateChi2(const TH1* hist1, const TH1* hist2) {
+    int nbins1 = hist1->GetNbinsX();
+    int nbins2 = hist2->GetNbinsX();
+
+    if (nbins1 != nbins2) {
+        std::cerr << "Error: Histograms have different number of bins." << std::endl;
+        return -1.0;
+    }
+
+    double chi2 = 0.0;
+    int ndf = -1;
+
+    for (int i = 1; i <= nbins1; ++i) {
+        double content1 = hist1->GetBinContent(i);
+        double content2 = hist2->GetBinContent(i);
+        double error1 = hist1->GetBinError(i);
+        double error2 = hist2->GetBinError(i);
+
+        double diff = content1 - content2;
+        double error_sq = error1 * error1 + error2 * error2;
+
+        if (error1 > 15e-05 && error2 > 15e-05 ) {
+            chi2 += diff * diff / error_sq;
+            ndf++;
+        }
+    }
+    
+    chi2 = chi2/(double)ndf;
+    //chi2 = chi2/((double)nbins1-1.);
+    
+    if(chi2>2){
+        cout << "WARNING::Large chi2" << endl;
+        for (int i = 1; i <= nbins1; ++i) {
+            double content1 = hist1->GetBinContent(i);
+            double content2 = hist2->GetBinContent(i);
+            double error1 = hist1->GetBinError(i);
+            double error2 = hist2->GetBinError(i);
+
+            double diff = content1 - content2;
+            double error_sq = error1 * error1 + error2 * error2;
+
+            if (error1 > 10e-05 && error2 > 10e-05 ) {
+                cout << "bin " << i << " : c1= " << content1 << " +/- " << error1
+                << " : c2= " << content2 << " +/- " << error2
+                << " ; res = " << diff * diff / error_sq << endl ;
+            }
+            
+        }
+    }
+    return chi2;
+}
 
 vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, int nBins, vector<double> limits, vector<string> weights){
 
+  auto nBinsAngles = NamedParameter<Int_t>("nBinsAngles", 20, "nBinsAngles");
+
   vector<TH1D*> histos;
-  TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBins : nBins*2,limits[0],limits[1]);
+  TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBinsAngles*2 : nBins*2,limits[0],limits[1]);
   histo->SetMinimum(0.);
   histo->GetXaxis()->SetTitle(title.c_str());
   histo->GetYaxis()->SetTitle("Yield (norm.)");
@@ -253,8 +307,12 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
   return histos;
 }
 
-void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, bool computeErrorBands = false){
+void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, bool computeErrorBands = false, bool legendLeft = false, double scaleMax = 1){
   
+  auto markerSize = NamedParameter<double>("markerSize",1);
+  auto lineWidthFit = NamedParameter<int>("lineWidthFit",4);
+  auto lineWidthAmps = NamedParameter<int>("lineWidthAmps",2);
+
   if(style == 0){
       histos[0]->SetLineWidth(1);
       histos[0]->SetMarkerSize(1.25);
@@ -262,11 +320,12 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   }
   if(style == 1){
     histos[0]->SetLineWidth(1);
-    histos[0]->SetMarkerSize(.5);
-    histos[0]->GetYaxis()->SetTitle("");
+    histos[0]->SetMarkerSize(markerSize);
+    //histos[0]->GetYaxis()->SetTitle("");
   }
   histos[0]->SetMinimum(1);
-  if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
+  //if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
+  histos[0]->SetMaximum(histos[0]->GetMaximum()*scaleMax);
   histos[0]->DrawNormalized("",1);
   
   //Compute err bands for fit
@@ -429,15 +488,50 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   }
 
   // Plot fit projections
+  unsigned int addChi2PerPlot = NamedParameter<unsigned int>("addChi2PerPlot",0);
+
   for (unsigned int i = (plotComponents == true ? histos.size()-nPermErrorBands-nAltModels-1 : 1); i >= 1 ; i--)
   {
       histos[i]->SetMinimum(1);
-      histos[i]->SetLineWidth(2);
+      
+      if(i==1)histos[i]->SetLineWidth(lineWidthFit);
+      else histos[i]->SetLineWidth(lineWidthAmps);
       if(style == 0 && i==1)histos[i]->SetLineWidth(4);
-      if(nPermErrorBands>3)histos[1]->SetLineWidth(1);
+      if(nPermErrorBands>3)histos[1]->SetLineWidth(2);
       double norm = histos[i]->Integral()/histos[1]->Integral();
       histos[i]->DrawNormalized("histcsame",norm);
   }
+  if(addChi2PerPlot){
+        histos[0]->Scale(1.0 / histos[0]->Integral());
+        histos[1]->Scale(1.0 / histos[1]->Integral());
+       
+        double chi2 = calculateChi2(histos[0], histos[1]);
+        cout << "Chi2 value: " << chi2 << endl;
+      
+        stringstream ss ;
+        TString leg_chi2 = "#chi^{2}/#nu = ";
+        ss << std::fixed << std::setprecision(1) << chi2 ;
+        leg_chi2 += ss.str();
+
+        TLegend* leg;
+        if(legendLeft)leg = new TLegend(0.15,0.75,0.3,0.9,"");
+        else leg = new TLegend(0.7,0.75,0.9,0.9,"");
+        leg->SetLineStyle(0);
+        leg->SetLineColor(0);
+        leg->SetFillColor(0);
+        leg->SetTextFont(132);
+        leg->SetTextColor(1);
+        leg->SetTextSize(0.06);
+        leg->SetTextAlign(12);
+        leg->SetEntrySeparation(0.0);
+        leg->AddEntry((TObject*)0,"#font[22]{LHCb}","");
+        TLegendEntry* le_chi2 = leg->AddEntry((TObject*)0,leg_chi2,"");
+        leg->SetEntrySeparation(0.0);
+        le_chi2->SetTextColor(kBlue);
+        le_chi2->SetTextSize(0.04);
+        leg->Draw();
+  }
+  histos[1]->DrawNormalized("histcsame",1);
   histos[0]->DrawNormalized("same",1);
   gPad->RedrawAxis();
 }
@@ -1074,7 +1168,15 @@ void makePlotsMuMu(){
     auto invertCut = NamedParameter<bool>("invertCut", 0,"Invert cut logic");
     auto cut_dim = NamedParameter<unsigned int>("cut_dim", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
     auto cut_limits = NamedParameter<double>("cut_limits", std::vector<double>(),"cut window" ).getVector();
+    auto invertCut2 = NamedParameter<bool>("invertCut2", 0,"Invert cut logic");
+    auto cut_dim2 = NamedParameter<unsigned int>("cut_dim2", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits2 = NamedParameter<double>("cut_limits2", std::vector<double>(),"cut window" ).getVector();
+    auto invertCut3 = NamedParameter<bool>("invertCut3", 0,"Invert cut logic");
+    auto cut_dim3 = NamedParameter<unsigned int>("cut_dim3", std::vector<unsigned int>(),"dimension to cut on" ).getVector();
+    auto cut_limits3 = NamedParameter<double>("cut_limits3", std::vector<double>(),"cut window" ).getVector();
     phsp_cut filter(cut_dim,cut_limits,invertCut);
+    phsp_cut filter2(cut_dim2,cut_limits2,invertCut2);
+    phsp_cut filter3(cut_dim3,cut_limits3,invertCut3);
     
     EventType evtType(pNames);
     vector<size_t> entryList,entryListMC;
@@ -1085,8 +1187,8 @@ void makePlotsMuMu(){
         if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") dummyEvents.transform( scale_transform );      
         if( NamedParameter<std::string>("MCUnits", "GeV").getVal()  == "MeV") dummyEventsMC.transform( scale_transform );
         
-        for(unsigned int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i]))entryList.push_back(i);
-        for(unsigned int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i]))entryListMC.push_back(i);
+        for(unsigned int i=0; i< dummyEvents.size(); i++ )if(filter(dummyEvents[i])&& filter2(dummyEvents[i]) && filter3(dummyEvents[i]))entryList.push_back(i);
+        for(unsigned int i=0; i< dummyEventsMC.size(); i++ )if(filter(dummyEventsMC[i])&& filter2(dummyEventsMC[i]) && filter3(dummyEventsMC[i]))entryListMC.push_back(i);
     }
     
     EventList events(dataFile, evtType, Branches(bNames), GetGenPdf(false), WeightBranch(weightData),EntryList(entryList) );
@@ -1234,7 +1336,7 @@ void makePlotsMuMu(){
     
     if(decayMuMu != "psi(2S)0")titles.push_back("#it{m(J/#psiK^{#plus}#pi^{#minus})} [GeV]");
     else titles.push_back("#it{m(#psi}(2S)#it{K^{#plus}#pi^{+})} [GeV]");
-    titles.push_back("#it{m(K^{#plus}#pi^{#minus})} [GeV]");
+    titles.push_back("#it{m(K^{#plus}#pi^{#plus})} [GeV]");
     titles.push_back("#it{m(#psi}(2S))} [GeV]");
 
     limits.push_back(lim3401);
@@ -1282,6 +1384,7 @@ void makePlotsMuMu(){
     vector<vector<TH1D*>> histo_set,histo_set_cut1,histo_set_cut2,histo_set_cut3,histo_set_cut4,histo_set_cut5,histo_set_cut6;
     vector<vector<TH1D*>> histo_set_cut7,histo_set_cut8,histo_set_cut9,histo_set_cut10,histo_set_cut11,histo_set_cut12;
     vector<vector<TH1D*>> histo_set_cutCombo1,histo_set_cutCombo2,histo_set_cutCombo3,histo_set_cutCombo4;
+    vector<vector<TH2D*>> histo2D_set;
 
     for(unsigned int i=0;i<dims.size();i++){
         histo_set.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
@@ -1300,13 +1403,19 @@ void makePlotsMuMu(){
         histo_set_cutCombo1.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
         histo_set_cutCombo2.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
         histo_set_cutCombo3.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
-        histo_set_cutCombo4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));  
+        histo_set_cutCombo4.push_back(createHistos(dims[i],labels[i],titles[i],nBins,limits[i],weights));
+        for(int j=i+1;j<dims.size();j++){
+            if(dims[i].size()>1 && dims[j].size()>1)histo2D_set.push_back(createHistos2D(dims[i],dims[j],labels[i],";"+titles[i]+";"+titles[j],nBins,limits[i],limits[j],weights));
+        }
     }
     //Fill data
     auto kstar_hcos = HelicityCosine({3},{0,1,2},{3,4}); 
     
     cout << "Fill data hists ..." << endl;
     for( auto& evt : events ){
+        
+        int histo2D_set_n = 0;
+        
         for(unsigned int j=0;j<dims.size();j++){
             double val = 0;
             if(dims[j].size()>1) val = sqrt(evt.s(dims[j]));
@@ -1332,7 +1441,14 @@ void makePlotsMuMu(){
             if(filter_plot1(evt) && filter_plot6(evt))  histo_set_cutCombo1[j][0]->Fill(val,evt.weight());   
             if(filter_plot2(evt) && filter_plot5(evt))  histo_set_cutCombo2[j][0]->Fill(val,evt.weight());   
             if(filter_plot3(evt) && filter_plot5(evt))  histo_set_cutCombo3[j][0]->Fill(val,evt.weight());   
-            if(filter_plot4(evt) && filter_plot5(evt))  histo_set_cutCombo4[j][0]->Fill(val,evt.weight());   
+            if(filter_plot4(evt) && filter_plot5(evt))  histo_set_cutCombo4[j][0]->Fill(val,evt.weight());
+            
+            for(int i=j+1;i<dims.size();i++){
+                if(dims[i].size()>1 && dims[j].size()>1){
+                    histo2D_set[histo2D_set_n][0]->Fill(sqrt(evt.s(dims[j])),sqrt(evt.s(dims[i])),evt.weight());
+                    histo2D_set_n++;
+                }
+            }
         }
     }
     
@@ -1476,10 +1592,11 @@ void makePlotsMuMu(){
     leg.AddEntry((TObject *)0,("nAmps = " + to_string(nAmps)).c_str() ,"");
     leg.SetNColumns(2);
     
-    //    for(int j=0;j<dims.size();j++){ 
-    //        plotData(histo_set[j]);
-    //        c->Print(("data_"+labels[j]+".eps").c_str());
-    //    }
+    auto plotOnlyData = NamedParameter<bool>("plotOnlyData", 0,"plotOnlyData");
+    if(plotOnlyData)for(int j=0;j<dims.size();j++){
+            plotData(histo_set[j]);
+            c->Print((outDir+"/"+"data_"+labels[j]+".pdf").c_str());
+    }
     
     // Apply smoothing?
     unsigned int smooth   = NamedParameter<unsigned int>("smoothFitProj",0);  
@@ -1524,14 +1641,59 @@ void makePlotsMuMu(){
                 }
     }
       
-    for(unsigned int j=0;j<dims.size();j++){ 
-        plotHistos(histo_set[j], true, 1, true);
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+".pdf").c_str());
-        c->Print((outDir+"/"+labels[j]+".png").c_str());
-        if(j==0)c->Print((outDir+"/"+labels[j]+".C").c_str());
-        if(j==0)c->Print((outDir+"/"+labels[j]+".root").c_str());
+        //c->Print((outDir+"/"+labels[j]+".png").c_str());
+        //if(j==0)c->Print((outDir+"/"+labels[j]+".C").c_str());
+        //if(j==0)c->Print((outDir+"/"+labels[j]+".root").c_str());
     }
     
+    //
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut1[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut1.pdf").c_str());
+    }
+    
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut2[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut2.pdf").c_str());
+    }
+    
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut3[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut3.pdf").c_str());
+    }
+    
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut4[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut4.pdf").c_str());
+    }
+    
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut5[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut5.pdf").c_str());
+    }
+    
+    for(unsigned int j=0;j<dims.size();j++){
+        bool legendLeft = (j==0 || j==3 || j==7 || j == 10) ? true : false;
+        double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
+        plotHistos(histo_set_cut6[j], true, 1, true, legendLeft, scaleMax);
+        c->Print((outDir+"/"+labels[j]+"_cut6.pdf").c_str());
+    }
+        
     cout << "f_bkg = " << histo_set[0][histo_set[0].size()-1]->Integral()/histo_set[0][1]->Integral() << endl;
     cout << "f_bkg = " << histo_set[1][histo_set[1].size()-1]->Integral()/histo_set[1][1]->Integral() << endl;
 
@@ -1711,7 +1873,6 @@ void makePlotsMuMu(){
     }
     c->Print((outDir+"/"+"amp_plot3_cutCombo4.pdf").c_str());
     
-    
     c->SetCanvasSize(500, 500);
     c->Clear();
     leg.Draw();
@@ -1722,6 +1883,21 @@ void makePlotsMuMu(){
     leg.Draw();
     c->Print((outDir+"/"+"leg2.pdf").c_str());
     
+    auto plotDalitz = NamedParameter<bool>("plotDalitz", 0,"plotDalitz");
+    if(plotDalitz){
+        c->Clear();
+        int histo2D_set_n = 0;
+        for(int i=0;i<dims.size();i++)for(int j=i+1;j<dims.size();j++){
+            if(dims[i].size()>1 && dims[j].size()>1){
+                histo2D_set[histo2D_set_n][0]->Draw("colz");
+                c->Print((outDir+"/"+"dalitz_"+to_string(i)+"_"+to_string(j)+".pdf").c_str());
+                histo2D_set_n ++;
+                //      histo2D_set[n][0]->Draw();
+                //      c->Print(("dalitzScatter_"+to_string(i)+"_"+to_string(j)+".pdf").c_str());
+            }
+        }
+    }
+        
 }
 
 

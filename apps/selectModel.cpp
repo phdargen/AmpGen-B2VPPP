@@ -12,6 +12,7 @@
 #include "AmpGen/LHCbStyle.h"
 #include "AmpGen/FitResult.h"
 #include <TH1.h>
+#include <TF1.h>
 #include <TFile.h>
 #include <TChain.h>
 #include <TMath.h>
@@ -91,6 +92,7 @@ void selectModel(){
   const int n = chain->GetEntries();
   for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
+        nll*=2;
     
         if(TMath::IsNaN(nll))continue;
       
@@ -109,15 +111,16 @@ void selectModel(){
         }
   }
     
-  TH1D * h_nll = new TH1D("h_nll","h_nll",40,-0.5,min(max_nll-min_nll,3000.5));  
+  TH1D * h_nll = new TH1D("h_nll","; #Delta(-2log L); # Fits",60,-0.5,min(max_nll-min_nll,120.5));
   TH1D * h_nll0 = new TH1D("h_nll1","h_nll1",40,-0.5,min(max_nll-min_nll,3000.5));  
   TH1D * h_nll1 = new TH1D("h_nll1","h_nll1",40,-0.5,min(max_nll-min_nll,3000.5));  
   TH1D * h_nll2 = new TH1D("h_nll2","h_nll2",40,-0.5,min(max_nll-min_nll,3000.5));  
   TH1D * h_nll3 = new TH1D("h_nll3","h_nll3",40,-0.5,min(max_nll-min_nll,3000.5));  
   TH1D * h_nll4 = new TH1D("h_nll4","h_nll4",40,-0.5,min(max_nll-min_nll,3000.5));  
-    
+   
+  h_nll->SetLineColor(kBlue);
   h_nll0->SetLineColor(kRed);  
-  h_nll1->SetLineColor(kBlue);  
+  //h_nll1->SetLineColor(kBlue);
   h_nll2->SetLineColor(kGreen);  
   h_nll3->SetLineColor(kYellow);  
   h_nll4->SetLineColor(kOrange);  
@@ -142,6 +145,7 @@ void selectModel(){
   
   for (int i = 0; i<n; i++) {
         chain->GetEntry(i);
+        nll*=2;
         if(TMath::IsNaN(nll))continue;
 
         h_nll->Fill(nll-min_nll);
@@ -195,11 +199,11 @@ void selectModel(){
   //c->Divide(3,2);
 
   h_nll->Draw("h");
-  h_nll0->Draw("hsame");
-  h_nll1->Draw("hsame");
-  h_nll2->Draw("hsame");
-  h_nll3->Draw("hsame");
-  h_nll4->Draw("hsame");
+  //h_nll0->Draw("hsame");
+  //h_nll1->Draw("hsame");
+  //h_nll2->Draw("hsame");
+  //h_nll3->Draw("hsame");
+  //h_nll4->Draw("hsame");
   c->Print((outDir+"n2ll.pdf").c_str());  
 
   h_chi2->Draw("h");
@@ -261,7 +265,10 @@ void selectModel(){
   c->Print((outDir+"scan_sigma_seed.pdf").c_str());
 
   g_chi2->Draw("AC*");
-  c->Print((outDir+"scan_chi2_seed.pdf").c_str());  
+  c->Print((outDir+"scan_chi2_seed.pdf").c_str());
+    
+  cout << "Not converged = " << h_nll1->GetEntries() + h_nll2->GetEntries() + h_nll3->GetEntries() + h_nll4->GetEntries() <<  endl;
+    cout << "Overflow = " << h_nll->GetBinContent(61) << endl;
     
 }
 
@@ -547,6 +554,95 @@ void analyzeFits(){
     
 }
 
+
+void fitChiSquareDistributionForSignificanceTests() {
+    
+    auto nFits = NamedParameter<int>("fitChi2SignTests::nFits", 1);
+    auto nBins = NamedParameter<int>("fitChi2SignTests::nBins", 100);
+    auto histMin = NamedParameter<double>("fitChi2SignTests::histMin", -10);
+    auto histMax = NamedParameter<double>("fitChi2SignTests::histMax", 100);
+    auto fitMin = NamedParameter<double>("fitChi2SignTests::fitMin", -10);
+    auto fitMax = NamedParameter<double>("fitChi2SignTests::fitMax", 100);
+    auto sign = NamedParameter<int>("fitChi2SignTests::sign", 1);
+    auto fitGauss = NamedParameter<int>("fitChi2SignTests::fitGauss", 0);
+
+    string outDir = NamedParameter<string>("outDir", "");
+    TH1D* hist = new TH1D("hist",";#Delta(2lnL); # Fits",nBins,histMin,histMax);
+    
+    for(unsigned int i = 0 ; i < nFits ; ++i){
+        if(! std::ifstream((outDir+"log_" + to_string(i)+".txt").c_str()).good()){
+            ERROR("File " << outDir+"log_" + to_string(i)+".txt" << " not found");
+            continue;
+        }
+        FitResult fr0(outDir+"log_H0_" + to_string(i)+".txt");
+        FitResult fr(outDir+"log_" + to_string(i)+".txt");
+
+        double dLL = sign * ( fr0.LL() - fr.LL() );
+        
+        hist->Fill(dLL);
+  }
+    
+  // Create a TF1 function for the chi-square distribution
+  TF1* func;
+  if(fitGauss) func =  new TF1("func", "[0]*ROOT::Math::normal_pdf(x, [2], [1])", fitMin, fitMax);
+  else func = new TF1("func", "[0]*ROOT::Math::chisquared_pdf(x, [1])", fitMin, fitMax);
+    
+  // Set some initial parameters for the fit
+  if(fitGauss){
+        func->SetParameters(hist->GetEntries(), hist->GetMean(), hist->GetRMS());
+        func->SetParName(0, "Normalization");
+        func->SetParName(1, "Mean");
+        func->SetParName(2, "Sigma");
+        func->SetParLimits(2, 0.1, hist->GetRMS() * 10);
+
+  }
+  else{
+        func->SetParameters(hist->GetEntries(), 1.0);
+        func->SetParName(0, "Normalization");
+        func->SetParName(1, "Degrees of Freedom");
+  }
+      
+  // Fit the histogram with the chi-square distribution
+  hist->Fit(func, "R"); // "R" option for adjusting the fit range
+  
+  // Print the fit result
+  TF1* fitFunction = hist->GetFunction("func");
+  if (fitFunction) {
+    double normalization = fitFunction->GetParameter(0);
+    printf("Fit Result:\n");
+    printf("Normalization: %f\n", normalization);
+    
+    if(fitGauss){
+        double meanFit = fitFunction->GetParameter(1);
+        double sigmaFit = fitFunction->GetParameter(2);
+        printf("Mean: %f\n", meanFit);
+        printf("Sigma: %f\n", sigmaFit);
+    }
+    else{
+        double degreesOfFreedom = fitFunction->GetParameter(1);
+        printf("Degrees of Freedom: %f\n", degreesOfFreedom);
+    }
+  }
+  
+  // Create a canvas to display the histogram and the fit function
+  TCanvas* canvas = new TCanvas("canvas", "Chi-Square Distribution Fit", 800, 600);
+  
+  // Draw the histogram
+  hist->SetLineColor(kBlue);
+  hist->Draw("hist");
+  
+  // Draw the fit function
+  func->SetLineColor(kRed);
+  func->Draw("same");
+  
+  // Update the canvas
+  canvas->Update();
+  
+  // Save the canvas as a PDF file
+  canvas->Print(((string)outDir+"dLL_fit.pdf").c_str());
+}
+
+
 int main( int argc, char* argv[] ){
 
   OptionsParser::setArgs( argc, argv );
@@ -559,6 +655,7 @@ int main( int argc, char* argv[] ){
   if(mode==0)selectModel();
   if(mode==1)scan();
   if(mode==2)analyzeFits();
-    
+  if(mode==3)fitChiSquareDistributionForSignificanceTests();
+
   return 0;
 }
