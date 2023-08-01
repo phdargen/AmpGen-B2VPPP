@@ -39,6 +39,7 @@ FitResult::FitResult( const FitResult& other )
   , m_status( other.status() )
   , m_observables( other.observables() )
   , m_fitFractions( other.fitFractions() )
+  , m_interferenceFractions( other.interferenceFractions() )
   , m_covarianceMatrix(other.cov())
   , m_covMapping(other.m_covMapping )
 {
@@ -92,6 +93,7 @@ bool FitResult::readFile( const std::string& fname, bool verbose )
     if ( name == "Parameter" ) parameterLines.push_back( line );
     else if ( name == "FitQuality" )  this->setFitQuality( line );
     else if ( name == "FitFraction" ) this->m_fitFractions.emplace_back(line);
+    else if ( name == "InterferenceFraction" ) this->m_interferenceFractions.emplace_back(line);
     else if ( name == "Observable" )  this->addToObservables( line );
     else if ( name == "Systematic" )  this->setSystematic( line );
   }
@@ -175,6 +177,7 @@ void FitResult::writeToFile( const std::string& fname )
     outlog << std::setprecision( 8 );
     outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
     for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
+    for ( auto& f : m_interferenceFractions )  outlog << "InterferenceFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
     for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
     outlog << "Systematic " << m_sys << "\n";
     outlog << "End Log\n";
@@ -184,6 +187,8 @@ void FitResult::writeToFile( const std::string& fname )
 std::string FitResult::latexName(std::string name){
     
     TString n(name);
+
+    n.ReplaceAll("_x_"," $ & $ ");
 
     n.ReplaceAll("{","\\{");
     n.ReplaceAll("}","\\}");
@@ -773,6 +778,11 @@ void FitResult::addFractions( const std::vector<FitFraction>& fractions )
   m_fitFractions = fractions; 
 }
 
+void FitResult::addInterferenceFractions( const std::vector<FitFraction>& fractions )
+{
+  m_interferenceFractions = fractions;
+}
+
 double FitResult::chi2() const { return m_chi2; }
 double FitResult::LL() const { return m_LL; }
 int FitResult::status() const { return m_status; }
@@ -784,6 +794,7 @@ MinuitParameterSet* FitResult::mps() const { return m_mps; }
 
 double FitResult::dof() const { return m_nBins - m_nParam - 1; }
 std::vector<FitFraction> FitResult::fitFractions() const { return m_fitFractions; }
+std::vector<FitFraction> FitResult::interferenceFractions() const { return m_interferenceFractions; }
 TMatrixD FitResult::cov() const { return m_covarianceMatrix; }
 double FitResult::cov( const size_t& x, const size_t& y ) const { return m_covarianceMatrix( x, y ); }
 double FitResult::cov( const std::string& x, const std::string& y ) const 
@@ -803,7 +814,11 @@ void FitResult::addFraction( const std::string& name, const double& frac, const 
 {
   m_fitFractions.emplace_back( name, frac, err );
 }
-void FitResult::clearFitFractions() { m_fitFractions.clear(); }
+void FitResult::addInterferenceFraction( const std::string& name, const double& frac, const double& err )
+{
+    m_interferenceFractions.emplace_back( name, frac, err );
+}
+void FitResult::clearFitFractions() { m_fitFractions.clear(); m_interferenceFractions.clear(); }
 void FitResult::setCov( const size_t& x, const size_t& y, const double& F ) { m_covarianceMatrix( x, y ) = F; }
 double FitResult::correlation( const std::string& x, const std::string& y ) const
 {

@@ -1568,6 +1568,9 @@ int main( int argc, char* argv[])
                   auto ep = fr->getErrorPropagator();
                   auto fitFractions = sig.fitFractions( ep );
                   fr->addFractions( fitFractions );
+                  auto interferenceFractions = sig.interferenceFractions( ep );
+                  fr->addInterferenceFractions( interferenceFractions );
+                  
                   vector<double> thresholds{0.01,0.05,0.1,0.5,1,2};
                   vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
                   

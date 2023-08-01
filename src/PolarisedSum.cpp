@@ -503,6 +503,37 @@ std::vector<FitFraction> PolarisedSum::fitFractions(const LinearErrorPropagator&
   return outputFractions;
 }
 
+std::vector<FitFraction> PolarisedSum::interferenceFractions(const LinearErrorPropagator& prop)
+{
+  bool recomputeIntegrals    = NamedParameter<bool>("PolarisedSum::RecomputeIntegrals", false );
+  std::vector<FitFraction> outputFractions;
+
+  auto head_rules = m_rules.rulesForDecay(m_eventType.mother(), m_prefix);
+  FitFractionCalculator<PolarisedSum> iCalc(this, findIndices(m_matrixElements, m_eventType.mother()), recomputeIntegrals);
+    
+  for(size_t i = 0 ; i < head_rules.size(); ++i)
+  {
+      auto process_i = head_rules[i];
+      auto num_i   = processIndex(m_matrixElements, process_i.name());
+      if( num_i.size() == 0 || num_i == iCalc.normSet ) continue;
+      for( size_t j = i+1 ; j < head_rules.size(); ++j ){
+        auto process_j = head_rules[j];
+        auto num_j   = processIndex(m_matrixElements, process_j.name());
+        if( num_j.size() == 0 || num_j == iCalc.normSet ) continue;
+        iCalc.emplace_back(process_i.name() + "_x_" + process_j.name() , num_i, num_j);
+      }
+  }
+  auto ifractions = iCalc(m_eventType.mother(), prop);
+  INFO("Interference fractions: ");
+  for( auto& f : ifractions ){
+      INFO( FitFraction(f) );
+      outputFractions.emplace_back(f);
+  }
+  
+  INFO("Returning: " << outputFractions.size() << " interference fractions");
+  return outputFractions;
+}
+
 void PolarisedSum::transferParameters()
 { 
   m_probExpression.prepare();

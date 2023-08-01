@@ -69,6 +69,7 @@ namespace AmpGen
 
       real_t getValNoCache(const Event&) const;
       std::vector<FitFraction> fitFractions(const LinearErrorPropagator&);
+      std::vector<FitFraction> interferenceFractions(const LinearErrorPropagator&);
       std::vector<TransitionMatrix<void>> matrixElements() const;
       void transferParameters(); 
       Tensor transitionMatrix() const;

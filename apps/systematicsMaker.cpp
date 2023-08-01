@@ -281,6 +281,10 @@ void analyzeResults(){
     starterFit.print();
     auto params = starterFit.floating();
     auto fracs = starterFit.fitFractions();
+    auto interferenceFracs = starterFit.interferenceFractions();
+
+    vector<FitResult> allModelFits;
+    allModelFits.push_back(starterFit);
     
     vector<TMatrixD> covs;
     vector<TMatrixD> covs_frac;
@@ -307,6 +311,7 @@ void analyzeResults(){
           FitResult fr(sysFiles[0] + to_string(i)+".txt");
           EnsureRing( fr, starterFit );    
           fits.push_back(fr);
+          if(sys=="AltAmp")allModelFits.push_back(fr);
         }
 
         vector<TMatrixD> cov({TMatrixD(params.size(),params.size()),TMatrixD(fracs.size(),fracs.size())});
@@ -437,6 +442,23 @@ void analyzeResults(){
     for(int i =0 ; i < covs.size() ; i++)  SummaryFile2 << sysNames[i] << " & " ;
     SummaryFile2 << " Total " << " \\\\ " << "\n";
     SummaryFile2 << "\\hline" << "\n";
+    
+    // Fit parameter results table
+    ofstream ResultFile,ResultFile2;
+    ResultFile.open(outDir+"result_table.tex",ofstream::trunc);
+    ResultFile2.open(outDir+"result_table2.tex",ofstream::trunc);
+
+    ResultFile << "\\begin{tabular}{l r r} " << "\n";
+    ResultFile << "\\hline" << "\n";
+    ResultFile << "\\hline" << "\n";
+    ResultFile << "Amplitude coupling & Amp & Phase  " << " \\\\ " << "\n";
+    ResultFile << "\\hline" << "\n";
+    
+    ResultFile2 << "\\begin{tabular}{l r} " << "\n";
+    ResultFile2 << "\\hline" << "\n";
+    ResultFile2 << "\\hline" << "\n";
+    ResultFile2 << "Fit Parameter &  Value " << " \\\\ " << "\n";
+    ResultFile2 << "\\hline" << "\n";
 
     for(int i =0 ; i < params.size() ; i++){
         if( params[i]->name().find( "B+" ) != string::npos ){
@@ -446,7 +468,7 @@ void analyzeResults(){
                 tot += (covs[j])[i][i];
                 SummaryFile << sqrt((covs[j])[i][i])/params[i]->err() << " & ";  
             }
-            SummaryFile << sqrt(tot)/params[i]->err() << " \\\\ " << "\n"; 
+            SummaryFile << sqrt(tot)/params[i]->err() << " \\\\ " << "\n";
         }
         else {
             double tot = 0.;
@@ -455,8 +477,55 @@ void analyzeResults(){
                 tot += (covs[j])[i][i];
                 SummaryFile2 << sqrt((covs[j])[i][i])/params[i]->err() << " & ";  
             }
-            SummaryFile2 << sqrt(tot)/params[i]->err() << " \\\\ " << "\n"; 
+            SummaryFile2 << sqrt(tot)/params[i]->err() << " \\\\ " << "\n";
         }
+    }
+      
+    for(int i =0 ; i < params.size() ; i++){
+
+        if( params[i]->name().find( "_Re" ) != string::npos || params[i]->name().find( "_Im" ) != string::npos ){
+            double tot_1 = 0.;
+            double tot_2 = 0.;
+            for(int j =0 ; j <covs.size() ; j++)tot_1 += (covs[j])[i][i];
+ 
+            if(params[i]->name().find( "_Im" )!= string::npos){
+                ResultFile << fixed << setprecision(1) << "$" << replaceAll(starterFit.latexName(params[i]->name()),"Phase","") << "$ & $-$ & $" ;
+                ResultFile << params[i]->mean()  << " \\pm " ;
+                ResultFile << params[i]->err() ;
+                if(tot_1>0)ResultFile << " \\pm " << sqrt(tot_1)  ;
+            }
+            
+            else if(params[i]->name().find( "_Re" )!= string::npos){
+                ResultFile << fixed << setprecision(2) << "$" << replaceAll(starterFit.latexName(params[i]->name()),"Amp","") << "$ & $" ;
+                ResultFile << params[i]->mean()  << " \\pm " ;
+                ResultFile << params[i]->err() ;
+                if(tot_1>0)ResultFile << " \\pm " << sqrt(tot_1)  ;
+                ResultFile << " $ & $ ";
+                if(params[i+1]->name().find( "_Im" )!= string::npos){
+                    for(int j =0 ; j <covs.size() ; j++)tot_2 += (covs[j])[i+1][i+1];
+
+                    ResultFile << fixed << setprecision(1);
+                    ResultFile << params[i+1]->mean()  << " \\pm " ;
+                    ResultFile << params[i+1]->err() ;
+                    if(tot_2>0)ResultFile << " \\pm " << sqrt(tot_2)  ;
+                    i++;
+                }
+               
+            }
+            
+            ResultFile << "$ \\\\ " << "\n";
+        }
+        
+        else{
+            double tot = 0.;
+            for(int j =0 ; j <covs.size() ; j++)tot += (covs[j])[i][i];
+            ResultFile2 << fixed << setprecision(2) << "$" << starterFit.latexName(params[i]->name()) << "$ & $" ;
+            ResultFile2 << params[i]->mean()  << " \\pm " ;
+            ResultFile2 << params[i]->err() ;
+            if(tot>0)ResultFile2 << " \\pm " << sqrt(tot)  ;
+            ResultFile2 << "$ \\\\ " << "\n";
+        }
+        
     }
 
     SummaryFile << "\\hline" << "\n";
@@ -466,6 +535,14 @@ void analyzeResults(){
     SummaryFile2 << "\\hline" << "\n";
     SummaryFile2 << "\\hline" << "\n";
     SummaryFile2 << "\\end{tabular}" << "\n";
+    
+    ResultFile << "\\hline" << "\n";
+    ResultFile << "\\hline" << "\n";
+    ResultFile << "\\end{tabular}" << "\n";
+    
+    ResultFile2 << "\\hline" << "\n";
+    ResultFile2 << "\\hline" << "\n";
+    ResultFile2 << "\\end{tabular}" << "\n";
 
     
     // Total fractions systematics table in terms of sigma_stat   
@@ -558,6 +635,152 @@ void analyzeResults(){
     FracResultFile2 << "\\hline" << "\n";
     FracResultFile2 << "\\hline" << "\n";
     FracResultFile2 << "\\end{tabular}" << "\n";
+    
+    // Interference Fractions
+    ofstream IntFracResultFile;
+    IntFracResultFile.open(outDir+"intFracResult_table.tex",ofstream::trunc);
+
+    IntFracResultFile << "\\begin{tabular}{l l r} " << "\n";
+    IntFracResultFile << "\\hline" << "\n";
+    IntFracResultFile << "\\hline" << "\n";
+    IntFracResultFile << "Decay channel $i$ & Decay channel $j$ &  $IF_{ij} [ \\% ] $ " << " \\\\ " << "\n";
+    IntFracResultFile << "\\hline" << "\n";
+    
+    for(int i =0 ; i < interferenceFracs.size() ; i++){
+            if(abs(interferenceFracs[i].val() * 100.) < 0.1)continue;
+            IntFracResultFile << fixed << setprecision(2) << "$" << starterFit.latexName(interferenceFracs[i].name()) << "$ & $" ;
+            IntFracResultFile << interferenceFracs[i].val() * 100. << " \\pm " ;
+            IntFracResultFile << interferenceFracs[i].err() * 100.  ;
+            IntFracResultFile << "$ \\\\ " << "\n";
+    }
+
+    IntFracResultFile << "\\hline" << "\n";
+    IntFracResultFile << "\\hline" << "\n";
+    IntFracResultFile << "\\end{tabular}" << "\n";
+    
+    // Alt model table
+    ofstream altModelsFile;
+    altModelsFile.open(outDir+"altModels_table.tex",ofstream::trunc);
+
+    altModelsFile << "\\begin{tabular}{l";
+    for(int i=0;i<allModelFits.size();i++) altModelsFile << " r";
+    altModelsFile << " } " << "\n";
+    altModelsFile << "\\hline" << "\n";
+    altModelsFile << "\\hline" << "\n";
+    altModelsFile << "Decay channel $F_{i} [ \\% ] $ ";
+    for(int i=0;i<allModelFits.size();i++) altModelsFile << " & Model " << i ;
+    altModelsFile << " \\\\ " << "\n" << "\\hline" << "\n";
+    
+    vector<FitFraction> allAmps;
+    MinuitParameterSet allPars;
+    for(int i=0;i<allModelFits.size();i++){
+        auto fracs_i = allModelFits[i].fitFractions();
+        auto params_i = allModelFits[i].floating();
+
+        for(auto &f : fracs_i){
+            bool foundAmp = false;
+            for(auto& f_allAmps : allAmps){
+                if(f == f_allAmps){
+                    foundAmp = true;
+                    break;
+                }
+            }
+            if(!foundAmp){allAmps.emplace_back(f.name(),f.val(),f.err()); INFO(f.name());}
+        }
+        
+        for(auto &p : params_i){
+            allPars.addOrGet(p->name(),p->flag(),p->mean(),p->err());
+        }
+        
+    }
+    
+    INFO("allAmps.size() = " << allAmps.size());
+    //std::sort(allAmps.begin(), allAmps.end());
+    //std::reverse(allAmps.begin(), allAmps.end());
+    
+    // Fit fractions
+    for(int i=0;i<allAmps.size();i++){
+
+        if( allAmps[i].name().find( "kMatrix" ) != string::npos || allAmps[i].name().find( "FOCUS" ) != string::npos || allAmps[i].name().find( "Sum_KPi" ) != string::npos || allAmps[i].name().find( "Sum_PiPi" ) != string::npos ) continue;
+            
+        altModelsFile << fixed << setprecision(2) << "$" << starterFit.latexName(allAmps[i].name()) << "$ " ;
+                
+        for(int j=0;j<allModelFits.size();j++){
+
+            auto fracs_j = allModelFits[j].fitFractions();
+            bool foundAmpName = false;
+
+            for(auto &f : fracs_j){
+                if(f.name()==allAmps[i].name()){
+                    altModelsFile << " & $ " << f.val() * 100. << " \\pm " ;
+                    altModelsFile << f.err() * 100.  ;
+                    altModelsFile << " $ ";
+                    foundAmpName = true;
+                    break;
+                }
+            }
+            if(!foundAmpName)altModelsFile << " & $-$ ";
+        }
+        
+        altModelsFile << " \\\\ " << "\n";
+    }
+    
+    // Fit parameters
+    altModelsFile << "\\hline" << "\n";
+    for(int i=0;i<allPars.size();i++){
+            
+        if( allPars[i]->name().find( "_Re" ) != string::npos || allPars[i]->name().find( "_Im" ) != string::npos ) continue;
+        
+        altModelsFile << fixed << setprecision(1) << "$" << starterFit.latexName(allPars[i]->name()) << "$ " ;
+                
+        for(int j=0;j<allModelFits.size();j++){
+
+            auto params_j = allModelFits[j].floating();
+            bool foundPar = false;
+
+            for(auto &p : params_j){
+                if(p->name()==allPars[i]->name()){
+                    altModelsFile << " & $ " << p->mean()  << " \\pm " ;
+                    altModelsFile << p->err()   ;
+                    altModelsFile << " $ ";
+                    foundPar = true;
+                    break;
+                }
+            }
+            if(!foundPar)altModelsFile << " & $-$ ";
+        }
+        
+        altModelsFile << " \\\\ " << "\n";
+    }
+    
+    
+    // Fit quality
+    altModelsFile << "\\hline" << "\n";
+    
+    altModelsFile << fixed << setprecision(1) << "$ -2nLL $ " ;
+    for(int j=0;j<allModelFits.size();j++){
+        double dLL = allModelFits[j].LL()-allModelFits[0].LL();
+        double sigma = sqrt(2)*TMath::ErfcInverse(TMath::Prob(abs(dLL),abs(allModelFits[j].nParam()-allModelFits[0].nParam()))) ;
+        altModelsFile << " & $ " << dLL << " (" << sigma <<  "\\sigma ) $ ";
+    }
+    altModelsFile << " \\\\ " << "\n";
+    
+    altModelsFile << fixed << setprecision(2) << "$ N_{par} $ " ;
+    for(int j=0;j<allModelFits.size();j++) altModelsFile << " & $ " << allModelFits[j].nParam() << " $ ";
+    altModelsFile << " \\\\ " << "\n";
+    
+    altModelsFile << fixed << setprecision(2) << "$ \\chi^2/\\nu $ " ;
+    for(int j=0;j<allModelFits.size();j++) altModelsFile << " & $ " << allModelFits[j].chi2()/allModelFits[j].dof() << " $ ";
+    altModelsFile << " \\\\ " << "\n";
+    
+    altModelsFile << fixed << setprecision(2) << "$ \\chi^2/bin $ " ;
+    for(int j=0;j<allModelFits.size();j++) altModelsFile << " & $ " << allModelFits[j].chi2()/allModelFits[j].nBins() << " $ ";
+    altModelsFile << " \\\\ " << "\n";
+
+    // End of table
+    altModelsFile << "\\hline" << "\n";
+    altModelsFile << "\\hline" << "\n";
+    altModelsFile << "\\end{tabular}" << "\n";
 }
 
 

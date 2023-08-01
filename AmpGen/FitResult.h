@@ -29,6 +29,8 @@ namespace AmpGen
     void addChi2( const double& chi2, const double& nBins );
     void addFractions( const std::vector<FitFraction>& fractions );
     void addFraction( const std::string& name, const double& frac, const double& err );
+    void addInterferenceFractions( const std::vector<FitFraction>& fractions );
+    void addInterferenceFraction( const std::string& name, const double& frac, const double& err );
     void setCov( const size_t& x, const size_t& y, const double& F );
     void setSystematic( const std::string& sys ){ m_sys = sys;}  
     void writeToFile( const std::string& fname );
@@ -60,6 +62,8 @@ namespace AmpGen
     MinuitParameterSet* mps()   const;
 
     std::vector<FitFraction> fitFractions()     const;
+    std::vector<FitFraction> interferenceFractions()     const;
+
     std::vector<MinuitParameter*> parameters()  const;
     std::vector<MinuitParameter*> floating(const bool& extended = false) const;
     TMatrixD cov() const;
@@ -80,6 +84,7 @@ namespace AmpGen
     std::string                         m_sys    = {""};  
     std::map<std::string, double>       m_observables;
     std::vector<FitFraction>            m_fitFractions;
+    std::vector<FitFraction>            m_interferenceFractions;
     TMatrixD                            m_covarianceMatrix;
     std::map<std::string, unsigned int> m_covMapping;
 
