@@ -1,64 +1,63 @@
 EventType B+ K+ pi+ pi- mu+ mu-
-decayMuMu "J/psi0"
 
-#DataSample		Jpsi_data_reduced.root:DecayTree
-#weightData        noWeight
-#DataSample        b2psiKpipi_sw.root:DecayTree
+## sFit
+#useBkgBDT   0
+#DataSample        /afs/cern.ch/work/p/phdargen/lhcb-analysis-b2psikpipi/TD-MINT2/src/Users/dargent/MassFits/psi_data_binnedKpipi_sw.root:DecayTree
 #weightData        N_B_sw
-#IntegrationSample   SignalIntegrationEvents_jpsiAcc.root
+#IntegrationSample   SignalIntegrationEvents_Acc.root
+
+## Bkg model
+useBkgBDT   0
+DataSample        psi_data_reduced.root:DecayTree
+weightData        noWeight
+IntegrationSample   SignalIntegrationEvents_Acc.root
 
 ## Bkg BDT
-useBkgBDT   1
-"ExtraBranches" "bkgPdf"
-"ExtraBranchesMC" "bkgPdf"
-DataSample        Jpsi_data_bkgPdf.root:DecayTree
-weightData        noWeight
-IntegrationSample   SignalIntegrationEvents_jpsiAcc_bkgPdf.root
-
+#useBkgBDT   1
+#"ExtraBranches" "bkgPdf"
+#"ExtraBranchesMC" "bkgPdf"
+#DataSample        psi_data_bkgPdf.root:DecayTree
+#weightData        noWeight
+#IntegrationSample   SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root
 
 DataUnits	 	MeV
 Branches FullDTFCP_K_PX FullDTFCP_K_PY FullDTFCP_K_PZ FullDTFCP_K_PE FullDTFCP_pip_PX FullDTFCP_pip_PY FullDTFCP_pip_PZ FullDTFCP_pip_PE FullDTFCP_pim_PX FullDTFCP_pim_PY FullDTFCP_pim_PZ FullDTFCP_pim_PE FullDTFCP_mup_PX FullDTFCP_mup_PY FullDTFCP_mup_PZ FullDTFCP_mup_PE FullDTFCP_mum_PX FullDTFCP_mum_PY FullDTFCP_mum_PZ FullDTFCP_mum_PE
 
-weightMC		weight
+maxIntEvents       700000
+weightMC        weight
 MCUnits		 	GeV
 BranchesMC Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ piplus_PE piminus_PX piminus_PY piminus_PZ piminus_PE muplus_PX muplus_PY muplus_PZ muplus_PE muminus_PX muminus_PY muminus_PZ muminus_PE
-
-maxDataEvents       10000
-maxIntEvents		300000
 
 "Minimiser::MaxCalls"   100000
 "Minimiser::Tolerance"  1.0
 "Minimiser::PrintLevel" 1
 "Minimiser::Normalise"	1
-"nCores"        10
+"nCores"        8
 Fit::nReTries	 0
 nFits		 1
-#addAmpList  addAmpListNoExotic.txt
+addAmpList  addAmpListExotic.txt
 "randomizeStartVals"     0
 normAmps 1
 "fixParamsOptionsFile"      1
+"maxTimePerGen"         24.
 
-saveWeights 	1
+saveWeights 	0
 nBins       60
-MinEventsChi2	25
-
+MinEventsChi2	16
+"chi2Mode"   1
+            
 nPermErrorBands   0
 smoothFitProj 1
 
-"useFilter"     1
-"invertCut"     0
-"cut_dim"       0 1 2
-"cut_limits"    0. 1.6
-"invertCut2"	0
-"cut_dim2"      0 2
-"cut_limits2"	0. 1.3
-"invertCut3"	0
-"cut_dim3"      1 2
-"cut_limits3"	0. 1.
-
+"useFilter"     0
+"invertCut"     1
+"cut_dim"       0 2
+"cut_limits"    0.8 0.95
 
 #B+  K+ pi+ pi- mu+ mu-
 #-   0  1   2   3   4
+
+filter_plotN	1 3 4 5
 
 #K pi
 "invertCut_plot1"     0
@@ -67,17 +66,17 @@ smoothFitProj 1
 
 "invertCut_plot2"     1
 "cut_dim_plot2"       0 2
-"cut_limits_plot2"    0.75 1.15
+"cut_limits_plot2"    0.8 0.95
 
 #Kpipi
 "invertCut_plot3"     0
 "cut_dim_plot3"       0 1 2
-"cut_limits_plot3"    1.5 3
+"cut_limits_plot3"    1.4 2
 #"cut_limits_plot3"    1.35 2
 
 "invertCut_plot4"     1
 "cut_dim_plot4"       0 1 2
-"cut_limits_plot4"    1.5 3
+"cut_limits_plot4"    1.4 2
 
 #pipi
 "invertCut_plot5"     0
@@ -86,16 +85,16 @@ smoothFitProj 1
 
 "invertCut_plot6"     1
 "cut_dim_plot6"       1 2
-"cut_limits_plot6"    0.6 0.95
+"cut_limits_plot6"    0.6 0.85
 
 #K pi
 "invertCut_plot7"     0
 "cut_dim_plot7"       0 2
-"cut_limits_plot7"    1.2 3
+"cut_limits_plot7"    1. 3
 
 "invertCut_plot8"     1
 "cut_dim_plot8"       0 2
-"cut_limits_plot8"    1.2 3
+"cut_limits_plot8"    1. 3
 
 #psipipi
 "invertCut_plot9"     0
@@ -106,19 +105,19 @@ smoothFitProj 1
 "cut_dim_plot10"       1 2 3 4
 "cut_limits_plot10"    4.55 6
 
-#pipi
+#psipi
 "invertCut_plot11"     0
-"cut_dim_plot11"       1 2
-"cut_limits_plot11"    1.1 2
+"cut_dim_plot11"       1 3 4
+"cut_limits_plot11"    4.1 4.3
 
 "invertCut_plot12"     1
-"cut_dim_plot12"       1 2
-"cut_limits_plot12"    1.1 2
+"cut_dim_plot12"       1 3 4
+"cut_limits_plot12"    4.1 4.3
 
 
-"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ NonRes Z(_Z2( Zs(_Zs2( X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9( Xs(_Xs2(_Xs3(_Xs4(
+"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ NonRes Z(_Z2(_Z3( Zs(_Zs2(_Zs3( X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9( Xs(_Xs2(_Xs3(_Xs4(
 "plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6 weight_7 weight_8
-"plot_legend" "Data" "Fit" "#it{B#rightarrow}J/#psi#it{K}_{1}" "#it{B}#rightarrowJ/#psi#it{K^{*}}" "#it{B}#rightarrowJ/#psi#it{K/K}_{2}" "#it{B#rightarrow}NonRes" "#it{B#rightarrowZK#pi}" "#it{B#rightarrowZ_{s}#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowX_{s}#pi}" 
+"plot_legend" "Data" "Fit" "#it{B#rightarrow}#psi(2S)#it{K}_{1}" "#it{B}#rightarrow#psi(2S)#it{K^{*}}" "#it{B}#rightarrow#psi(2S)#it{K/K}_{2}" "#it{B#rightarrow}NonRes" "#it{B#rightarrowZK#pi}" "#it{B#rightarrowZ_{s}#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowX_{s}#pi}" 
 
 #"plot_amps"   K*(892)0 rho(770)0 Z(
 #"plot_weights"   weight_1 weight_2 weight_3
@@ -127,6 +126,7 @@ smoothFitProj 1
 # Flag to interpret complex numbers are (amp,phase) rather than real/imaginary, and angles in deg rather than rad.
 CouplingConstant::Coordinates  polar
 CouplingConstant::AngularUnits deg 
+
 Type PolarisedSum
 "PolarisedSum::InterferenceFractions"  true
 #Particle::SpinBasis Weyl
@@ -147,27 +147,27 @@ Type PolarisedSum
 #f_sig       2  1.0 0.001
 #f_bkg       2  0.0 0.001
 
-f_bkg       2  0.02 0.005
+f_bkg       2  0.0293 0.005
 f_sig       = 1 - f_bkg
 
-Inco_B+[Bkg;BgSpin0]{J/psi0,K+,pi+,pi-}  2 1 0 0 10    2 0 0 -360 360
+Inco_B+[Bkg;BgSpin0]{psi(2S)0,K+,pi+,pi-}  2 1 0 0 10    2 0 0 -360 360
 Bkg_a_cosTheta  2 0.2283 0.001 0 0
-#Bkg_a_m01  2 -2.229 0.001 0 0
-#Bkg_a_m012  2 3.623 0.001 0 0
-#Bkg_a_m02  2 -2.498 0.001 0 0
-#Bkg_a_m12  2 -2.473 0.001 0 0
-#Bkg_a_m340  2 9.786 0.001 0 0
-#Bkg_a_m3401  2 -9.092 0.001 0 0
-#Bkg_a_m3402  2 -6.301 0.001 0 0
-#Bkg_a_m341  2 5.588 0.001 0 0
-#Bkg_a_m3412  2 -2.634 0.001 0 0
-#Bkg_a_m342  2 3.101 0.001 0 0
+Bkg_a_m01  2 -2.229 0.001 0 0
+Bkg_a_m012  2 3.623 0.001 0 0
+Bkg_a_m02  2 -2.498 0.001 0 0
+Bkg_a_m12  2 -2.473 0.001 0 0
+Bkg_a_m340  2 9.786 0.001 0 0
+Bkg_a_m3401  2 -9.092 0.001 0 0
+Bkg_a_m3402  2 -6.301 0.001 0 0
+Bkg_a_m341  2 5.588 0.001 0 0
+Bkg_a_m3412  2 -2.634 0.001 0 0
+Bkg_a_m342  2 3.101 0.001 0 0
 Bkg_b_cosTheta  2 -0.007668 0.001 0 0
-#Bkg_b_m340  2 -6.988 0.001 0 0
-#Bkg_b_m3412  2 -4.019 0.001 0 0
+Bkg_b_m340  2 -6.988 0.001 0 0
+Bkg_b_m3412  2 -4.019 0.001 0 0
 Bkg_c_cosTheta  2 -0.8861 0.001 0 0
-#Bkg_c_m340  2 1.711 0.001 0 0
-#Bkg_c_m3412  2 1.151 0.001 0 0
+Bkg_c_m340  2 1.711 0.001 0 0
+Bkg_c_m3412  2 1.151 0.001 0 0
 
 ## Resonance parameters
 ## --------------------
@@ -183,19 +183,25 @@ K*(892)0_radius    1     3.0       0.5
 
 rho(770)0_mass      1    0.77526    0.00023
 rho(770)0_width     1     0.1474    0.0008
+rho(770)0_radius    1     1.5    0.0001
 omega(782)0_mass    1     0.78266    0.00013
 omega(782)0_width   1     0.00868    0.00013
 
 rhoOmega10_mass  =  rho(770)0_mass    
 rhoOmega10_width =  rho(770)0_width    
+rhoOmega10_radius =  rho(770)0_radius
 rhoOmega20_mass  =  rho(770)0_mass    
 rhoOmega20_width =  rho(770)0_width    
+rhoOmega20_radius =  rho(770)0_radius
 rhoOmega30_mass  =  rho(770)0_mass    
 rhoOmega30_width =  rho(770)0_width    
+rhoOmega30_radius =  rho(770)0_radius
 rhoOmega40_mass  =  rho(770)0_mass    
 rhoOmega40_width =  rho(770)0_width    
+rhoOmega40_radius =  rho(770)0_radius
 rhoOmega50_mass  =  rho(770)0_mass    
 rhoOmega50_width =  rho(770)0_width
+rhoOmega50_radius =  rho(770)0_radius
 
 rhoOmega10[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
 rhoOmega20[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
@@ -203,8 +209,8 @@ rhoOmega30[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0
 rhoOmega40[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
 rhoOmega50[GounarisSakurai.Omega]{pi+,pi-}     1 1.0 0.000         1 0.0 0.0  
 
-#rhoOmega10_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
-#rhoOmega10_deltaOmegaPhase   0   -12.6 0.001 -180 180
+rhoOmega10_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
+rhoOmega10_deltaOmegaPhase   2   -12.6 0.001 -180 180
 #rhoOmega20_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
 #rhoOmega20_deltaOmegaPhase   2   -12.6 0.001 -180 180
 #rhoOmega30_deltaOmegaAmp     2   0.00157 0.0001 0 0.01
@@ -258,6 +264,9 @@ K(2)(1770)+_mass          2               1.773      0.008  1.5 1.8
 K(2)(1770)+_width         2               0.186      0.014  0.05 0.4
 K(2)(1770)+_radius        2               1.5        0.00000
 
+K(1830)+_mass  2 1.874 0 1.38 1.55
+K(1830)+_width  2 0.168 0 0.05 0.35
+
 ## X resonances
 ##
 
@@ -282,8 +291,8 @@ X(4274)0_width  2 0.051 0.007  0.01  0.5
 X(4350)S0_mass   2 4.351 0.005  4 4.6
 X(4350)S0_width  2 0.013 0.018  0.01  0.5
 
-X(4350)P0_mass   2 4.351 0.005  4 4.6
-X(4350)P0_width  2 0.013 0.018  0.01  0.5
+X(4350)T0_mass   2 4.351 0.005  4 4.6
+X(4350)T0_width  2 0.013 0.018  0.01  0.5
 
 X(4350)V0_mass   2 4.351 0.005  4 4.6
 X(4350)V0_width  2 0.013 0.018  0.01  0.5
@@ -413,6 +422,266 @@ Z(4430)+_width 2 0.181 0.031  0.01  0.5
 Z(4430)-_mass = Z(4430)+_mass
 Z(4430)-_width = Z(4430)+_width
 
+
+Zs(4000)+_mass   2 4.003 0.011  4.2 4.8
+Zs(4000)+_width  2 0.131 0.030  0.01  0.8
+
+Zs(4220)A+_mass   2 4.216 0.045  4.15 4.8
+Zs(4220)A+_width  2 0.233 0.100  0.01  0.8
+
+Zs(4220)V+_mass   2 4.216 0.045  4.15 4.8
+Zs(4220)V+_width  2 0.233 0.100  0.01  0.8
+
+Zs(4220)P+_mass   2 4.216 0.045  4.15 4.8
+Zs(4220)P+_width  2 0.233 0.100  0.01  0.8
+
+## Generic exotics
+##
+
+X(P)0_mass     0 4.65 0.001  4.3   4.9
+X(P)0_width    0 0.200 0.010  0.010  0.550
+
+X(S)0_mass     0 4.250 0.001  4.2   4.3
+X(S)0_width    0 0.200 0.010  0.050  0.350
+X2(S)0_mass    0 4.75 0.001   4.7   4.8
+X2(S)0_width   0 0.200 0.010  0.050  0.350
+
+X(A)0_mass     0 4.325 0.001  4.15   4.55
+X(A)0_width    0 0.100 0.010  0.010  0.350
+X2(A)0_mass    0 4.800 0.001  4.75   4.9
+X2(A)0_width   0 0.100 0.005  0.020  0.250
+
+X(V)0_mass     0 4.150 0.001  4.1   4.2
+X(V)0_width    0 0.050 0.005  0.010  0.150
+X2(V)0_mass    0 4.150 0.001  4.1   4.2
+X2(V)0_width   0 0.200 0.010  0.050  0.350
+X3(V)0_mass    0 4.650 0.001  4.6   4.7
+X3(V)0_width   0 0.200 0.010  0.050  0.350
+X4(V)0_mass    0 4.700 0.001  4.65   4.75
+X4(V)0_width   0 0.200 0.010  0.050  0.350
+
+X(T)0_mass    0 4.450 0.001  4.4   4.5
+X(T)0_width   0 0.050 0.005  0.010  0.150
+X2(T)0_mass    0 4.750 0.001  4.7   4.85
+X2(T)0_width   0 0.050 0.005  0.010  0.150
+
+X(PT)0_mass   0 4.600 0.001  4.55   4.65
+X(PT)0_width  0 0.200 0.010  0.050  0.350
+X2(PT)0_mass   0 4.750 0.001  4.7   4.85
+X2(PT)0_width  0 0.050 0.005  0.010  0.150
+
+#
+X3(S)0_mass    0 4.750 0.001  4.5   5.5
+X3(S)0_width   0 0.050 0.005  0.010  0.150
+X3(P)0_mass    0 4.750 0.001  3.5   5.5
+X3(P)0_width   0 0.050 0.005  0.010  0.150
+X3(A)0_mass    0 4.750 0.001  3.5   5.5
+X3(A)0_width   0 0.050 0.005  0.010  0.150
+X3(T)0_mass    0 4.750 0.001  3.5   5.5
+X3(T)0_width   0 0.050 0.005  0.010  0.150
+X3(PT)0_mass   0 4.750 0.001  3.5   5.5
+X3(PT)0_width  0 0.050 0.005  0.010  0.150
+
+X4(S)0_mass    0 4.450 0.001  3.5   5.5
+X4(S)0_width   0 0.150 0.10  0.01  0.8
+X4(P)0_mass    0 4.450 0.001  3.5   5.5
+X4(P)0_width   0 0.150 0.10  0.01  0.8
+
+X4(A)0_mass    0 4.450 0.001  3.5   5.5
+X4(A)0_width   0 0.150 0.10  0.01  0.8
+X4(T)0_mass    0 4.450 0.001  3.5   5.5
+X4(T)0_width   0 0.150 0.10  0.01  0.8
+X4(PT)0_mass   0 4.450 0.001  3.5   5.5
+X4(PT)0_width  0 0.150 0.10  0.01  0.8
+
+X5(S)0_mass    0 4.60 0.001  3.5   5.5
+X5(S)0_width   0 0.150 0.10  0.01  0.8
+X5(P)0_mass    0 4.60 0.001  3.5   5.5
+X5(P)0_width   0 0.150 0.10  0.01  0.8
+X5(V)0_mass    0 4.60 0.001  3.5   5.5
+X5(V)0_width   0 0.150 0.10  0.01  0.8
+X5(A)0_mass    0 4.60 0.001  3.5   5.5
+X5(A)0_width   0 0.150 0.10  0.01  0.8
+X5(T)0_mass    0 4.60 0.001  3.5   5.5
+X5(T)0_width   0 0.150 0.10  0.01  0.8
+X5(PT)0_mass   0 4.60 0.001  3.5   5.5
+X5(PT)0_width  0 0.150 0.10  0.01  0.8
+
+X6(S)0_mass    0 4.750 0.001  3.5   5.5
+X6(S)0_width   0 0.050 0.005  0.010  0.150
+X6(P)0_mass    0 4.750 0.001  3.5   5.5
+X6(P)0_width   0 0.050 0.005  0.010  0.150
+X6(V)0_mass    0 4.750 0.001  3.5   5.5
+X6(V)0_width   0 0.050 0.005  0.010  0.150
+X6(A)0_mass    0 4.750 0.001  3.5   5.5
+X6(A)0_width   0 0.050 0.005  0.010  0.150
+X6(T)0_mass    0 4.750 0.001  3.5   5.5
+X6(T)0_width   0 0.050 0.005  0.010  0.150
+X6(PT)0_mass   0 4.750 0.001  3.5   5.5
+X6(PT)0_width  0 0.050 0.005  0.010  0.150
+
+X7(S)0_mass    0 4.450 0.001  3.5   5.5
+X7(S)0_width   0 0.250 0.10  0.01  0.8
+X7(P)0_mass    0 4.450 0.001  3.5   5.5
+X7(P)0_width   0 0.250 0.10  0.01  0.8
+X7(V)0_mass    0 4.450 0.001  3.5   5.5
+X7(V)0_width   0 0.250 0.10  0.01  0.8
+X7(A)0_mass    0 4.450 0.001  3.5   5.5
+X7(A)0_width   0 0.250 0.10  0.01  0.8
+X7(T)0_mass    0 4.450 0.001  3.5   5.5
+X7(T)0_width   0 0.250 0.10  0.01  0.8
+X7(PT)0_mass   0 4.450 0.001  3.5   5.5
+X7(PT)0_width  0 0.250 0.10  0.01  0.8
+
+X8(S)0_mass    0 4.60 0.001  3.5   5.5
+X8(S)0_width   0 0.250 0.10  0.01  0.8
+X8(P)0_mass    0 4.60 0.001  3.5   5.5
+X8(P)0_width   0 0.250 0.10  0.01  0.8
+X8(V)0_mass    0 4.60 0.001  3.5   5.5
+X8(V)0_width   0 0.250 0.10  0.01  0.8
+X8(A)0_mass    0 4.60 0.001  3.5   5.5
+X8(A)0_width   0 0.250 0.10  0.01  0.8
+X8(T)0_mass    0 4.60 0.001  3.5   5.5
+X8(T)0_width   0 0.250 0.10  0.01  0.8
+X8(PT)0_mass   0 4.60 0.001  3.5   5.5
+X8(PT)0_width  0 0.250 0.10  0.01  0.8
+
+X9(S)0_mass    0 4.750 0.001  3.5   5.5
+X9(S)0_width   0 0.250 0.10  0.01  0.8
+X9(P)0_mass    0 4.750 0.001  3.5   5.5
+X9(P)0_width   0 0.250 0.10  0.01  0.8
+X9(V)0_mass    0 4.750 0.001  3.5   5.5
+X9(V)0_width   0 0.250 0.10  0.01  0.8
+X9(A)0_mass    0 4.750 0.001  3.5   5.5
+X9(A)0_width   0 0.250 0.10  0.01  0.8
+X9(T)0_mass    0 4.750 0.001  3.5   5.5
+X9(T)0_width   0 0.250 0.10  0.01  0.8
+X9(PT)0_mass   0 4.750 0.001  3.5   5.5
+X9(PT)0_width  0 0.250 0.10  0.01  0.8
+#
+
+Xs(S)0_mass     0 4.400 0.001  4.35   4.45
+Xs(S)0_width    0 0.050 0.005  0.010  0.150
+Xs2(S)0_mass    0 4.600 0.001  4.55   4.65
+Xs2(S)0_width   0 0.050 0.005  0.010  0.150
+Xs3(S)0_mass    0 4.850 0.001  4.8   4.95
+Xs3(S)0_width   0 0.050 0.005  0.010  0.150
+Xs4(S)0_mass    0 5.000 0.001  4.95   5.1
+Xs4(S)0_width   0 0.200 0.010  0.050  0.350
+
+Xs(A)0_mass     0 4.600 0.001  4.65   4.65
+Xs(A)0_width    0 0.200 0.010  0.050  0.350
+Xs2(A)0_mass    0 4.900 0.001  4.85   5.
+Xs2(A)0_width   0 0.200 0.010  0.050  0.350
+Xs3(A)0_mass    0 5.100 0.001  5.   5.15
+Xs3(A)0_width   0 0.100 0.005  0.020  0.250
+
+Xs(V)0_mass     0 4.850 0.001  4.8   4.95
+Xs(V)0_width    0 0.050 0.005  0.010  0.150
+Xs2(V)0_mass    0 5.100 0.001  5.   5.15
+Xs2(V)0_width   0 0.200 0.010  0.050  0.350
+
+Xs(T)0_mass     0 4.900 0.001  4.85   5.
+Xs(T)0_width    0 0.050 0.005  0.010  0.150
+Xs2(T)0_mass    0 5.100 0.001  5.   5.2
+Xs2(T)0_width   0 0.100 0.005  0.020  0.250
+
+Xs(PT)0_mass    0 4.550 0.001  4.5   4.6
+Xs(PT)0_width   0 0.200 0.010  0.050  0.350
+Xs2(PT)0_mass   0 4.950 0.001  4.9   5.1
+Xs2(PT)0_width  0 0.050 0.005  0.010  0.150
+Xs3(PT)0_mass   0 5.250 0.001  5.1   5.3
+Xs3(PT)0_width  0 0.100 0.005  0.020  0.250
+
+#
+Xs3(V)0_mass    0 4.600 0.001  3.5   5.5
+Xs3(V)0_width   0 0.200 0.010  0.050  0.350
+Xs3(T)0_mass    0 4.600 0.001  3.5   5.5
+Xs3(T)0_width   0 0.200 0.010  0.050  0.350
+
+Xs4(V)0_mass    0 4.900 0.001  3.5   5.5
+Xs4(V)0_width   0 0.200 0.010  0.050  0.350
+Xs4(A)0_mass    0 4.900 0.001  3.5   5.5
+Xs4(A)0_width   0 0.200 0.010  0.050  0.350
+Xs4(T)0_mass    0 4.900 0.001  3.5   5.5
+Xs4(T)0_width   0 0.200 0.010  0.050  0.350
+Xs4(PT)0_mass   0 4.900 0.001  3.5   5.5
+Xs4(PT)0_width  0 0.200 0.010  0.050  0.350
+#
+
+Z(P)+_mass     0 4.050 0.001  3.95   4.35
+Z(P)+_width    0 0.200 0.010  0.010  0.550
+Z2(P)+_mass    0 4.600 0.001  4.4   5.0
+Z2(P)+_width   0 0.060 0.010  0.010  0.350
+Z3(P)+_mass    0 4.400 0.001  4.35   4.45
+Z3(P)+_width   0 0.200 0.010  0.050  0.350
+Z4(P)+_mass    0 4.600 0.001  4.55   4.65
+Z4(P)+_width   0 0.200 0.010  0.050  0.350
+
+Z(A)+_mass     0 3.900 0.001  3.15   4.05
+Z(A)+_width    0 0.200 0.005  0.010  0.550
+Z2(A)+_mass    0 4.100 0.001  4.05   5
+Z2(A)+_width   0 0.200 0.005  0.010  0.550
+Z3(A)+_mass    0 4.250 0.001  4.2   5.5
+Z3(A)+_width   0 0.100 0.005  0.020  0.250
+
+Z(V)+_mass     0 4.550 0.001  3.85   4.95
+Z(V)+_width    0 0.200 0.005  0.020  0.650
+Z2(V)+_mass    0 4.450 0.001  4.4  4.5
+Z2(V)+_width   0 0.200 0.010  0.050  0.350
+Z3(V)+_mass    0 4.250 0.001  3.5   5.5
+Z3(V)+_width   0 0.100 0.005  0.020  0.250
+
+Z(T)+_mass     0 3.95  0.001  4.   4.2
+Z(T)+_width    0 0.200 0.010  0.050  0.550
+Z2(T)+_mass    0 4.400 0.001  4.35   4.45
+Z2(T)+_width   0 0.200 0.010  0.050  0.350
+Z3(T)+_mass    0 4.250 0.001  3.5   5.5
+Z3(T)+_width   0 0.100 0.005  0.020  0.250
+
+Z(PT)+_mass     0 4.500 0.001  4.05   5.15
+Z(PT)+_width    0 0.150 0.010  0.050  0.650
+Z2(PT)+_mass   0 4.250 0.001  4.2   4.3
+Z2(PT)+_width  0 0.100 0.005  0.020  0.250
+Z3(PT)+_mass   0 4.250 0.001  3.5   5.5
+Z3(PT)+_width  0 0.100 0.005  0.020  0.250
+
+Zs(P)+_mass     0 4.450 0.001  3.95   4.8
+Zs(P)+_width    0 0.200 0.010  0.010  0.550
+Zs2(P)+_mass    0 4.900 0.001  4.2   5.4
+Zs2(P)+_width   0 0.200 0.010  0.010  0.600
+Zs3(P)+_mass    0 4.750 0.001  4.65   4.85
+Zs3(P)+_width   0 0.100 0.005  0.020  0.250
+
+Zs(A)+_mass     0 4.500 0.001  4.   4.75
+Zs(A)+_width    0 0.200 0.010  0.010  0.650
+Zs2(A)+_mass    0 4.450 0.001  4.35   4.55
+Zs2(A)+_width   0 0.200 0.010  0.050  0.350
+Zs3(A)+_mass    0 4.900 0.001  4.85   5.
+Zs3(A)+_width   0 0.200 0.010  0.050  0.350
+
+Zs(V)+_mass     0 4.300 0.001  4.   4.5
+Zs(V)+_width    0 0.200 0.010  0.010  0.350
+Zs2(V)+_mass    0 4.900 0.001  4.2   5.4
+Zs2(V)+_width   0 0.200 0.010  0.010  0.350
+Zs3(V)+_mass    0 4.850 0.001  4.75   5.
+Zs3(V)+_width   0 0.050 0.005  0.010  0.150
+
+Zs(T)+_mass     0 4.450 0.001  3.95   4.75
+Zs(T)+_width    0 0.200 0.010  0.050  0.550
+Zs2(T)+_mass    0 4.850 0.001  4.2   5.4
+Zs2(T)+_width   0 0.100 0.010  0.050  0.550
+Zs3(T)+_mass    0 4.800 0.001  4.75   5.
+Zs3(T)+_width   0 0.200 0.010  0.050  0.350
+
+Zs(PT)+_mass    0 4.450 0.001  3.9   4.75
+Zs(PT)+_width   0 0.200 0.010  0.010  0.550
+Zs2(PT)+_mass   0 4.850 0.001  4.2   4.4
+Zs2(PT)+_width  0 0.100 0.010  0.010  0.550
+Zs3(PT)+_mass   0 4.850 0.001  4.75   5.
+Zs3(PT)+_width  0 0.100 0.005  0.020  0.250
+
+
 Z(P)-_mass = Z(P)+_mass
 Z(P)-_width = Z(P)+_width
 Z2(P)-_mass = Z2(P)+_mass
@@ -486,276 +755,35 @@ Zs2(PT)-_width = Zs2(PT)+_width
 Zs3(PT)-_mass = Zs3(PT)+_mass
 Zs3(PT)-_width = Zs3(PT)+_width
 
-Zs(4000)+_mass   2 4.003 0.011  4.2 4.8
-Zs(4000)+_width  2 0.131 0.030  0.01  0.8
-
-Zs(4220)A+_mass   2 4.216 0.045  4.15 4.8
-Zs(4220)A+_width  2 0.233 0.100  0.01  0.8
-
-Zs(4220)V+_mass   2 4.216 0.045  4.15 4.8
-Zs(4220)V+_width  2 0.233 0.100  0.01  0.8
-
-Zs(4220)P+_mass   2 4.216 0.045  4.15 4.8
-Zs(4220)P+_width  2 0.233 0.100  0.01  0.8
-
-## Generic exotics
-##
-
-X(S)0_mass    0 4.450 0.05  3.5   5.5
-X(S)0_width   0 0.050 0.10  0.01  0.8
-X(P)0_mass    0 4.450 0.05  3.5   5.5
-X(P)0_width   0 0.050 0.10  0.01  0.8
-X(V)0_mass    0 4.450 0.05  3.5   5.5
-X(V)0_width   0 0.050 0.10  0.01  0.8
-X(A)0_mass    0 4.450 0.05  3.5   5.5
-X(A)0_width   0 0.050 0.10  0.01  0.8
-X(T)0_mass    0 4.450 0.05  3.5   5.5
-X(T)0_width   0 0.050 0.10  0.01  0.8
-X(PT)0_mass   0 4.450 0.05  3.5   5.5
-X(PT)0_width  0 0.050 0.10  0.01  0.8
-
-X2(S)0_mass    0 4.60 0.05  3.5   5.5
-X2(S)0_width   0 0.050 0.10  0.01  0.8
-X2(P)0_mass    0 4.60 0.05  3.5   5.5
-X2(P)0_width   0 0.050 0.10  0.01  0.8
-X2(V)0_mass    0 4.60 0.05  3.5   5.5
-X2(V)0_width   0 0.050 0.10  0.01  0.8
-X2(A)0_mass    0 4.60 0.05  3.5   5.5
-X2(A)0_width   0 0.050 0.10  0.01  0.8
-X2(T)0_mass    0 4.60 0.05  3.5   5.5
-X2(T)0_width   0 0.050 0.10  0.01  0.8
-X2(PT)0_mass   0 4.60 0.05  3.5   5.5
-X2(PT)0_width  0 0.050 0.10  0.01  0.8
-
-X3(S)0_mass    0 4.750 0.05  3.5   5.5
-X3(S)0_width   0 0.050 0.10  0.01  0.8
-X3(P)0_mass    0 4.750 0.05  3.5   5.5
-X3(P)0_width   0 0.050 0.10  0.01  0.8
-X3(V)0_mass    0 4.750 0.05  3.5   5.5
-X3(V)0_width   0 0.050 0.10  0.01  0.8
-X3(A)0_mass    0 4.750 0.05  3.5   5.5
-X3(A)0_width   0 0.050 0.10  0.01  0.8
-X3(T)0_mass    0 4.750 0.05  3.5   5.5
-X3(T)0_width   0 0.050 0.10  0.01  0.8
-X3(PT)0_mass   0 4.750 0.05  3.5   5.5
-X3(PT)0_width  0 0.050 0.10  0.01  0.8
-
-X4(S)0_mass    0 4.450 0.05  3.5   5.5
-X4(S)0_width   0 0.150 0.10  0.01  0.8
-X4(P)0_mass    0 4.450 0.05  3.5   5.5
-X4(P)0_width   0 0.150 0.10  0.01  0.8
-X4(V)0_mass    0 4.450 0.05  3.5   5.5
-X4(V)0_width   0 0.150 0.10  0.01  0.8
-X4(A)0_mass    0 4.450 0.05  3.5   5.5
-X4(A)0_width   0 0.150 0.10  0.01  0.8
-X4(T)0_mass    0 4.450 0.05  3.5   5.5
-X4(T)0_width   0 0.150 0.10  0.01  0.8
-X4(PT)0_mass   0 4.450 0.05  3.5   5.5
-X4(PT)0_width  0 0.150 0.10  0.01  0.8
-
-X5(S)0_mass    0 4.60 0.05  3.5   5.5
-X5(S)0_width   0 0.150 0.10  0.01  0.8
-X5(P)0_mass    0 4.60 0.05  3.5   5.5
-X5(P)0_width   0 0.150 0.10  0.01  0.8
-X5(V)0_mass    0 4.60 0.05  3.5   5.5
-X5(V)0_width   0 0.150 0.10  0.01  0.8
-X5(A)0_mass    0 4.60 0.05  3.5   5.5
-X5(A)0_width   0 0.150 0.10  0.01  0.8
-X5(T)0_mass    0 4.60 0.05  3.5   5.5
-X5(T)0_width   0 0.150 0.10  0.01  0.8
-X5(PT)0_mass   0 4.60 0.05  3.5   5.5
-X5(PT)0_width  0 0.150 0.10  0.01  0.8
-
-X6(S)0_mass    0 4.750 0.05  3.5   5.5
-X6(S)0_width   0 0.050 0.10  0.01  0.8
-X6(P)0_mass    0 4.750 0.05  3.5   5.5
-X6(P)0_width   0 0.050 0.10  0.01  0.8
-X6(V)0_mass    0 4.750 0.05  3.5   5.5
-X6(V)0_width   0 0.050 0.10  0.01  0.8
-X6(A)0_mass    0 4.750 0.05  3.5   5.5
-X6(A)0_width   0 0.050 0.10  0.01  0.8
-X6(T)0_mass    0 4.750 0.05  3.5   5.5
-X6(T)0_width   0 0.050 0.10  0.01  0.8
-X6(PT)0_mass   0 4.750 0.05  3.5   5.5
-X6(PT)0_width  0 0.050 0.10  0.01  0.8
-
-X7(S)0_mass    0 4.450 0.05  3.5   5.5
-X7(S)0_width   0 0.250 0.10  0.01  0.8
-X7(P)0_mass    0 4.450 0.05  3.5   5.5
-X7(P)0_width   0 0.250 0.10  0.01  0.8
-X7(V)0_mass    0 4.450 0.05  3.5   5.5
-X7(V)0_width   0 0.250 0.10  0.01  0.8
-X7(A)0_mass    0 4.450 0.05  3.5   5.5
-X7(A)0_width   0 0.250 0.10  0.01  0.8
-X7(T)0_mass    0 4.450 0.05  3.5   5.5
-X7(T)0_width   0 0.250 0.10  0.01  0.8
-X7(PT)0_mass   0 4.450 0.05  3.5   5.5
-X7(PT)0_width  0 0.250 0.10  0.01  0.8
-
-X8(S)0_mass    0 4.60 0.05  3.5   5.5
-X8(S)0_width   0 0.250 0.10  0.01  0.8
-X8(P)0_mass    0 4.60 0.05  3.5   5.5
-X8(P)0_width   0 0.250 0.10  0.01  0.8
-X8(V)0_mass    0 4.60 0.05  3.5   5.5
-X8(V)0_width   0 0.250 0.10  0.01  0.8
-X8(A)0_mass    0 4.60 0.05  3.5   5.5
-X8(A)0_width   0 0.250 0.10  0.01  0.8
-X8(T)0_mass    0 4.60 0.05  3.5   5.5
-X8(T)0_width   0 0.250 0.10  0.01  0.8
-X8(PT)0_mass   0 4.60 0.05  3.5   5.5
-X8(PT)0_width  0 0.250 0.10  0.01  0.8
-
-X9(S)0_mass    0 4.750 0.05  3.5   5.5
-X9(S)0_width   0 0.250 0.10  0.01  0.8
-X9(P)0_mass    0 4.750 0.05  3.5   5.5
-X9(P)0_width   0 0.250 0.10  0.01  0.8
-X9(V)0_mass    0 4.750 0.05  3.5   5.5
-X9(V)0_width   0 0.250 0.10  0.01  0.8
-X9(A)0_mass    0 4.750 0.05  3.5   5.5
-X9(A)0_width   0 0.250 0.10  0.01  0.8
-X9(T)0_mass    0 4.750 0.05  3.5   5.5
-X9(T)0_width   0 0.250 0.10  0.01  0.8
-X9(PT)0_mass   0 4.750 0.05  3.5   5.5
-X9(PT)0_width  0 0.250 0.10  0.01  0.8
-
-
-Xs(S)0_mass    0 4.600 0.05  3.5   5.5
-Xs(S)0_width   0 0.050 0.10  0.01  0.8
-Xs(P)0_mass    0 4.600 0.05  3.5   5.5
-Xs(P)0_width   0 0.050 0.10  0.01  0.8
-Xs(V)0_mass    0 4.600 0.05  3.5   5.5
-Xs(V)0_width   0 0.050 0.10  0.01  0.8
-Xs(A)0_mass    0 4.600 0.05  3.5   5.5
-Xs(A)0_width   0 0.050 0.10  0.01  0.8
-Xs(T)0_mass    0 4.600 0.05  3.5   5.5
-Xs(T)0_width   0 0.050 0.10  0.01  0.8
-Xs(PT)0_mass   0 4.600 0.05  3.5   5.5
-Xs(PT)0_width  0 0.050 0.10  0.01  0.8
-
-Xs2(S)0_mass    0 4.900 0.05  3.5   5.5
-Xs2(S)0_width   0 0.050 0.10  0.01  0.8
-Xs2(P)0_mass    0 4.900 0.05  3.5   5.5
-Xs2(P)0_width   0 0.050 0.10  0.01  0.8
-Xs2(V)0_mass    0 4.900 0.05  3.5   5.5
-Xs2(V)0_width   0 0.050 0.10  0.01  0.8
-Xs2(A)0_mass    0 4.900 0.05  3.5   5.5
-Xs2(A)0_width   0 0.050 0.10  0.01  0.8
-Xs2(T)0_mass    0 4.900 0.05  3.5   5.5
-Xs2(T)0_width   0 0.050 0.10  0.01  0.8
-Xs2(PT)0_mass   0 4.900 0.05  3.5   5.5
-Xs2(PT)0_width  0 0.050 0.10  0.01  0.8
-
-Xs3(S)0_mass    0 4.600 0.05  3.5   5.5
-Xs3(S)0_width   0 0.200 0.10  0.01  0.8
-Xs3(P)0_mass    0 4.600 0.05  3.5   5.5
-Xs3(P)0_width   0 0.200 0.10  0.01  0.8
-Xs3(V)0_mass    0 4.600 0.05  3.5   5.5
-Xs3(V)0_width   0 0.200 0.10  0.01  0.8
-Xs3(A)0_mass    0 4.600 0.05  3.5   5.5
-Xs3(A)0_width   0 0.200 0.10  0.01  0.8
-Xs3(T)0_mass    0 4.600 0.05  3.5   5.5
-Xs3(T)0_width   0 0.200 0.10  0.01  0.8
-Xs3(PT)0_mass   0 4.600 0.05  3.5   5.5
-Xs3(PT)0_width  0 0.200 0.10  0.01  0.8
-
-Xs4(S)0_mass    0 4.900 0.05  3.5   5.5
-Xs4(S)0_width   0 0.200 0.10  0.01  0.8
-Xs4(P)0_mass    0 4.900 0.05  3.5   5.5
-Xs4(P)0_width   0 0.200 0.10  0.01  0.8
-Xs4(V)0_mass    0 4.900 0.05  3.5   5.5
-Xs4(V)0_width   0 0.200 0.10  0.01  0.8
-Xs4(A)0_mass    0 4.900 0.05  3.5   5.5
-Xs4(A)0_width   0 0.200 0.10  0.01  0.8
-Xs4(T)0_mass    0 4.900 0.05  3.5   5.5
-Xs4(T)0_width   0 0.200 0.10  0.01  0.8
-Xs4(PT)0_mass   0 4.900 0.05  3.5   5.5
-Xs4(PT)0_width  0 0.200 0.10  0.01  0.8
-
-Z(S)+_mass    0 4.100 0.05  3.5   5.5
-Z(S)+_width   0 0.100 0.10  0.01  0.8
-Z(P)+_mass    0 4.100 0.05  3.5   5.5
-Z(P)+_width   0 0.100 0.10  0.01  0.8
-Z(V)+_mass    0 4.100 0.05  3.5   5.5
-Z(V)+_width   0 0.100 0.10  0.01  0.8
-Z(A)+_mass    0 4.100 0.05  3.5   5.5
-Z(A)+_width   0 0.100 0.10  0.01  0.8
-Z(T)+_mass    0 4.100 0.05  3.5   5.5
-Z(T)+_width   0 0.100 0.10  0.01  0.8
-Z(PT)+_mass   0 4.100 0.05  3.5   5.5
-Z(PT)+_width  0 0.100 0.10  0.01  0.8
-
-Z2(S)+_mass    0 4.250 0.05  3.5   5.5
-Z2(S)+_width   0 0.100 0.10  0.01  0.8
-Z2(P)+_mass    0 4.250 0.05  3.5   5.5
-Z2(P)+_width   0 0.100 0.10  0.01  0.8
-Z2(V)+_mass    0 4.250 0.05  3.5   5.5
-Z2(V)+_width   0 0.100 0.10  0.01  0.8
-Z2(A)+_mass    0 4.250 0.05  3.5   5.5
-Z2(A)+_width   0 0.100 0.10  0.01  0.8
-Z2(T)+_mass    0 4.250 0.05  3.5   5.5
-Z2(T)+_width   0 0.100 0.10  0.01  0.8
-Z2(PT)+_mass   0 4.250 0.05  3.5   5.5
-Z2(PT)+_width  0 0.100 0.10  0.01  0.8
-
-Zs(S)+_mass    0 4.300 0.05  3.5   5.5
-Zs(S)+_width   0 0.100 0.10  0.01  0.8
-Zs(P)+_mass    0 4.300 0.05  3.5   5.5
-Zs(P)+_width   0 0.100 0.10  0.01  0.8
-Zs(V)+_mass    0 4.300 0.05  3.5   5.5
-Zs(V)+_width   0 0.100 0.10  0.01  0.8
-Zs(A)+_mass    0 4.300 0.05  3.5   5.5
-Zs(A)+_width   0 0.100 0.10  0.01  0.8
-Zs(T)+_mass    0 4.300 0.05  3.5   5.5
-Zs(T)+_width   0 0.100 0.10  0.01  0.8
-Zs(PT)+_mass   0 4.300 0.05  3.5   5.5
-Zs(PT)+_width  0 0.100 0.10  0.01  0.8
-
-Zs2(S)+_mass    0 4.550 0.05  3.5   5.5
-Zs2(S)+_width   0 0.100 0.10  0.01  0.8
-Zs2(P)+_mass    0 4.550 0.05  3.5   5.5
-Zs2(P)+_width   0 0.100 0.10  0.01  0.8
-Zs2(V)+_mass    0 4.550 0.05  3.5   5.5
-Zs2(V)+_width   0 0.100 0.10  0.01  0.8
-Zs2(A)+_mass    0 4.550 0.05  3.5   5.5
-Zs2(A)+_width   0 0.100 0.10  0.01  0.8
-Zs2(T)+_mass    0 4.550 0.05  3.5   5.5
-Zs4(T)+_width   0 0.100 0.10  0.01  0.8
-Zs4(PT)+_mass   0 4.550 0.05  3.5   5.5
-Zs4(PT)+_width  0 0.100 0.10  0.01  0.8
-
-
 ## Decay heads
 ## --------------------
 
-#J/psi0[None]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
-J/psi0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+#psi(2S)0[None]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+psi(2S)0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
 
-B+{J/psi0,K(1)(1270)+}           2 1.00 0.001        2 0.0 0.1 
-B+{J/psi0,K(1)(1400)+}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{J/psi0,K*(1410)+}             0 0.50 0.001 0 5    0 0.0 0.1 -360 360
-B+{K(2)*(1430)+,J/psi0}          0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{J/psi0,K(1460)+}              0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{K(2)(1580)+,J/psi0}           2 1.00 0.001        2 0.0 0.1
-B+{J/psi0,K(1630)+}              2 1.00 0.001        2 0.0 0.1
-B+{J/psi0,K(1)(1650)+}           2 1.00 0.001        2 0.0 0.1
-B+{J/psi0,K*(1680)+}             0 0.50 0.001 0 5    0 0.0 0.1 -360 360
-B+{K(2)(1770)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{K(2)(1820)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{J/psi0,K(1830)+}            2 1.00 0.001 0 2    2 0.0 0.1 -360 360
-B+{K(2)*(1980)+,J/psi0}          0 0.25 0.001 0 2    0 0.0 0.1 -360 360
-B+{K(2)(2250)+,J/psi0}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{psi(2S)0,K(1)(1270)+}           2 1.00 0.001        2 0.0 0.1 
+B+{psi(2S)0,K(1)(1400)+}           0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{psi(2S)0,K*(1410)+}             0 0.50 0.001 0 5    0 0.0 0.1 -360 360
+B+{K(2)*(1430)+,psi(2S)0}          0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{psi(2S)0,K(1460)+}              0 0.25 0.001 0 2    0 0.0 0.1 -360 360
+B+{K(2)(1580)+,psi(2S)0}           2 1.00 0.001        2 0.0 0.1
+B+{psi(2S)0,K(1630)+}              2 1.00 0.001        2 0.0 0.1
+B+{psi(2S)0,K(1)(1650)+}           2 1.00 0.001        2 0.0 0.1
+B+{psi(2S)0,K*(1680)+}             0 0.50 0.001 0 5    0 0.0 0.1 -360 360
+B+{K(2)(1770)+,psi(2S)0}           2 1.00 0.001        2 0.0 0.1
+B+{psi(2S)0,K(1830)+}              2 1.00 0.001 0 2    2 0.0 0.1 -360 360
 
 B+{psi(4160)0,K+}                  2 1.00 0.001        2 0.0 0.1
 B+{psi(4230)0,K+}                  2 1.00 0.001        2 0.0 0.1
 B+{psi(4360)0,K+}                  2 1.00 0.001        2 0.0 0.1
 B+{psi(4415)0,K+}                  2 1.00 0.001        2 0.0 0.1
-B+{psi(4660)0,K+}                  2 1.00 0.001        2 0.0 0.1
+B+{psi(4660)0,K+}       		   2 1.00 0.001        2 0.0 0.1
 
 B+{X(4140)0,K+}                    2 1.00 0.001        2 0.0 0.1
 B+{X(4160)0,K+}                    2 1.00 0.001        2 0.0 0.1
 B+{X(4274)0,K+}                    2 1.00 0.001        2 0.0 0.1
 B+{X(4350)S0,K+}                   2 1.00 0.001        2 0.0 0.1
-B+{X(4350)P0,K+}                   2 1.00 0.001        2 0.0 0.1
+#B+{X(4350)T0,K+}                   2 1.00 0.001        2 0.0 0.1
 B+{X(4350)V0,K+}                   2 1.00 0.001        2 0.0 0.1
 B+{X(4350)A0,K+}                   2 1.00 0.001        2 0.0 0.1
 B+{X(4500)0,K+}                    2 1.00 0.001        2 0.0 0.1
@@ -942,23 +970,23 @@ sA                                                3              1              
 ## KPi50 = Xs
 
 # f_pipi, f_kk
-PiPi00[kMatrix.prod.0]{pi+,pi-}                                    2 1. 0.001 0 1       2 0.0 0.1 -360 360
-PiPi00[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
+PiPi00[kMatrix.prod.0]{pi+,pi-}                                    2 1. 0.001 0 1       2 0.0 0.1 -360 360     
+PiPi00[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360      
 
-PiPi10[kMatrix.prod.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
-PiPi10[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
+PiPi10[kMatrix.prod.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360      
+PiPi10[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360      
 
 #PiPi20[kMatrix.prod.0]{pi+,pi-}                                    2 1 0.001 0 50     2 0.0 0.1 -360 360
 #PiPi20[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
 
 # beta_0, beta_1
-PiPi00[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
-PiPi00[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
-#PiPi00[kMatrix.pole.2]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
+PiPi00[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360      
+PiPi00[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360     
+#PiPi00[kMatrix.pole.2]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360     
 
-PiPi10[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
-PiPi10[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
-#PiPi10[kMatrix.pole.2]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360
+PiPi10[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360   
+PiPi10[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360    
+#PiPi10[kMatrix.pole.2]{pi+,pi-}                                    0 1 0.001 0 100     0 0.0 0.1 -360 360    
 
 #PiPi20[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
 #PiPi20[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
@@ -979,7 +1007,7 @@ PiPi40[kMatrix.prod.1]{pi+,pi-}  0 5.669 0.7626 0 50    0 -65.35 8.025 -360 360
 PiPi00_s0_prod                                                     1    -0.17    0
 PiPi10_s0_prod                                                     1    -0.17    0
 PiPi20_s0_prod                                                     1    -0.17    0
-PiPi30_s0_prod                                                     1    -0.0676736   0
+PiPi30_s0_prod                                                     1    -0.0676736   0  
 
 # Kpi
 KPi00[FOCUS.Kpi]{K+,pi-}                                2 1 0.001 0 1      2 0.0 0.1 -360 360
@@ -1279,6 +1307,92 @@ K(2)*(1430)+::Spline::Gamma::37                    2   0.349794       0
 K(2)*(1430)+::Spline::Gamma::38                    2   0.36554        0 
 K(2)*(1430)+::Spline::Gamma::39                    2   0.381134       0 
 
+# Running width for K*(1680)+ from file Histos_PsiKpipi/RunningWidth_K*(1680+.root
+K*(1680)+::Spline  40 0 4
+K*(1680)+::Spline::Gamma::0                     2   0              0 
+K*(1680)+::Spline::Gamma::1                     2   0              0 
+K*(1680)+::Spline::Gamma::2                     2   0              0 
+K*(1680)+::Spline::Gamma::3                     2   0              0 
+K*(1680)+::Spline::Gamma::4                     2   0.000216677    0 
+K*(1680)+::Spline::Gamma::5                     2   0.00461855     0 
+K*(1680)+::Spline::Gamma::6                     2   0.0111993      0 
+K*(1680)+::Spline::Gamma::7                     2   0.0185926      0 
+K*(1680)+::Spline::Gamma::8                     2   0.0262185      0 
+K*(1680)+::Spline::Gamma::9                     2   0.0338251      0 
+K*(1680)+::Spline::Gamma::10                    2   0.0414014      0 
+K*(1680)+::Spline::Gamma::11                    2   0.0495583      0 
+K*(1680)+::Spline::Gamma::12                    2   0.0591323      0 
+K*(1680)+::Spline::Gamma::13                    2   0.070205       0 
+K*(1680)+::Spline::Gamma::14                    2   0.083246       0 
+K*(1680)+::Spline::Gamma::15                    2   0.0994501      0 
+K*(1680)+::Spline::Gamma::16                    2   0.119554       0 
+K*(1680)+::Spline::Gamma::17                    2   0.141406       0 
+K*(1680)+::Spline::Gamma::18                    2   0.162602       0 
+K*(1680)+::Spline::Gamma::19                    2   0.182421       0 
+K*(1680)+::Spline::Gamma::20                    2   0.200864       0 
+K*(1680)+::Spline::Gamma::21                    2   0.218075       0 
+K*(1680)+::Spline::Gamma::22                    2   0.234198       0 
+K*(1680)+::Spline::Gamma::23                    2   0.249359       0 
+K*(1680)+::Spline::Gamma::24                    2   0.263658       0 
+K*(1680)+::Spline::Gamma::25                    2   0.277181       0 
+K*(1680)+::Spline::Gamma::26                    2   0.289998       0 
+K*(1680)+::Spline::Gamma::27                    2   0.302169       0 
+K*(1680)+::Spline::Gamma::28                    2   0.313746       0 
+K*(1680)+::Spline::Gamma::29                    2   0.324775       0 
+K*(1680)+::Spline::Gamma::30                    2   0.335296       0 
+K*(1680)+::Spline::Gamma::31                    2   0.345346       0 
+K*(1680)+::Spline::Gamma::32                    2   0.354956       0 
+K*(1680)+::Spline::Gamma::33                    2   0.364156       0 
+K*(1680)+::Spline::Gamma::34                    2   0.372972       0 
+K*(1680)+::Spline::Gamma::35                    2   0.381428       0 
+K*(1680)+::Spline::Gamma::36                    2   0.389546       0 
+K*(1680)+::Spline::Gamma::37                    2   0.397346       0 
+K*(1680)+::Spline::Gamma::38                    2   0.404848       0 
+K*(1680)+::Spline::Gamma::39                    2   0.411998       0 
+
+# Running width for K(2)(1770)+ from file Histos_PsiKpipi/RunningWidth_K(2)(1770)+.root
+K(2)(1770)+::Spline  40 0 4
+K(2)(1770)+::Spline::Gamma::0                     2   0              0 
+K(2)(1770)+::Spline::Gamma::1                     2   0              0 
+K(2)(1770)+::Spline::Gamma::2                     2   0              0 
+K(2)(1770)+::Spline::Gamma::3                     2   0              0 
+K(2)(1770)+::Spline::Gamma::4                     2   0              0 
+K(2)(1770)+::Spline::Gamma::5                     2   0              0 
+K(2)(1770)+::Spline::Gamma::6                     2   6.72585e-05    0 
+K(2)(1770)+::Spline::Gamma::7                     2   0.00252104     0 
+K(2)(1770)+::Spline::Gamma::8                     2   0.00745154     0 
+K(2)(1770)+::Spline::Gamma::9                     2   0.0138996      0 
+K(2)(1770)+::Spline::Gamma::10                    2   0.0212864      0 
+K(2)(1770)+::Spline::Gamma::11                    2   0.0292504      0 
+K(2)(1770)+::Spline::Gamma::12                    2   0.0375589      0 
+K(2)(1770)+::Spline::Gamma::13                    2   0.0460589      0 
+K(2)(1770)+::Spline::Gamma::14                    2   0.0546481      0 
+K(2)(1770)+::Spline::Gamma::15                    2   0.0632569      0 
+K(2)(1770)+::Spline::Gamma::16                    2   0.071838       0 
+K(2)(1770)+::Spline::Gamma::17                    2   0.0803591      0 
+K(2)(1770)+::Spline::Gamma::18                    2   0.0887981      0 
+K(2)(1770)+::Spline::Gamma::19                    2   0.0971403      0 
+K(2)(1770)+::Spline::Gamma::20                    2   0.105376       0 
+K(2)(1770)+::Spline::Gamma::21                    2   0.113499       0 
+K(2)(1770)+::Spline::Gamma::22                    2   0.121507       0 
+K(2)(1770)+::Spline::Gamma::23                    2   0.129398       0 
+K(2)(1770)+::Spline::Gamma::24                    2   0.137171       0 
+K(2)(1770)+::Spline::Gamma::25                    2   0.144828       0 
+K(2)(1770)+::Spline::Gamma::26                    2   0.152371       0 
+K(2)(1770)+::Spline::Gamma::27                    2   0.159801       0 
+K(2)(1770)+::Spline::Gamma::28                    2   0.16712        0 
+K(2)(1770)+::Spline::Gamma::29                    2   0.174332       0 
+K(2)(1770)+::Spline::Gamma::30                    2   0.181439       0 
+K(2)(1770)+::Spline::Gamma::31                    2   0.188445       0 
+K(2)(1770)+::Spline::Gamma::32                    2   0.195351       0 
+K(2)(1770)+::Spline::Gamma::33                    2   0.20216        0 
+K(2)(1770)+::Spline::Gamma::34                    2   0.208877       0 
+K(2)(1770)+::Spline::Gamma::35                    2   0.215502       0 
+K(2)(1770)+::Spline::Gamma::36                    2   0.22204        0 
+K(2)(1770)+::Spline::Gamma::37                    2   0.228492       0 
+K(2)(1770)+::Spline::Gamma::38                    2   0.234861       0 
+K(2)(1770)+::Spline::Gamma::39                    2   0.24115        0
+
 # Running width for K(1)(1650)+ from file Histos_PsiKpipi_v2/RunningWidth_K(1)(1650)+.root
 K(1)(1650)+::Spline  40 0 6
 K(1)(1650)+::Spline::Gamma::0                     2   0              0
@@ -1321,221 +1435,6 @@ K(1)(1650)+::Spline::Gamma::36                    2   1.30549        0
 K(1)(1650)+::Spline::Gamma::37                    2   1.37929        0
 K(1)(1650)+::Spline::Gamma::38                    2   1.45293        0
 K(1)(1650)+::Spline::Gamma::39                    2   1.52561        0
-
-# Running width for K*(1680)+ from file Histos_PsiKpipi_v2/RunningWidth_K*(1680+.root
-K*(1680)+::Spline  40 0 6
-K*(1680)+::Spline::Gamma::0                     2   0              0
-K*(1680)+::Spline::Gamma::1                     2   0              0
-K*(1680)+::Spline::Gamma::2                     2   0              0
-K*(1680)+::Spline::Gamma::3                     2   0.0026234      0
-K*(1680)+::Spline::Gamma::4                     2   0.014755       0
-K*(1680)+::Spline::Gamma::5                     2   0.029492       0
-K*(1680)+::Spline::Gamma::6                     2   0.0443923      0
-K*(1680)+::Spline::Gamma::7                     2   0.0586147      0
-K*(1680)+::Spline::Gamma::8                     2   0.0720309      0
-K*(1680)+::Spline::Gamma::9                     2   0.0849933      0
-K*(1680)+::Spline::Gamma::10                    2   0.098028       0
-K*(1680)+::Spline::Gamma::11                    2   0.11182        0
-K*(1680)+::Spline::Gamma::12                    2   0.127217       0
-K*(1680)+::Spline::Gamma::13                    2   0.144961       0
-K*(1680)+::Spline::Gamma::14                    2   0.165542       0
-K*(1680)+::Spline::Gamma::15                    2   0.189233       0
-K*(1680)+::Spline::Gamma::16                    2   0.216148       0
-K*(1680)+::Spline::Gamma::17                    2   0.246284       0
-K*(1680)+::Spline::Gamma::18                    2   0.279559       0
-K*(1680)+::Spline::Gamma::19                    2   0.315832       0
-K*(1680)+::Spline::Gamma::20                    2   0.354921       0
-K*(1680)+::Spline::Gamma::21                    2   0.396624       0
-K*(1680)+::Spline::Gamma::22                    2   0.440719       0
-K*(1680)+::Spline::Gamma::23                    2   0.486982       0
-K*(1680)+::Spline::Gamma::24                    2   0.535184       0
-K*(1680)+::Spline::Gamma::25                    2   0.585104       0
-K*(1680)+::Spline::Gamma::26                    2   0.636526       0
-K*(1680)+::Spline::Gamma::27                    2   0.689244       0
-K*(1680)+::Spline::Gamma::28                    2   0.743061       0
-K*(1680)+::Spline::Gamma::29                    2   0.797795       0
-K*(1680)+::Spline::Gamma::30                    2   0.853274       0
-K*(1680)+::Spline::Gamma::31                    2   0.90934        0
-K*(1680)+::Spline::Gamma::32                    2   0.965846       0
-K*(1680)+::Spline::Gamma::33                    2   1.02266        0
-K*(1680)+::Spline::Gamma::34                    2   1.07965        0
-K*(1680)+::Spline::Gamma::35                    2   1.13672        0
-K*(1680)+::Spline::Gamma::36                    2   1.19376        0
-K*(1680)+::Spline::Gamma::37                    2   1.25068        0
-K*(1680)+::Spline::Gamma::38                    2   1.3074         0
-K*(1680)+::Spline::Gamma::39                    2   1.3633         0
-
-# Running width for K(2)(1770)+ from file Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root
-K(2)(1770)+::Spline  40 0 6
-K(2)(1770)+::Spline::Gamma::0                     2   0              0
-K(2)(1770)+::Spline::Gamma::1                     2   0              0
-K(2)(1770)+::Spline::Gamma::2                     2   0              0
-K(2)(1770)+::Spline::Gamma::3                     2   0              0
-K(2)(1770)+::Spline::Gamma::4                     2   6.73902e-05    0
-K(2)(1770)+::Spline::Gamma::5                     2   0.00474819     0
-K(2)(1770)+::Spline::Gamma::6                     2   0.0138996      0
-K(2)(1770)+::Spline::Gamma::7                     2   0.0252131      0
-K(2)(1770)+::Spline::Gamma::8                     2   0.0375589      0
-K(2)(1770)+::Spline::Gamma::9                     2   0.0503473      0
-K(2)(1770)+::Spline::Gamma::10                    2   0.0632569      0
-K(2)(1770)+::Spline::Gamma::11                    2   0.0761077      0
-K(2)(1770)+::Spline::Gamma::12                    2   0.0887981      0
-K(2)(1770)+::Spline::Gamma::13                    2   0.101272       0
-K(2)(1770)+::Spline::Gamma::14                    2   0.113499       0
-K(2)(1770)+::Spline::Gamma::15                    2   0.125467       0
-K(2)(1770)+::Spline::Gamma::16                    2   0.137171       0
-K(2)(1770)+::Spline::Gamma::17                    2   0.148614       0
-K(2)(1770)+::Spline::Gamma::18                    2   0.159801       0
-K(2)(1770)+::Spline::Gamma::19                    2   0.170739       0
-K(2)(1770)+::Spline::Gamma::20                    2   0.181439       0
-K(2)(1770)+::Spline::Gamma::21                    2   0.19191        0
-K(2)(1770)+::Spline::Gamma::22                    2   0.20216        0
-K(2)(1770)+::Spline::Gamma::23                    2   0.212201       0
-K(2)(1770)+::Spline::Gamma::24                    2   0.22204        0
-K(2)(1770)+::Spline::Gamma::25                    2   0.231687       0
-K(2)(1770)+::Spline::Gamma::26                    2   0.24115        0
-K(2)(1770)+::Spline::Gamma::27                    2   0.250438       0
-K(2)(1770)+::Spline::Gamma::28                    2   0.259558       0
-K(2)(1770)+::Spline::Gamma::29                    2   0.268517       0
-K(2)(1770)+::Spline::Gamma::30                    2   0.277322       0
-K(2)(1770)+::Spline::Gamma::31                    2   0.285981       0
-K(2)(1770)+::Spline::Gamma::32                    2   0.294497       0
-K(2)(1770)+::Spline::Gamma::33                    2   0.302879       0
-K(2)(1770)+::Spline::Gamma::34                    2   0.31113        0
-K(2)(1770)+::Spline::Gamma::35                    2   0.319256       0
-K(2)(1770)+::Spline::Gamma::36                    2   0.327263       0
-K(2)(1770)+::Spline::Gamma::37                    2   0.335153       0
-K(2)(1770)+::Spline::Gamma::38                    2   0.342932       0
-K(2)(1770)+::Spline::Gamma::39                    2   0.35053        0
-
-
-# Running width for K(2)(1820)+ from file Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root
-K(2)(1820)+::Spline  40 0 6
-K(2)(1820)+::Spline::Gamma::1                     2   0              0
-K(2)(1820)+::Spline::Gamma::2                     2   0              0
-K(2)(1820)+::Spline::Gamma::3                     2   0              0
-K(2)(1820)+::Spline::Gamma::4                     2   6.73902e-05    0
-K(2)(1820)+::Spline::Gamma::5                     2   0.00474819     0
-K(2)(1820)+::Spline::Gamma::6                     2   0.0138996      0
-K(2)(1820)+::Spline::Gamma::7                     2   0.0252131      0
-K(2)(1820)+::Spline::Gamma::8                     2   0.0375589      0
-K(2)(1820)+::Spline::Gamma::9                     2   0.0503473      0
-K(2)(1820)+::Spline::Gamma::10                    2   0.0632569      0
-K(2)(1820)+::Spline::Gamma::11                    2   0.0761077      0
-K(2)(1820)+::Spline::Gamma::12                    2   0.0887981      0
-K(2)(1820)+::Spline::Gamma::13                    2   0.101272       0
-K(2)(1820)+::Spline::Gamma::14                    2   0.113499       0
-K(2)(1820)+::Spline::Gamma::15                    2   0.125467       0
-K(2)(1820)+::Spline::Gamma::16                    2   0.137171       0
-K(2)(1820)+::Spline::Gamma::17                    2   0.148614       0
-K(2)(1820)+::Spline::Gamma::18                    2   0.159801       0
-K(2)(1820)+::Spline::Gamma::19                    2   0.170739       0
-K(2)(1820)+::Spline::Gamma::20                    2   0.181439       0
-K(2)(1820)+::Spline::Gamma::21                    2   0.19191        0
-K(2)(1820)+::Spline::Gamma::22                    2   0.20216        0
-K(2)(1820)+::Spline::Gamma::23                    2   0.212201       0
-K(2)(1820)+::Spline::Gamma::24                    2   0.22204        0
-K(2)(1820)+::Spline::Gamma::25                    2   0.231687       0
-K(2)(1820)+::Spline::Gamma::26                    2   0.24115        0
-K(2)(1820)+::Spline::Gamma::27                    2   0.250438       0
-K(2)(1820)+::Spline::Gamma::28                    2   0.259558       0
-K(2)(1820)+::Spline::Gamma::29                    2   0.268517       0
-K(2)(1820)+::Spline::Gamma::30                    2   0.277322       0
-K(2)(1820)+::Spline::Gamma::31                    2   0.285981       0
-K(2)(1820)+::Spline::Gamma::32                    2   0.294497       0
-K(2)(1820)+::Spline::Gamma::33                    2   0.302879       0
-K(2)(1820)+::Spline::Gamma::34                    2   0.31113        0
-K(2)(1820)+::Spline::Gamma::35                    2   0.319256       0
-K(2)(1820)+::Spline::Gamma::36                    2   0.327263       0
-K(2)(1820)+::Spline::Gamma::37                    2   0.335153       0
-K(2)(1820)+::Spline::Gamma::38                    2   0.342932       0
-K(2)(1820)+::Spline::Gamma::39                    2   0.35053        0
-
-# Running width for K(2)(2250)+ from file Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root
-K(2)(2250)+::Spline  40 0 6
-K(2)(2250)+::Spline::Gamma::0                     2   0              0
-K(2)(2250)+::Spline::Gamma::1                     2   0              0
-K(2)(2250)+::Spline::Gamma::2                     2   0              0
-K(2)(2250)+::Spline::Gamma::3                     2   0              0
-K(2)(2250)+::Spline::Gamma::4                     2   6.73902e-05    0
-K(2)(2250)+::Spline::Gamma::5                     2   0.00474819     0
-K(2)(2250)+::Spline::Gamma::6                     2   0.0138996      0
-K(2)(2250)+::Spline::Gamma::7                     2   0.0252131      0
-K(2)(2250)+::Spline::Gamma::8                     2   0.0375589      0
-K(2)(2250)+::Spline::Gamma::9                     2   0.0503473      0
-K(2)(2250)+::Spline::Gamma::10                    2   0.0632569      0
-K(2)(2250)+::Spline::Gamma::11                    2   0.0761077      0
-K(2)(2250)+::Spline::Gamma::12                    2   0.0887981      0
-K(2)(2250)+::Spline::Gamma::13                    2   0.101272       0
-K(2)(2250)+::Spline::Gamma::14                    2   0.113499       0
-K(2)(2250)+::Spline::Gamma::15                    2   0.125467       0
-K(2)(2250)+::Spline::Gamma::16                    2   0.137171       0
-K(2)(2250)+::Spline::Gamma::17                    2   0.148614       0
-K(2)(2250)+::Spline::Gamma::18                    2   0.159801       0
-K(2)(2250)+::Spline::Gamma::19                    2   0.170739       0
-K(2)(2250)+::Spline::Gamma::20                    2   0.181439       0
-K(2)(2250)+::Spline::Gamma::21                    2   0.19191        0
-K(2)(2250)+::Spline::Gamma::22                    2   0.20216        0
-K(2)(2250)+::Spline::Gamma::23                    2   0.212201       0
-K(2)(2250)+::Spline::Gamma::24                    2   0.22204        0
-K(2)(2250)+::Spline::Gamma::25                    2   0.231687       0
-K(2)(2250)+::Spline::Gamma::26                    2   0.24115        0
-K(2)(2250)+::Spline::Gamma::27                    2   0.250438       0
-K(2)(2250)+::Spline::Gamma::28                    2   0.259558       0
-K(2)(2250)+::Spline::Gamma::29                    2   0.268517       0
-K(2)(2250)+::Spline::Gamma::30                    2   0.277322       0
-K(2)(2250)+::Spline::Gamma::31                    2   0.285981       0
-K(2)(2250)+::Spline::Gamma::32                    2   0.294497       0
-K(2)(2250)+::Spline::Gamma::33                    2   0.302879       0
-K(2)(2250)+::Spline::Gamma::34                    2   0.31113        0
-K(2)(2250)+::Spline::Gamma::35                    2   0.319256       0
-K(2)(2250)+::Spline::Gamma::36                    2   0.327263       0
-K(2)(2250)+::Spline::Gamma::37                    2   0.335153       0
-K(2)(2250)+::Spline::Gamma::38                    2   0.342932       0
-K(2)(2250)+::Spline::Gamma::39                    2   0.35053        0
-
-# Running width for K(2)*(1980)+ from file Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root
-K(2)*(1980)+::Spline  40 0 6
-K(2)*(1980)+::Spline::Gamma::0                     2   0              0
-K(2)*(1980)+::Spline::Gamma::1                     2   0              0
-K(2)*(1980)+::Spline::Gamma::2                     2   0              0
-K(2)*(1980)+::Spline::Gamma::3                     2   0              0
-K(2)*(1980)+::Spline::Gamma::4                     2   6.73902e-05    0
-K(2)*(1980)+::Spline::Gamma::5                     2   0.00474819     0
-K(2)*(1980)+::Spline::Gamma::6                     2   0.0138996      0
-K(2)*(1980)+::Spline::Gamma::7                     2   0.0252131      0
-K(2)*(1980)+::Spline::Gamma::8                     2   0.0375589      0
-K(2)*(1980)+::Spline::Gamma::9                     2   0.0503473      0
-K(2)*(1980)+::Spline::Gamma::10                    2   0.0632569      0
-K(2)*(1980)+::Spline::Gamma::11                    2   0.0761077      0
-K(2)*(1980)+::Spline::Gamma::12                    2   0.0887981      0
-K(2)*(1980)+::Spline::Gamma::13                    2   0.101272       0
-K(2)*(1980)+::Spline::Gamma::14                    2   0.113499       0
-K(2)*(1980)+::Spline::Gamma::15                    2   0.125467       0
-K(2)*(1980)+::Spline::Gamma::16                    2   0.137171       0
-K(2)*(1980)+::Spline::Gamma::17                    2   0.148614       0
-K(2)*(1980)+::Spline::Gamma::18                    2   0.159801       0
-K(2)*(1980)+::Spline::Gamma::19                    2   0.170739       0
-K(2)*(1980)+::Spline::Gamma::20                    2   0.181439       0
-K(2)*(1980)+::Spline::Gamma::21                    2   0.19191        0
-K(2)*(1980)+::Spline::Gamma::22                    2   0.20216        0
-K(2)*(1980)+::Spline::Gamma::23                    2   0.212201       0
-K(2)*(1980)+::Spline::Gamma::24                    2   0.22204        0
-K(2)*(1980)+::Spline::Gamma::25                    2   0.231687       0
-K(2)*(1980)+::Spline::Gamma::26                    2   0.24115        0
-K(2)*(1980)+::Spline::Gamma::27                    2   0.250438       0
-K(2)*(1980)+::Spline::Gamma::28                    2   0.259558       0
-K(2)*(1980)+::Spline::Gamma::29                    2   0.268517       0
-K(2)*(1980)+::Spline::Gamma::30                    2   0.277322       0
-K(2)*(1980)+::Spline::Gamma::31                    2   0.285981       0
-K(2)*(1980)+::Spline::Gamma::32                    2   0.294497       0
-K(2)*(1980)+::Spline::Gamma::33                    2   0.302879       0
-K(2)*(1980)+::Spline::Gamma::34                    2   0.31113        0
-K(2)*(1980)+::Spline::Gamma::35                    2   0.319256       0
-K(2)*(1980)+::Spline::Gamma::36                    2   0.327263       0
-K(2)*(1980)+::Spline::Gamma::37                    2   0.335153       0
-K(2)*(1980)+::Spline::Gamma::38                    2   0.342932       0
-K(2)*(1980)+::Spline::Gamma::39                    2   0.35053        0
 
 # Running width for K(1830)+ from file Histos_PsiKpipi_v2/RunningWidth_K(1830)+_phsp.root
 K(1830)+::Spline  40 0 6
@@ -1967,48 +1866,48 @@ X(4350)S0::Spline::Gamma::37                    2   0.160367       0
 X(4350)S0::Spline::Gamma::38                    2   0.164415       0 
 X(4350)S0::Spline::Gamma::39                    2   0.168256       0 
 
-# Running width for X(4350)P0 from file Histos_PsiKpipi/RunningWidth_X2rhophi.root
-X(4350)P0::Spline  40 16 25
-X(4350)P0::Spline::Gamma::0                     2   1.18929e-07    0 
-X(4350)P0::Spline::Gamma::1                     2   8.60029e-07    0 
-X(4350)P0::Spline::Gamma::2                     2   3.10422e-06    0 
-X(4350)P0::Spline::Gamma::3                     2   8.21858e-06    0 
-X(4350)P0::Spline::Gamma::4                     2   1.82701e-05    0 
-X(4350)P0::Spline::Gamma::5                     2   0.00138829     0 
-X(4350)P0::Spline::Gamma::6                     2   0.00384789     0 
-X(4350)P0::Spline::Gamma::7                     2   0.00668475     0 
-X(4350)P0::Spline::Gamma::8                     2   0.00969083     0 
-X(4350)P0::Spline::Gamma::9                     2   0.0127758      0 
-X(4350)P0::Spline::Gamma::10                    2   0.0159062      0 
-X(4350)P0::Spline::Gamma::11                    2   0.0190871      0 
-X(4350)P0::Spline::Gamma::12                    2   0.0223607      0 
-X(4350)P0::Spline::Gamma::13                    2   0.0258173      0 
-X(4350)P0::Spline::Gamma::14                    2   0.0296196      0 
-X(4350)P0::Spline::Gamma::15                    2   0.0340314      0 
-X(4350)P0::Spline::Gamma::16                    2   0.0393809      0 
-X(4350)P0::Spline::Gamma::17                    2   0.0458274      0 
-X(4350)P0::Spline::Gamma::18                    2   0.0530859      0 
-X(4350)P0::Spline::Gamma::19                    2   0.0606384      0 
-X(4350)P0::Spline::Gamma::20                    2   0.0681135      0 
-X(4350)P0::Spline::Gamma::21                    2   0.0753455      0 
-X(4350)P0::Spline::Gamma::22                    2   0.082284       0 
-X(4350)P0::Spline::Gamma::23                    2   0.0889274      0 
-X(4350)P0::Spline::Gamma::24                    2   0.0952914      0 
-X(4350)P0::Spline::Gamma::25                    2   0.101397       0 
-X(4350)P0::Spline::Gamma::26                    2   0.107265       0 
-X(4350)P0::Spline::Gamma::27                    2   0.112914       0 
-X(4350)P0::Spline::Gamma::28                    2   0.118362       0 
-X(4350)P0::Spline::Gamma::29                    2   0.123624       0 
-X(4350)P0::Spline::Gamma::30                    2   0.128713       0 
-X(4350)P0::Spline::Gamma::31                    2   0.133642       0 
-X(4350)P0::Spline::Gamma::32                    2   0.138422       0 
-X(4350)P0::Spline::Gamma::33                    2   0.14306        0 
-X(4350)P0::Spline::Gamma::34                    2   0.147567       0 
-X(4350)P0::Spline::Gamma::35                    2   0.151949       0 
-X(4350)P0::Spline::Gamma::36                    2   0.156214       0 
-X(4350)P0::Spline::Gamma::37                    2   0.160367       0 
-X(4350)P0::Spline::Gamma::38                    2   0.164415       0 
-X(4350)P0::Spline::Gamma::39                    2   0.168256       0 
+# Running width for X(4350)T0 from file Histos_PsiKpipi/RunningWidth_X2rhophi.root
+X(4350)T0::Spline  40 16 25
+X(4350)T0::Spline::Gamma::0                     2   1.18929e-07    0 
+X(4350)T0::Spline::Gamma::1                     2   8.60029e-07    0 
+X(4350)T0::Spline::Gamma::2                     2   3.10422e-06    0 
+X(4350)T0::Spline::Gamma::3                     2   8.21858e-06    0 
+X(4350)T0::Spline::Gamma::4                     2   1.82701e-05    0 
+X(4350)T0::Spline::Gamma::5                     2   0.00138829     0 
+X(4350)T0::Spline::Gamma::6                     2   0.00384789     0 
+X(4350)T0::Spline::Gamma::7                     2   0.00668475     0 
+X(4350)T0::Spline::Gamma::8                     2   0.00969083     0 
+X(4350)T0::Spline::Gamma::9                     2   0.0127758      0 
+X(4350)T0::Spline::Gamma::10                    2   0.0159062      0 
+X(4350)T0::Spline::Gamma::11                    2   0.0190871      0 
+X(4350)T0::Spline::Gamma::12                    2   0.0223607      0 
+X(4350)T0::Spline::Gamma::13                    2   0.0258173      0 
+X(4350)T0::Spline::Gamma::14                    2   0.0296196      0 
+X(4350)T0::Spline::Gamma::15                    2   0.0340314      0 
+X(4350)T0::Spline::Gamma::16                    2   0.0393809      0 
+X(4350)T0::Spline::Gamma::17                    2   0.0458274      0 
+X(4350)T0::Spline::Gamma::18                    2   0.0530859      0 
+X(4350)T0::Spline::Gamma::19                    2   0.0606384      0 
+X(4350)T0::Spline::Gamma::20                    2   0.0681135      0 
+X(4350)T0::Spline::Gamma::21                    2   0.0753455      0 
+X(4350)T0::Spline::Gamma::22                    2   0.082284       0 
+X(4350)T0::Spline::Gamma::23                    2   0.0889274      0 
+X(4350)T0::Spline::Gamma::24                    2   0.0952914      0 
+X(4350)T0::Spline::Gamma::25                    2   0.101397       0 
+X(4350)T0::Spline::Gamma::26                    2   0.107265       0 
+X(4350)T0::Spline::Gamma::27                    2   0.112914       0 
+X(4350)T0::Spline::Gamma::28                    2   0.118362       0 
+X(4350)T0::Spline::Gamma::29                    2   0.123624       0 
+X(4350)T0::Spline::Gamma::30                    2   0.128713       0 
+X(4350)T0::Spline::Gamma::31                    2   0.133642       0 
+X(4350)T0::Spline::Gamma::32                    2   0.138422       0 
+X(4350)T0::Spline::Gamma::33                    2   0.14306        0 
+X(4350)T0::Spline::Gamma::34                    2   0.147567       0 
+X(4350)T0::Spline::Gamma::35                    2   0.151949       0 
+X(4350)T0::Spline::Gamma::36                    2   0.156214       0 
+X(4350)T0::Spline::Gamma::37                    2   0.160367       0 
+X(4350)T0::Spline::Gamma::38                    2   0.164415       0 
+X(4350)T0::Spline::Gamma::39                    2   0.168256       0 
 
 # Running width for X(4350)V0 from file Histos_PsiKpipi/RunningWidth_X2rhophi.root
 X(4350)V0::Spline  40 16 25

@@ -45,7 +45,7 @@ endif
 #workday      = 8 hours
 #tomorrow     = 1 day
 
-+JobFlavour = "longlunch"
++JobFlavour = "microcentury"
 #+MaxDuration = 300
 #request_memory = 8096
 request_cpus   = 2
@@ -57,9 +57,12 @@ request_disk   = 800000
 #stream_output = True
 #stream_error = True
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(INDIR)/$(LIST), $(INDIR)/$(OPTIONFILE), psi_data_bkgPdf.root, SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, mass_width.csv, MintDalitzSpecialParticles.csv
-arguments = $(Process) main_psi.txt $(OPTIONFILE)
- 
+#transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(INDIR)/$(LIST), $(INDIR)/$(OPTIONFILE), psi_data_bkgPdf.root, SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, mass_width.csv, MintDalitzSpecialParticles.csv
+#arguments = $(Process) main_psi.txt $(OPTIONFILE)
+
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi_oldModelSel.txt, $(INDIR)/$(LIST), $(INDIR)/$(OPTIONFILE), psi_data_reduced.root, SignalIntegrationEvents_Acc.root, mass_width.csv, MintDalitzSpecialParticles.csv
+
+arguments = $(Process) main_psi_oldModelSel.txt $(OPTIONFILE)
 
 #input      = $(OPTIONFILE)
 output      = $(OUTDIR)/out_$(Process).out

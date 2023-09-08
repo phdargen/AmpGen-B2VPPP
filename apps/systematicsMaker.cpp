@@ -731,6 +731,8 @@ void analyzeResults(){
             
         if( allPars[i]->name().find( "_Re" ) != string::npos || allPars[i]->name().find( "_Im" ) != string::npos ) continue;
         
+        double scale = 1;
+        if( allPars[i]->name().find( "_mass" ) != string::npos || allPars[i]->name().find( "_width" ) != string::npos )scale=1000.;
         altModelsFile << fixed << setprecision(1) << "$" << starterFit.latexName(allPars[i]->name()) << "$ " ;
                 
         for(int j=0;j<allModelFits.size();j++){
@@ -740,8 +742,8 @@ void analyzeResults(){
 
             for(auto &p : params_j){
                 if(p->name()==allPars[i]->name()){
-                    altModelsFile << " & $ " << p->mean()  << " \\pm " ;
-                    altModelsFile << p->err()   ;
+                    altModelsFile << " & $ " << p->mean() * scale  << " \\pm " ;
+                    altModelsFile << p->err() * scale  ;
                     altModelsFile << " $ ";
                     foundPar = true;
                     break;

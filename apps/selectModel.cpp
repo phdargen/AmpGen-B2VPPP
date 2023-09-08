@@ -61,14 +61,15 @@ void selectModel(){
   std::string resultsFile = NamedParameter<std::string>("ResultsFile"     , "result.root", "Name of the output plot file");
   auto scanParam = NamedParameter<std::string>("scanParam", std::vector<std::string>()).getVector(); // name, min, max, nSteps
   bool isScan = (scanParam.size()==4);
-    
+  bool isParam = (scanParam.size()==3);
+
   string outDir = resultsFile;
   outDir = replaceAll(outDir,"result.root","");
   
   TChain* chain = new TChain("Result");
   chain->Add((replaceAll(resultsFile,".root","_*.root")).c_str());  
  
-  double nll, chi2, sumFractions, nSig;
+  double nll, chi2, sumFractions, nSig, par;
   unsigned status, nPar,nAmps, seed;
     
   chain->SetBranchAddress("nll",&nll);
@@ -79,7 +80,8 @@ void selectModel(){
   chain->SetBranchAddress("nAmps",&nAmps);
   chain->SetBranchAddress("nSig",&nSig);
   chain->SetBranchAddress("seed",&seed);
-        
+  if(isParam)chain->SetBranchAddress(scanParam[0].c_str(),&par);
+
   chain->GetEntry(0);
   double min_nll = nll; 
   double max_nll = nll; 
@@ -136,7 +138,9 @@ void selectModel(){
   h_chi21->SetLineColor(kBlue);  
   h_chi22->SetLineColor(kGreen);  
   h_chi23->SetLineColor(kYellow);  
-  h_chi24->SetLineColor(kOrange);  
+  h_chi24->SetLineColor(kOrange);
+    
+  TH1D * h_par = new TH1D("h_par",("; " + scanParam[0] + "; # Fits").c_str(),60, std::stod(scanParam[1]), std::stod(scanParam[2])  );
     
   double nll_vals[n];
   double sig_vals[n];
@@ -156,13 +160,16 @@ void selectModel(){
         chi2_vals[i]=chi2;
       
         if(isScan)seed_vals[i]= std::stod(scanParam[1]) + ( std::stod(scanParam[2])-std::stod(scanParam[1]) ) * (double)seed/(double)std::stoi(scanParam[3]);
+        else if(isParam)seed_vals[i]= par;
         else seed_vals[i]= seed;
+      
+        h_par->Fill(seed_vals[i]);
 
         double AIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) ;
         double BIC = (nll-min_nll) + 2. * ((double) nPar - (double) min_nPar) * log(nSig) ;
       
         cout << "seed " << seed << endl;
-        if(scanParam.size()==4) cout << "seed val " << seed_vals[i] << endl;
+        if(isScan || isParam) cout << "seed val " << seed_vals[i] << endl;
         cout << "n2ll = " << nll-min_nll << endl;
         cout << "chi2 = " << chi2 << endl;
         cout << "status = " << status << endl;
@@ -214,6 +221,9 @@ void selectModel(){
   h_chi24->Draw("hsame");
   c->Print((outDir+"chi2.pdf").c_str());
     
+  h_par->Draw("h");
+  c->Print((outDir+"h_par_" + scanParam[0] + ".pdf").c_str());
+    
   chain->GetEntry(min_i);
   cout << endl << "Best nll model: " << endl;
   cout << "with seed: " << seed << endl;
@@ -241,7 +251,8 @@ void selectModel(){
   TGraph* g_sig = new TGraph(n,seed_vals,sig_vals);
 
   if(scanParam.size()==4)g_nll->GetXaxis()->SetTitle(scanParam[0].c_str());  
-  else g_nll->GetXaxis()->SetTitle("seed"); 
+  else g_nll->GetXaxis()->SetTitle("seed");
+  g_nll->SetMaximum(120);
   g_nll->GetYaxis()->SetTitle("n2ll"); 
   g_nll->SetMarkerColor(kRed);
   g_nll->SetMarkerSize(1);
