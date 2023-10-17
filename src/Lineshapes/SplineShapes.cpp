@@ -83,14 +83,17 @@ DEFINE_LINESHAPE( FormFactorSpline )
 
 DEFINE_LINESHAPE( MIPWA )
 {
-  bool cont       = lineshapeModifier.find( "continue" ) != std::string::npos;
-  Expression real = getSpline( particleName, s / ( GeV * GeV ), "Re", dbexpressions, cont );
-  Expression imag = getSpline( particleName, s / ( GeV * GeV ), "Im", dbexpressions, cont );
+  bool cont = lineshapeModifier.find( "continue" ) != std::string::npos;
+  bool omnes = lineshapeModifier.find( "Omnes" ) != std::string::npos;
+  bool polar = lineshapeModifier.find( "Polar" ) != std::string::npos;
+    
+  Expression real = getSpline( particleName, s / ( GeV * GeV ), omnes ? lineshapeModifier + "::Re" : "Re", dbexpressions, cont );
+  Expression imag = getSpline( particleName, s / ( GeV * GeV ), omnes ? lineshapeModifier + "::Im" : "Im", dbexpressions, cont );
   ADD_DEBUG( real, dbexpressions );
   ADD_DEBUG( imag, dbexpressions );
   ADD_DEBUG( s, dbexpressions );
   Expression J = Constant(0,1);
-  return lineshapeModifier != "Polar" ? ( real + J*imag ) : real * ( Cos( M_PI / 180. * imag ) + J*Sin(M_PI / 180. * imag ) );
+  return !polar ? ( real + J*imag ) : real * ( Cos( M_PI / 180. * imag ) + J*Sin(M_PI / 180. * imag ) );
 }
 
 DEFINE_LINESHAPE( InelasticSpline )
