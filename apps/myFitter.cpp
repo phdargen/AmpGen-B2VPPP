@@ -1531,7 +1531,7 @@ int main( int argc, char* argv[])
                   }
               }
               
-              double min_LL = 99999;
+              double min_LL = 9999999;
               double minChi2 = 999;
               double minChi2PerBin = 999;
               double minChi2Dalitz = 999;

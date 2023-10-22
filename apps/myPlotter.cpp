@@ -340,7 +340,7 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
 //  INFO("addSysErrBand = " << addSysErrBand);  
 
   // Plot alt models
-  if(plotAltModels){
+  if(plotAltModels==1){
         histos[1]->SetLineColor(kRed);
         histos[1]->SetMarkerColor(kRed);
         histos[histos.size()-1]->SetLineColor(kAzure - 4);
@@ -348,12 +348,34 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         histos[histos.size()-1]->SetFillColorAlpha(kAzure - 4, 1);
         histos[histos.size()-1]->SetMarkerSize(0.);
         histos[histos.size()-1]->DrawNormalized("histsame",1);
-//        for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
-//            histos[i]->SetLineColor(i);
-//            histos[i]->SetMarkerColor(i);
-//            histos[i]->DrawNormalized("e1same",1);
-//        }
         computeErrorBands = false;
+  }
+  if(plotAltModels==2){
+        histos[1]->SetLineColor(kRed+1);
+        histos[1]->SetMarkerColor(kRed+1);
+        histos[1]->SetLineStyle(kDashed);
+
+        histos[histos.size()-1]->SetLineColor(kAzure - 4);
+        histos[histos.size()-1]->SetMarkerColor(kAzure - 4);
+        histos[histos.size()-1]->SetFillColorAlpha(kAzure - 4, 1);
+        histos[histos.size()-1]->SetMarkerSize(0.);
+        histos[histos.size()-1]->DrawNormalized("histsame",1);
+
+        histos[histos.size()-2]->SetLineColor(kGreen+1);
+        //histos[histos.size()-2]->SetMarkerColor(kAzure - 4);
+        //histos[histos.size()-2]->SetFillColorAlpha(kAzure - 4, 1);
+        //histos[histos.size()-2]->SetMarkerSize(0.);
+        histos[histos.size()-2]->DrawNormalized("histsame",1);
+      
+        computeErrorBands = false;
+  }
+    
+  if(plotAltModels==-1){
+        for (unsigned int i=histos.size()-1 ; i >= histos.size()-nAltModels; i--) {
+            histos[i]->SetLineColor(i);
+            histos[i]->SetMarkerColor(i);
+            histos[i]->DrawNormalized("e1same",1);
+        }
   }
     
   // Only compute once for every histo set !  

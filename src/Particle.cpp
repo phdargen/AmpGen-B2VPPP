@@ -176,7 +176,7 @@ void Particle::pdgLookup()
   bool isStrong = quarks() == daughterQuarks();
   if( abs(m_props->pdgID()) == 24 || abs(m_props->pdgID()) == 23 ) isStrong = false; 
   if ( m_name.find( "NonRes" ) != std::string::npos ) isStrong = true;
-  if( !isStrong && !(m_name == "B+" || m_name == "B-") && !isStable() ){
+  if( !isStrong && !(m_name == "B+" || m_name == "B-" || m_name == "Bbar0" || m_name == "B0" || m_name == "Bsbar0" || m_name == "Bs0"  || m_name == "D+" || m_name == "D-" || m_name == "Dbar0" || m_name == "D0") && !isStable() ){
           //WARNING(m_name << " is weak ?" );
           isStrong = true;
   }  

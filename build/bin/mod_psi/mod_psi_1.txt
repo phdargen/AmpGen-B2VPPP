@@ -1,0 +1,17 @@
+
+psi(4360)0[GSpline]{psi(2S)0,PiPi20}                                                   0 0.2 0.001 0 1      0 0.0 0.1 -360 360
+#psi(4415)0[GSpline]{psi(2S)0,PiPi20}                                                   0 0.2 0.001 0 1      0 0.0 0.1 -360 360
+#psi(4660)0[GSpline]{psi(2S)0,PiPi20}                                                   0 0.2 0.001 0 1      0 0.0 0.1 -360 360
+
+#PiPi20[MIPWA.Omnes11]{pi+,pi-}   2 1. 0.    0 0    2 0 0. 0 0
+#PiPi20[MIPWA.OmnesS0]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+#PiPi20[MIPWA.OmnesS2]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+
+# f_pipi, f_kk
+PiPi20[kMatrix.prod.0]{pi+,pi-}                                    2 1 0.001 0 50     2 0.0 0.1 -360 360
+PiPi20[kMatrix.prod.1]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
+
+# beta_0, beta_1
+PiPi20[kMatrix.pole.0]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
+PiPi20[kMatrix.pole.1]{pi+,pi-}                                    0 1 0.001 0 50     0 0.0 0.1 -360 360
+#PiPi20[kMatrix.pole.2]{pi+,pi-}                                    0 1 0.001 0 50    0 0.0 0.1 -360 360

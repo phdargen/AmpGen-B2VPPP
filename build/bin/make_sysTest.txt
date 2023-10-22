@@ -1,4 +1,5 @@
-"baseLineFit" "myTest2/log.txt"
+#"baseLineFit" "myTest2/log.txt"
+"baseLineFit" "bestModel5/log.txt"
 "outDir" "myTest2/"
 
 #"includeSys" "Acc" "Bkg" "FF" "NR" "LS" "Res" "AltAmp"
@@ -30,5 +31,5 @@
 "sysMethodRes" "Var"
 
 "sysNameAltAmp" "Alt. Amp."
-"sysFilesAltAmp" "altModels/log_" 1 2
+"sysFilesAltAmp" "altModels/log_" 1 6
 "sysMethodAltAmp" "Bias"

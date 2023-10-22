@@ -111,8 +111,8 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() ){
-                  mean += p->mean();    
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") ){
+                  mean += p->mean();
                   maxDiff = abs(p->mean() - params[i]->mean()) > maxDiff ? abs(p->mean() - params[i]->mean()) : maxDiff;
                   if(params_toy->find(name_i))pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
                   else ERROR(name_i << " not found in toy log file");
@@ -133,7 +133,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() ){
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","")  ){
                   var += pow(p->mean() - mean,2);
                   if(params_toy->find(name_i))pull_var += pow((params_toy->find(name_i)->mean()-p->mean())/p->err() - pull_mean,2);
                   else ERROR(name_i << " not found in toy log file");
@@ -165,12 +165,13 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
         for(auto& fit : fits){
             auto fracs_fit = fit.fitFractions();
             for(auto& f: fracs_fit){
-                if(name_i == f.name() ){
-                    mean += f.val();     
+                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","")  ){
+                    mean += f.val();
                     maxDiff = abs(f.val() - fracs[i].val()) > maxDiff ? abs(f.val() - fracs[i].val()) : maxDiff;
                     double frac_toy_val = -1;
                     for(auto& f_toy: fracsToy){
                         if(name_i == f_toy.name() ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),".BL","") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     pull_mean += (f.val() - frac_toy_val)/f.err();
@@ -194,7 +195,8 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
                     var += pow(f.val() - mean,2);
                     double frac_toy_val = -1;
                     for(auto& f_toy: fracsToy){
-                        if(name_i == f_toy.name() ) frac_toy_val = f_toy.val();
+                        if(name_i == f_toy.name() || name_i == replaceAll(f.name(),".BL","")  ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),".BL","")  ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     pull_var += pow((f.val() - frac_toy_val)/f.err() - pull_mean,2);

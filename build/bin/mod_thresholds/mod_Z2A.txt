@@ -1,0 +1,44 @@
+"LogFile"        "log_Z2A.txt"
+"FitWeightFileName" "Fit_weights_Z2A.root"
+saveWeights     1
+
+"removeAmps"  "Z(4430)+{" "Z(4430)-{"
+
+#B+{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.3534 0.06792 0 2    0 20.65 15.31 -360 360
+#B+[P]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.8258 0.05177 0 2    0 -109.2 4.481 -360 360
+#B+[D]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.6195 0.03742 0 2    0 -47.95 3.997 -360 360
+#X(V)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}  0 0.1095 0.04685 0 10    0 22.41 20.67 -360 360
+#Xs(A)0[GSpline]{Z(4240)A-[CoupledChannel.norm]{psi(2S)0,pi-},K+}  0 0.183 0.03072 0 2    0 111.8 10.25 -360 360
+#X(4500)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}  0 0.08529 0.02459 0 10   0 2.512 15.45 -360 360
+#X(4500)0[GSpline]{Z(4240)A-[CoupledChannel.norm]{psi(2S)0,pi-},pi+}_Re = X(4500)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Re
+#X(4500)0[GSpline]{Z(4240)A-[CoupledChannel.norm]{psi(2S)0,pi-},pi+}_Im = X(4500)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Im
+#X(V)0[GSpline]{Z(4240)A-[CoupledChannel.norm]{psi(2S)0,pi-},pi+}_Re = X(V)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Re
+#X(V)0[GSpline]{Z(4240)A-[CoupledChannel.norm]{psi(2S)0,pi-},pi+}_Im = X(V)0[GSpline]{Z(4240)A+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Im
+#Z(4240)A+_mass  2 4.278 0.001 3.9 4.3
+#Z(4240)A+_width  2 0.2774 0.001 0.025 0.35
+
+B+{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.65 0.1118 0 2    0 -13 11.49 -360 360
+B+{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},KPi40}  0 0.7901 0.1064 0 4    0 187.2 6.765 -360 360
+
+X(4700)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}  0 0.06102 0.01843 0 10    0 45.77 24.21 -360 360
+X(V)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}  0 0.1047 0.03533 0 10    0 25.45 18.25 -360 360
+
+X(4685)0[GSpline]{Z(4430)[CoupledChannel.norm]-{psi(2S)0,pi-},pi+}_Re = X(4685)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Re
+X(4685)0[GSpline]{Z(4430)[CoupledChannel.norm]-{psi(2S)0,pi-},pi+}_Im = X(4685)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Im
+X(V)0[GSpline]{Z(4430)[CoupledChannel.norm]-{psi(2S)0,pi-},pi+}_Re = X(V)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Re
+X(V)0[GSpline]{Z(4430)[CoupledChannel.norm]-{psi(2S)0,pi-},pi+}_Im = X(V)0[GSpline]{Z(4430)+[CoupledChannel.norm]{psi(2S)0,pi+},pi-}_Im
+
+Z(4430)+_mass  2 4.481 0.001 4 5
+Z(4430)+_width  2 0.1941 0.001 0.01 0.5
+
+#Z(4430)+_channels { Z(4430)+{psi(2S)0,pi+} g1 Z(4430)+{psi(4160)0,pi+} g2 }
+Z(4430)+_channels { Z(4430)+{psi(2S)0,pi+} g1 Z(4430)+{J/psi0,pi+} g2 }
+
+#Z(4430)-_channels { Z(4430)-{psi(2S)0,pi-} g1 Z(4430)-{psi(4160)0,pi-} g2 }
+Z(4430)-_channels { Z(4430)-{psi(2S)0,pi-} g1 Z(4430)-{J/psi0,pi-} g2 }
+
+g1                2 1 0.001
+g2                0 0.25 0.001 0 1000
+#g3                0 0.25 0.001 0 1000
+
+

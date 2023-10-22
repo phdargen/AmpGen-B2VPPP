@@ -1,0 +1,17 @@
+removeAmps "PiPi00[kMatrix" "PiPi10[kMatrix" "PiPi20[kMatrix" "PiPi30[kMatrix" "PiPi40[kMatrix" "PiPi50[kMatrix" 
+
+#B+{Zs(4000)+{psi(2S)0,K+},PiPi40}  0 0.1141 0.01835 0 2    0 -240.1 9.465 -360 360
+#psi(4360)0[GSpline]{psi(2S)0,PiPi20}  0 0.2387 0.01652 0 2    0 -79.45 5.279 -360 360
+#K(1460)+[GSpline.EFF]{PiPi30,K+}  2 1 0 0 0    2 0 0 0 0
+
+PiPi20[MIPWA.Omnes11]{pi+,pi-}  2 1. 0.02126   0 0     0 46.69 0.7181 0 0
+PiPi20[MIPWA.OmnesS0]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+PiPi20[MIPWA.OmnesS2]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+
+PiPi30[MIPWA.Omnes11]{pi+,pi-}  0 1. 0.02126   0 0     0 46.69 0.7181 0 0
+PiPi30[MIPWA.OmnesS0]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+PiPi30[MIPWA.OmnesS2]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+
+PiPi40[MIPWA.Omnes11]{pi+,pi-}  2 1. 0.02126   0 0     0 46.69 0.7181 0 0
+PiPi40[MIPWA.OmnesS0]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0
+PiPi40[MIPWA.OmnesS2]{pi+,pi-}  0 0.2 0.02126   0 0    0 46.69 0.7181 0 0

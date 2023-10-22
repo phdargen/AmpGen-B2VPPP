@@ -104,13 +104,22 @@ int main( int argc, char* argv[] )
   /* Events are read in from ROOT files. If only the filename and the event type are specified, 
      the file is assumed to be in the specific format that is defined by the event type, 
      unless the branches to load are specified in the user options */
-  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false), InputUnits(Units::MeV) );
-  
-  /* Generate events to normalise the PDF with. This can also be loaded from a file, 
+  auto scale_transform = [](auto& event){ for( size_t x = 0 ; x < event.size(); ++x ) event[x] /= 1000.; };
+  EventList_type events(dataFile, evtType, Branches(bNames), GetGenPdf(false) );
+  if( NamedParameter<std::string>("DataUnits", "GeV").getVal()  == "MeV") events.transform( scale_transform );
+
+  events[0].print();
+  events[1].print();
+
+  /* Generate events to normalise the PDF with. This can also be loaded from a file,
      which will be the case when efficiency variations are included. Default number of normalisation events 
      is 5 million. */
   EventList_type eventsMC = intFile == "" ? Generator<>(evtType, &rndm).generate(2.5e6) : EventList_type(intFile, evtType, GetGenPdf(true));
-  
+
+  eventsMC[0].print();
+  eventsMC[1].print();
+
+    
   sig.setMC( eventsMC );
 
   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
