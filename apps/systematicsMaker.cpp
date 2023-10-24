@@ -273,6 +273,18 @@ vector<TMatrixD> diffMethod(const FitResult& fit1, const FitResult& fit2, const 
     return vector<TMatrixD>({covMatrix,covMatrix_frac}); 
 }
 
+
+string removeLineshapeMods(string name){
+    name =  replaceAll(name,"[GSpline]","");
+    name =  replaceAll(name,"[GSpline.BL]","");
+    name =  replaceAll(name,"[D;GSpline.BL]","");
+    name =  replaceAll(name,"[D;GSpline]","");
+    name =  replaceAll(name,"[GounarisSakurai.Omega.BL]","");
+    name =  replaceAll(name,"[GounarisSakurai.Omega]","");
+
+    return name;
+}
+
 void analyzeResults(){
 
     INFO("Doing systematic analysis");    
@@ -682,12 +694,12 @@ void analyzeResults(){
         for(auto &f : fracs_i){
             bool foundAmp = false;
             for(auto& f_allAmps : allAmps){
-                if(f == f_allAmps){
+                if(removeLineshapeMods(f.name()) == removeLineshapeMods(f_allAmps.name())){
                     foundAmp = true;
                     break;
                 }
             }
-            if(!foundAmp){allAmps.emplace_back(f.name(),f.val(),f.err()); INFO(f.name());}
+            if(!foundAmp){allAmps.emplace_back(removeLineshapeMods(f.name()),f.val(),f.err()); INFO(f.name());}
         }
         
         for(auto &p : params_i){
@@ -713,7 +725,7 @@ void analyzeResults(){
             bool foundAmpName = false;
 
             for(auto &f : fracs_j){
-                if(f.name()==allAmps[i].name()){
+                if(removeLineshapeMods(f.name())==removeLineshapeMods(allAmps[i].name())){
                     altModelsFile << " & $ " << f.val() * 100. << " \\pm " ;
                     altModelsFile << f.err() * 100.  ;
                     altModelsFile << " $ ";

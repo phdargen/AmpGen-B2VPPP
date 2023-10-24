@@ -1460,10 +1460,10 @@ void makePlotsMuMu(){
             if(filter_plot11(evt))histo_set_cut11[j][0]->Fill(val,evt.weight());
             if(filter_plot12(evt))histo_set_cut12[j][0]->Fill(val,evt.weight());   
             
-            if(filter_plot1(evt) && filter_plot6(evt))  histo_set_cutCombo1[j][0]->Fill(val,evt.weight());   
-            if(filter_plot2(evt) && filter_plot5(evt))  histo_set_cutCombo2[j][0]->Fill(val,evt.weight());   
-            if(filter_plot3(evt) && filter_plot5(evt))  histo_set_cutCombo3[j][0]->Fill(val,evt.weight());   
-            if(filter_plot4(evt) && filter_plot5(evt))  histo_set_cutCombo4[j][0]->Fill(val,evt.weight());
+            if(filter_plot3(evt) && filter_plot2(evt))  histo_set_cutCombo1[j][0]->Fill(val,evt.weight());
+            if(filter_plot3(evt) && filter_plot6(evt))  histo_set_cutCombo2[j][0]->Fill(val,evt.weight());
+            if(filter_plot3(evt) && filter_plot7(evt))  histo_set_cutCombo3[j][0]->Fill(val,evt.weight());
+            if(filter_plot3(evt) && filter_plot11(evt))  histo_set_cutCombo4[j][0]->Fill(val,evt.weight());
             
             for(int i=j+1;i<dims.size();i++){
                 if(dims[i].size()>1 && dims[j].size()>1){
@@ -1506,10 +1506,10 @@ void makePlotsMuMu(){
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k]->Fill(val,w[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k]->Fill(val,w[k]);
                 
-                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k]->Fill(val,w[k]);   
-                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k]->Fill(val,w[k]);   
-                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k]->Fill(val,w[k]);   
-                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k]->Fill(val,w[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot2(eventsMC[i]))histo_set_cutCombo1[j][k]->Fill(val,w[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo2[j][k]->Fill(val,w[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot7(eventsMC[i]))histo_set_cutCombo3[j][k]->Fill(val,w[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot11(eventsMC[i]))histo_set_cutCombo4[j][k]->Fill(val,w[k]);
             }
             
             for(unsigned int k = 0; k < nPermErrorBands; k++){
@@ -1527,10 +1527,10 @@ void makePlotsMuMu(){
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists]->Fill(val,wErr[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists]->Fill(val,wErr[k]);
                 
-                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists]->Fill(val,wErr[k]);   
-                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists]->Fill(val,wErr[k]);   
-                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists]->Fill(val,wErr[k]);   
-                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists]->Fill(val,wErr[k]);   
+                if(filter_plot1(eventsMC[i]) && filter_plot2(eventsMC[i]))histo_set_cutCombo1[j][k+nHists]->Fill(val,wErr[k]);
+                if(filter_plot2(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo2[j][k+nHists]->Fill(val,wErr[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot7(eventsMC[i]))histo_set_cutCombo3[j][k+nHists]->Fill(val,wErr[k]);
+                if(filter_plot4(eventsMC[i]) && filter_plot11(eventsMC[i]))histo_set_cutCombo4[j][k+nHists]->Fill(val,wErr[k]);
             }
             
             if(addSysErrBand)for(unsigned int k = 0; k < nPermErrorBands; k++){
@@ -1548,10 +1548,10 @@ void makePlotsMuMu(){
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
                 
-                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
-                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
-                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
-                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot2(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot7(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot11(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands]->Fill(val,wErrTot[k]);
             }
             
             for(unsigned int k = 0; k < nAltModels; k++){
@@ -1569,10 +1569,10 @@ void makePlotsMuMu(){
                 if(filter_plot11(eventsMC[i]))histo_set_cut11[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
                 if(filter_plot12(eventsMC[i]))histo_set_cut12[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
                 
-                if(filter_plot1(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
-                if(filter_plot2(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
-                if(filter_plot3(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
-                if(filter_plot4(eventsMC[i]) && filter_plot5(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);   
+                if(filter_plot3(eventsMC[i]) && filter_plot2(eventsMC[i]))histo_set_cutCombo1[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot6(eventsMC[i]))histo_set_cutCombo2[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot7(eventsMC[i]))histo_set_cutCombo3[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
+                if(filter_plot3(eventsMC[i]) && filter_plot11(eventsMC[i]))histo_set_cutCombo4[j][k+nHists+nPermErrorBands*(1+addSysErrBand)]->Fill(val,wAlt[k]);
             }
             
         }
