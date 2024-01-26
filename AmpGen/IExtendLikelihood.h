@@ -68,6 +68,20 @@ namespace AmpGen
     double m_lambda;
     PolarisedSum* m_pdf;
   };
+
+  class Cauchy : public IExtendLikelihood
+  {
+  public:
+      double getVal()  override;
+      void configure( const std::string& configString, AmpGen::PolarisedSum& pdf,
+                      const MinuitParameterSet& mps ) override;
+      IExtendLikelihood* create() override { return new Cauchy(); }
+      static std::string _id;
+
+  private:
+      double m_lambda;
+      PolarisedSum* m_pdf;
+  };
     
   class ExtendedNormalisation : public IExtendLikelihood
     {

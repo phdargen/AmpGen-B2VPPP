@@ -464,6 +464,120 @@ void prepareRunningWidthFromFiles(){
     
 }
 
+void prepareRunningMassFromFiles(){
+        
+    MinuitParameterSet mps;
+    mps.loadFromStream();
+    
+    vector<string> threeBodiesToIntegrate = NamedParameter<string>( "ThreeBodiesToIntegrate" ).getVector();
+    string inDir = NamedParameter<string>("RunningWidthFilesDir", ".");
+    vector<string> files = NamedParameter<string>( "RunningWidthFiles" ).getVector();
+    std::string outDir = NamedParameter<std::string>("outDir", ".");
+    std::string outName = NamedParameter<std::string>("outName", "splineKnots.txt");
+
+    ofstream resultsFile;
+    resultsFile.open((outDir + "/" + outName).c_str(),std::ofstream::trunc);
+
+    int counter = 0;
+    for ( auto& head : threeBodiesToIntegrate ){
+        
+        cout << endl << "Running mass for " << head << " from file " << files[counter] << endl;
+        
+        resultsFile << "# Running mass for " << head << " from file " << files[counter] << endl;
+
+        TFile* f=TFile::Open((inDir+files[counter]).c_str());
+        TH1D* h=dynamic_cast<TH1D*>(f->Get("RunningMass"));
+        counter++;
+        
+        auto spline_params = NamedParameter<double>( head + "::Spline").getVector();
+        size_t nBins;
+        double min, max;
+        if( spline_params.size() == 3 ){
+            nBins = size_t( spline_params[0] );
+            min   =         spline_params[1] ;
+            max   =         spline_params[2];
+        }
+        else {
+            nBins = NamedParameter<double>( head + "::Spline::N"  , 0. );
+            min   = NamedParameter<double>( head + "::Spline::Min", 0. );
+            max   = NamedParameter<double>( head + "::Spline::Max", 0. );
+        }
+
+        double mass0      = mps.find( head+"_mass") != 0 ? mps( head+"_mass") : sqrt( min + (max-min)/2. );
+        double width0      = mps.find( head+"_width") != 0 ? mps( head+"_width") : 0.1;
+
+        cout << "mass0 = " << mass0 << endl;
+        cout << "width0 = " << width0 << endl;
+        cout << left << head << "::Spline" << "  " << nBins << " " << min << " " << max << endl;
+        resultsFile << left << head << "::Spline" << "  " << nBins << " " << min << " " << max << endl;
+        
+        double step   = ( max - min ) / double(nBins-1);
+        
+        TGraph* mass_m = new TGraph(nBins);
+        TGraph* mass_m_norm = new TGraph(nBins);
+        double norm = h->Interpolate(mass0*mass0);
+
+        for ( size_t c = 0; c < nBins; ++c ) {
+            double s = min + double(c) * step;
+            double val = h->Interpolate(s);
+
+            mass_m->SetPoint(c, sqrt(s), sqrt( mass0*mass0 + (val-norm) * mass0 * width0 ) );
+            //mass_m_norm->SetPoint(c, sqrt(s), val/norm  );
+
+            cout << left << head << "::Spline::dm2::" << setw(20) << c << "  2   " << setw(14) << val << " 0 " << endl;
+            resultsFile << left << head << "::Spline::dm2::" << setw(20) << c << "  2   " << setw(14) << val << " 0 " << endl;
+        }
+        resultsFile << endl;
+        
+        TCanvas* c = new TCanvas();
+        
+        TPaveText* lhcbName = new TPaveText(gStyle->GetPadLeftMargin() + 0.05,
+                                            0.87 - gStyle->GetPadTopMargin(),
+                                            gStyle->GetPadLeftMargin() + 0.20,
+                                            0.95 - gStyle->GetPadTopMargin(),
+                                            "BRNDC");
+        lhcbName->AddText("LHCb");
+        lhcbName->SetFillColor(0);
+        lhcbName->SetTextAlign(12);
+        lhcbName->SetBorderSize(0);
+        lhcbName->SetTextSize(0.08);
+        lhcbName->SetTextFont(132);
+
+        TPaveText *text= new TPaveText(gStyle->GetPadLeftMargin() + 0.5,
+                                       0.77 - gStyle->GetPadTopMargin(),
+                                       gStyle->GetPadLeftMargin() + 0.65,
+                                       0.85 - gStyle->GetPadTopMargin(),
+                                       "BRNDC");
+        auto fitResult = new FitResult();
+        text->AddText(fitResult->latexName(head).c_str());
+        text->SetLineColor(kWhite);
+        text->SetFillColor(kWhite);
+        text->SetShadowColor(0);
+        text->SetTextAlign(12);
+        text->SetTextSize(0.08);
+        text->SetTextFont(132);
+        text->SetTextColor(kBlack);
+
+        mass_m->SetLineColor(kBlue);
+        mass_m->SetTitle("; #sqrt{#it{s}} [GeV]  ; #it{M(s)} [GeV]");
+        mass_m->Draw("A*C");
+        //lhcbName->Draw();
+        text->Draw();
+
+        TString n(head);
+        n.ReplaceAll("*","");
+        n.ReplaceAll("+","");
+        n.ReplaceAll("-","");
+        n.ReplaceAll(")0","");
+        n.ReplaceAll("(","_");
+        n.ReplaceAll(")","");
+
+        c->Print( ( outDir + "/" + (string) n + "_runningMass.pdf").c_str());
+    }
+    
+}
+
+
 complex<double> BW_val(const double& s, const double& m, const double& gamma){
     //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * m * gamma);
     //complex<double> BW = -complex<double>(0,1) * m * gamma/(m*m - s -  complex<double>(0,1) * sqrt(s) * gamma);
@@ -733,12 +847,14 @@ int main(int argc , char* argv[] ){
       auto plotRw = NamedParameter<bool>("plotRunningWidths", 0);
       auto calculateRw = NamedParameter<bool>("calculateRunningWidths", 0);
       auto prepareRw = NamedParameter<bool>("prepareRunningWidthFromFiles", 0);
+      auto prepareRm = NamedParameter<bool>("prepareRunningMassFromFiles", 0);
       auto plotSpline = NamedParameter<int>("plotSpline", 0);
 
       if(plotRw)plotRunningWidths();
       if(calculateRw)calculateRunningWidths();
       if(prepareRw)prepareRunningWidthFromFiles();
-    
+      if(prepareRm)prepareRunningMassFromFiles();
+
       if(plotSpline==1){
         string logFile = NamedParameter<std::string>("LogFile", "log.txt", "Name of the output log file");
         string head = NamedParameter<std::string>("Head","X(A)0");

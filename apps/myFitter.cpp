@@ -758,7 +758,15 @@ void addLASSO( Minimiser& mini, PolarisedSum& sig, MinuitParameterSet& mps, doub
     auto ll_term = new LASSO();
     ll_term->configure( "lambda " + to_string(lambda), sig, mps );
     mini.addExtendedTerm( ll_term );
-    INFO("Added LASSO term with lambda = " << lambda);
+    INFO("Added LASSO term with lambda = " << lambda << "; penalty nll = " << ll_term->getVal());
+}
+
+void addCauchy( Minimiser& mini, PolarisedSum& sig, MinuitParameterSet& mps, double lambda )
+{
+    auto ll_term = new Cauchy();
+    ll_term->configure( "lambda " + to_string(lambda), sig, mps );
+    mini.addExtendedTerm( ll_term );
+    INFO("Added Cauchy term with lambda = " << lambda << "; penalty nll = " << ll_term->getVal());
 }
 
 template <typename likelihoodType>
@@ -771,7 +779,10 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
      (i.e. the likielihood, and a set of MinuitParameters. */
     Minimiser mini( likelihood, &MPS );
     addGaussianConstraint( mini, MPS );
-    if(lambda > 0)addLASSO( mini, sig, MPS, lambda );
+    
+    auto performLASSO = NamedParameter<int>("doLASSO", 0,"doLASSO");
+    if(performLASSO==1 && lambda > 0)addLASSO( mini, sig, MPS, lambda );
+    if(performLASSO==2 && lambda > 0)addCauchy( mini, sig, MPS, lambda );
 
     auto threeBodyShapes     = threeBodyCalculators( MPS );
     unsigned int updateWidth = NamedParameter<unsigned int>( "UpdateWidth", 0 );
@@ -1522,8 +1533,18 @@ int main( int argc, char* argv[])
               // Do fit
               auto nFits = NamedParameter<int>("nFits", 1);
               auto performFit = NamedParameter<bool>("doFit", 1,"doFit");
-              auto performLASSO = NamedParameter<bool>("doLASSO", 0,"doLASSO");
-              double lambda = performLASSO ? seed + 0.1  : -1;
+              auto performLASSO = NamedParameter<int>("doLASSO", 0,"doLASSO");
+              double lambda = -1;
+              if(performLASSO==1){
+                  if(seed < 10) lambda = 0.1 + seed/10.;
+                  else lambda = seed - 9.;
+              }
+              if(performLASSO==2){
+                  //lambda = 0.001 * pow(10,seed);
+                  if(seed < 10) lambda = 0.001 + 0.01 * seed ;
+                  else if(seed < 30) lambda = 0.1 + 0.1/2. * (seed-10) ;
+                  else lambda = 1 + 1 * (seed-30) ;
+              }
               
               if(!performFit){
                   for(int i=0;i<MPS.size();i++){
@@ -1571,7 +1592,7 @@ int main( int argc, char* argv[])
                   auto interferenceFractions = sig.interferenceFractions( ep );
                   fr->addInterferenceFractions( interferenceFractions );
                   
-                  vector<double> thresholds{0.01,0.05,0.1,0.5,1,2};
+                  vector<double> thresholds{0.05,0.1,0.25,0.5,1,2};
                   vector<double> numFracAboveThresholds = sig.numFracAboveThreshold(thresholds);
                   
                   // Plot spline
@@ -1609,7 +1630,7 @@ int main( int argc, char* argv[])
                   fr->setSystematic(doSystematic);
                   fr->print();
                   fr->printToLatexTable(tableFile);
-                  fr->writeToRootFile( output, seed, 0, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds );
+                  fr->writeToRootFile( output, seed, 0, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds, lambda );
                   if(replaceAmpAwithB.size()>0 && n>0){
                       fr->writeToFile(replaceAll(logFile,".txt","_" + to_string(n-1) + ".txt"));
                       fr->writeToOptionsFile(replaceAll(modelFile,".txt","_" +  to_string(n-1) + ".txt"), 0);

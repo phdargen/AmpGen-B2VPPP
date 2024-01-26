@@ -473,7 +473,7 @@ void FitResult::writeToOptionsFile( const std::string& fname, int fixParams )
     outlog.close();
 }
 
-void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, double nll, unsigned nAmps, double Ns, std::vector<double> thresholds, std::vector<double> numFracAboveThresholds){
+void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, double nll, unsigned nAmps, double Ns, std::vector<double> thresholds, std::vector<double> numFracAboveThresholds, double lambda){
         
         double chi2;
         unsigned status, nPar;
@@ -495,6 +495,7 @@ void FitResult::writeToRootFile(TFile * output, unsigned seed, int verbose, doub
         outputTree->Branch("nPar", &nPar, "nPar/I");
         outputTree->Branch("nAmps", &nAmps, "nAmps/I");
         outputTree->Branch("nSig", &Ns);
+        outputTree->Branch("lambda", &lambda, "lambda/D");
 
         for (unsigned int i = 0; i < m_fitFractions.size(); i++ ){
             res[i] = m_fitFractions[i].val();

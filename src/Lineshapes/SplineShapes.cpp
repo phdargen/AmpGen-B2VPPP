@@ -32,8 +32,10 @@ DEFINE_LINESHAPE( GSpline )
 
   bool useEFF            = lineshapeModifier.find( "EFF" ) != std::string::npos;
   bool useDispersiveTerm = lineshapeModifier.find( "Dis" ) != std::string::npos;
+  bool useDispersiveTermScaled = lineshapeModifier.find( "dm2" ) != std::string::npos;
   bool useGFF            = lineshapeModifier.find( "GFF" ) != std::string::npos;
   bool useBL             = lineshapeModifier.find( "BL"  ) != std::string::npos;
+  bool useSqrtS = lineshapeModifier.find( "useSqrtS" ) != std::string::npos;
 
   Expression BF = fcn::sqrt( BlattWeisskopf_Norm( q2 * radius * radius, 0, L ) ) ;
   if( useBL )  BF  = fcn::sqrt( BlattWeisskopf( q2 * radius * radius, L ) );
@@ -50,8 +52,10 @@ DEFINE_LINESHAPE( GSpline )
 
   Expression real_part    = mass * mass;
   if( useDispersiveTerm ) real_part = real_part + getSpline( particleName, sInGeV, "dm2", dbexpressions, true ) - getSpline( particleName, mass*mass, "dm2", dbexpressions, true );
-  const Expression self_energy = real_part - Constant(0,1) * mass * runningWidth; 
-
+  if( useDispersiveTermScaled ) real_part = real_part + mass * width0 * (getSpline( particleName, sInGeV, "dm2", dbexpressions, true ) - getSpline( particleName, mass*mass, "dm2", dbexpressions, true ) );
+  Expression self_energy = real_part - Constant(0,1) * mass * runningWidth;
+  if(useSqrtS) self_energy = real_part - Constant(0,1) * fcn::sqrt(s) * runningWidth;
+    
   const Expression BW        = norm / ( self_energy - s );
 
   ADD_DEBUG( mass, dbexpressions );
