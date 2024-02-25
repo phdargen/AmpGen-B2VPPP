@@ -7,5 +7,8 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_96python3/x86_64-centos7-gcc8-opt/setup.
 #echo "Executing $AMPGENROOT/build/bin/myFitter $@"
 #echo "$@"
 #$AMPGENROOT/build/bin/myFitter "$@"
+touch result.root
+touch log.txt
+touch model.txt
 ./myFitter.exe "$@"
 #./myPlotter.exe "$@"

@@ -1,0 +1,3 @@
+phspFile	toy_coreStart.root
+weightPhsp      weight
+BranchesPhsp	""

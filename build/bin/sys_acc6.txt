@@ -1,4 +1,4 @@
 "doSystematic"  "Acc1"
-IntegrationSample   SignalIntegrationEvents_Acc2.root
+#IntegrationSample   SignalIntegrationEvents_Acc6.root
 weightMC		weight_alt4
 addAmpList		""

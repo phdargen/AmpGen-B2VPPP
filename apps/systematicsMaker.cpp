@@ -100,6 +100,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
     // Fit parameters    
     auto params = starterFit.floating();
     TMatrixD covMatrix( params.size(), params.size() );
+    INFO("Number of toys " << fits.size());
     
     auto params_toy = toyFit.mps();
 
@@ -116,6 +117,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
                   maxDiff = abs(p->mean() - params[i]->mean()) > maxDiff ? abs(p->mean() - params[i]->mean()) : maxDiff;
                   if(params_toy->find(name_i))pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
                   else ERROR(name_i << " not found in toy log file");
+                  //if(name_i=="B+[D]{psi(2S)0,K(1)(1270)+}_Im") INFO(name_i << " : " << p->mean() << " +/- " << p->err());
               }
           }
       }
@@ -148,7 +150,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       if(mode=="MaxDiff") covMatrix(i,i) = pow(maxDiff,2);
         
       if(mode=="PullBias")covMatrix(i,i) = pow(pull_mean * params[i]->err(),2);
-      if(mode=="PullBias")INFO(name_i << ": pull = " << pull_mean << " +/- " << sqrt(pull_var) );
+      if(mode=="PullBias")INFO(name_i << ": pull = " << pull_mean << " +/- " << sqrt(pull_var) << ": mean = " << mean << " +/- " << sqrt(var) );
     }
 
     // Fit fractions
@@ -174,7 +176,9 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
                         else if(name_i == replaceAll(f_toy.name(),".BL","") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
-                    pull_mean += (f.val() - frac_toy_val)/f.err();
+                    if(f.err()>0.0001)pull_mean += (f.val() - frac_toy_val)/f.err();
+                    if(name_i=="Sum_Xs2(V)0") INFO(name_i << " : " << f.val() << " +/- " <<f.err());
+
                 }
             }
         }
@@ -199,7 +203,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
                         else if(name_i == replaceAll(f_toy.name(),".BL","")  ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
-                    pull_var += pow((f.val() - frac_toy_val)/f.err() - pull_mean,2);
+                    if(f.err()>0.0001)pull_var += pow((f.val() - frac_toy_val)/f.err() - pull_mean,2);
                 }
             }
         }
@@ -211,7 +215,8 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
         if(mode=="MaxDiff") covMatrix_frac(i,i) = pow(maxDiff,2);
         
         if(mode=="PullBias")covMatrix_frac(i,i) = pow(pull_mean * fracs[i].err(),2);
-        if(mode=="PullBias")INFO(name_i << ": pull = " << pull_mean << " +/- " << sqrt(pull_var) );
+        if(mode=="PullBias")INFO(name_i << ": pull = " << pull_mean << " +/- " << sqrt(pull_var) << ": mean = " << mean << " +/- " << sqrt(var) );
+
     }
     
     return vector<TMatrixD>({covMatrix,covMatrix_frac}); 
@@ -323,7 +328,7 @@ void analyzeResults(){
               continue;
           }
           FitResult fr(sysFiles[0] + to_string(i)+".txt");
-          EnsureRing( fr, starterFit );    
+          //EnsureRing( fr, starterFit );
           fits.push_back(fr);
           if(sys=="AltAmp")allModelFits.push_back(fr);
         }
@@ -354,10 +359,12 @@ void analyzeResults(){
                 TMatrixD covMatrix( params.size(), params.size() );
                 TMatrixD covMatrix_frac( fracs.size(), fracs.size() );
                 
+                // f_bkg
                 auto tmp = diffMethod(fits[0],fits[1],starterFit);
                 covMatrix += tmp[0];
                 covMatrix_frac += tmp[1];   
                 
+                // bkg model
                 fits.erase(fits.begin());
                 fits.erase(fits.begin());                
                 tmp = sampleVarMethod(fits,starterFit,starterFit,"Bias");
@@ -370,6 +377,7 @@ void analyzeResults(){
             else if(sys=="Toys"){
                 string baseLineToy = NamedParameter<string>("baseLineToy", "");
                 FitResult starterToy(baseLineToy);
+                //EnsureRing( starterToy, starterFit );
                 cov = sampleVarMethod(fits,starterFit,starterToy,sysMethod);
             }
             
@@ -385,8 +393,8 @@ void analyzeResults(){
             }
             cout <<  "Fit fractions " << endl;    
             for( unsigned int i = 0 ; i < fracs.size() ; ++i){
-                  if(fracs[i].err()<0.0001)continue;
-                  INFO( setw(60) << left << fracs[i].name() << " " << setprecision(4) 
+                  //if(fracs[i].err()<0.0001)continue;
+                  INFO( setw(60) << left << fracs[i].name() << " " << setprecision(4)
                       << setw(10) <<  right << round(  fracs[i].val() * 100,4) << " ± " 
                       << setw(8) <<  round( fracs[i].err() * 100,4) << " ± " 
                       << setw(8) <<  round(  sqrt( cov[1](i,i)  ) * 100,4) << " ( " 
@@ -414,7 +422,7 @@ void analyzeResults(){
     }    
     cout <<  "Fit fractions " << endl;    
     for( unsigned int i = 0 ; i < fracs.size() ; ++i){
-          if(fracs[i].err()<0.0001)continue;
+          //if(fracs[i].err()<0.0001)continue;
           INFO( setw(60) << left << fracs[i].name() << " " << setprecision(4) 
               << setw(10) <<  right << round(  fracs[i].val() * 100,4) << " ± " 
               << setw(8) <<  round( fracs[i].err() * 100,4) << " ± " 

@@ -1,0 +1,13 @@
+"doSystematic"  "rhoOmega1"
+addAmpList              ""
+
+rho(770)0_deltaOmegaAmp  2 0.0041 0.0001 0 0.01
+rho(770)0_deltaOmegaPhase  2 0 0 -180 180
+rhoOmega10_deltaOmegaAmp  2 0.0067 0.0001 0 0.01
+rhoOmega10_deltaOmegaPhase  2 0 0 -180 180
+rhoOmega20_deltaOmegaAmp  2 0.0081 0.0001 0 0.01
+rhoOmega20_deltaOmegaPhase  2 0 0 -180 180
+rhoOmega30_deltaOmegaAmp  2 0.0031 0.0001 0 0.01
+rhoOmega30_deltaOmegaPhase  2 0 0 -180 180
+rhoOmega40_deltaOmegaAmp  2 0.0043 0.0001 0 0.01
+rhoOmega40_deltaOmegaPhase  2 0 0 -180 180

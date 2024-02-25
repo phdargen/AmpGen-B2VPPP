@@ -1,0 +1,45 @@
+"doSystematic"  "Ls1"
+addAmpList		""
+
+# Running width for K(2)*(1430)+ from file Histos_PsiKpipiAlt/RunningWidth_K(2*(1430+.root
+K(2)*(1430)+::Spline  40 0 4
+K(2)*(1430)+::Spline::Gamma::0                     2   0              0 
+K(2)*(1430)+::Spline::Gamma::1                     2   0              0 
+K(2)*(1430)+::Spline::Gamma::2                     2   0              0 
+K(2)*(1430)+::Spline::Gamma::3                     2   0              0 
+K(2)*(1430)+::Spline::Gamma::4                     2   5.62149e-07    0 
+K(2)*(1430)+::Spline::Gamma::5                     2   0.000104423    0 
+K(2)*(1430)+::Spline::Gamma::6                     2   0.000514991    0 
+K(2)*(1430)+::Spline::Gamma::7                     2   0.00134376     0 
+K(2)*(1430)+::Spline::Gamma::8                     2   0.00267873     0 
+K(2)*(1430)+::Spline::Gamma::9                     2   0.00468098     0 
+K(2)*(1430)+::Spline::Gamma::10                    2   0.00826117     0 
+K(2)*(1430)+::Spline::Gamma::11                    2   0.0177885      0 
+K(2)*(1430)+::Spline::Gamma::12                    2   0.0273179      0 
+K(2)*(1430)+::Spline::Gamma::13                    2   0.0353898      0 
+K(2)*(1430)+::Spline::Gamma::14                    2   0.0430554      0 
+K(2)*(1430)+::Spline::Gamma::15                    2   0.0514271      0 
+K(2)*(1430)+::Spline::Gamma::16                    2   0.0607889      0 
+K(2)*(1430)+::Spline::Gamma::17                    2   0.0707356      0 
+K(2)*(1430)+::Spline::Gamma::18                    2   0.0808595      0 
+K(2)*(1430)+::Spline::Gamma::19                    2   0.0910773      0 
+K(2)*(1430)+::Spline::Gamma::20                    2   0.101434       0 
+K(2)*(1430)+::Spline::Gamma::21                    2   0.111983       0 
+K(2)*(1430)+::Spline::Gamma::22                    2   0.122763       0 
+K(2)*(1430)+::Spline::Gamma::23                    2   0.133798       0 
+K(2)*(1430)+::Spline::Gamma::24                    2   0.145097       0 
+K(2)*(1430)+::Spline::Gamma::25                    2   0.156661       0 
+K(2)*(1430)+::Spline::Gamma::26                    2   0.168485       0 
+K(2)*(1430)+::Spline::Gamma::27                    2   0.180559       0 
+K(2)*(1430)+::Spline::Gamma::28                    2   0.192869       0 
+K(2)*(1430)+::Spline::Gamma::29                    2   0.2054         0 
+K(2)*(1430)+::Spline::Gamma::30                    2   0.218135       0 
+K(2)*(1430)+::Spline::Gamma::31                    2   0.231057       0 
+K(2)*(1430)+::Spline::Gamma::32                    2   0.244147       0 
+K(2)*(1430)+::Spline::Gamma::33                    2   0.257388       0 
+K(2)*(1430)+::Spline::Gamma::34                    2   0.270762       0 
+K(2)*(1430)+::Spline::Gamma::35                    2   0.284252       0 
+K(2)*(1430)+::Spline::Gamma::36                    2   0.297841       0 
+K(2)*(1430)+::Spline::Gamma::37                    2   0.311513       0 
+K(2)*(1430)+::Spline::Gamma::38                    2   0.325252       0 
+K(2)*(1430)+::Spline::Gamma::39                    2   0.33891        0 

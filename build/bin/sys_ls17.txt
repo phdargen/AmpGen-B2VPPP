@@ -1,0 +1,18 @@
+"doSystematic"  "Ls1"
+addAmpList              ""
+
+removeAmps "MIPWA.Omnes"
+
+PiPi20[kMatrix.pole.0]{pi+,pi-}  0 18.05 0.001 0 200   0 268.5 1 -360 360
+PiPi20[kMatrix.pole.1]{pi+,pi-}  0 16.43 0.001 0 100   0 67.74 1 -360 360
+PiPi20[kMatrix.prod.0]{pi+,pi-}  2 1 0 0 50    	       2 0 1 -360 360
+PiPi20[kMatrix.prod.1]{pi+,pi-}  0 7.144 0.001 0 100   0 150.3 1 -360 360
+
+PiPi30[kMatrix.pole.0]{pi+,pi-}  2 1.2 0 0 0           2 46.69 0 0 0
+PiPi30[kMatrix.pole.1]{pi+,pi-}  0 1.326 0.001 0 200   0 112.9 1 -360 360
+PiPi30[kMatrix.prod.1]{pi+,pi-}  0 2.252 0.001 0 200   0 -80.8 1 -360 360
+
+PiPi40[kMatrix.pole.0]{pi+,pi-}  0 2.873 0.001 0 50    0 -77.91 1 -360 360
+PiPi40[kMatrix.pole.1]{pi+,pi-}  0 1.317 0.001 0 50    0 -110.7 1 -360 360
+PiPi40[kMatrix.prod.0]{pi+,pi-}  2 1 0 0 50            2 0 0 -360 360
+PiPi40[kMatrix.prod.1]{pi+,pi-}  0 2.553 0.001 0 50    0 101.7 1 -360 360

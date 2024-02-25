@@ -317,6 +317,18 @@ int main( int argc, char** argv )
   INFO("Generating " << nEvents << " events with f_sig = " << f_sig << " and f_bkg = " << f_bkg << " ..." );
   TFile* f;
     
+  //Remove amps from list
+  vector<string> removeAmps = NamedParameter<string>("removeAmps",vector<string>() ).getVector();
+  for(int n=0; n<removeAmps.size();n++){
+      for(int i=0;i<MPS.size();i++){
+          if(MPS[i]->name().find(removeAmps[n]) != std::string::npos){
+              INFO("Removing parameter " << MPS[i]->name());
+              MPS.unregister(MPS[i]);
+              i=-1;
+          }
+      }
+  }
+    
   // Generate signal events
   if(f_sig>0){
         {

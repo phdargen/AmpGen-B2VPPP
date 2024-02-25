@@ -45,8 +45,8 @@ request_cpus   = 2
 #RequestCpus = 8
 request_disk   = 800000
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, doLASSO1.txt, $(OPTIONFILE), omnes/omnes_mod.txt, omnes/omnes.txt, addAmpListExotic_v6/model_mod.txt,  psi_data_bkgPdf.root, SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, mass_width.csv, MintDalitzSpecialParticles.csv
-arguments = $(Process) main_psi.txt $(OPTIONFILE) omnes_mod.txt omnes.txt model_mod.txt doLASSO1.txt
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, doLASSO.txt, $(OPTIONFILE), omnes/omnes_mod.txt, omnes/omnes.txt, addAmpListExotic_v6/model_mod.txt,  psi_data_bkgPdf.root, SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, mass_width.csv, MintDalitzSpecialParticles.csv
+arguments = $(Process) main_psi.txt $(OPTIONFILE) omnes_mod.txt omnes.txt model_mod.txt doLASSO.txt
  
 output      = $(INDIR)/$(OUTDIR)/out_$(Process).out
 error       = $(INDIR)/$(OUTDIR)/error.err

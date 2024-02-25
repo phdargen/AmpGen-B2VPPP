@@ -1,0 +1,45 @@
+"doSystematic"  "Ls1"
+addAmpList              ""
+
+# Running width for X(V)0 from file Histos_PsiKpipi/RunningWidth_X2phsp.root
+X(V)0::Spline  40 12 25
+X(V)0::Spline::Gamma::0                     2   0              0
+X(V)0::Spline::Gamma::1                     2   0              0
+X(V)0::Spline::Gamma::2                     2   0              0
+X(V)0::Spline::Gamma::3                     2   0              0
+X(V)0::Spline::Gamma::4                     2   0              0
+X(V)0::Spline::Gamma::5                     2   0              0
+X(V)0::Spline::Gamma::6                     2   0              0
+X(V)0::Spline::Gamma::7                     2   0              0
+X(V)0::Spline::Gamma::8                     2   0              0
+X(V)0::Spline::Gamma::9                     2   0              0
+X(V)0::Spline::Gamma::10                    2   0              0
+X(V)0::Spline::Gamma::11                    2   0              0
+X(V)0::Spline::Gamma::12                    2   0.000180101    0
+X(V)0::Spline::Gamma::13                    2   0.000901388    0
+X(V)0::Spline::Gamma::14                    2   0.00221056     0
+X(V)0::Spline::Gamma::15                    2   0.00413598     0
+X(V)0::Spline::Gamma::16                    2   0.00669716     0
+X(V)0::Spline::Gamma::17                    2   0.00990698     0
+X(V)0::Spline::Gamma::18                    2   0.0137726      0
+X(V)0::Spline::Gamma::19                    2   0.0182963      0
+X(V)0::Spline::Gamma::20                    2   0.0234773      0
+X(V)0::Spline::Gamma::21                    2   0.0293113      0
+X(V)0::Spline::Gamma::22                    2   0.0357918      0
+X(V)0::Spline::Gamma::23                    2   0.0429103      0
+X(V)0::Spline::Gamma::24                    2   0.0506568      0
+X(V)0::Spline::Gamma::25                    2   0.0590199      0
+X(V)0::Spline::Gamma::26                    2   0.0679873      0
+X(V)0::Spline::Gamma::27                    2   0.0775461      0
+X(V)0::Spline::Gamma::28                    2   0.0876825      0
+X(V)0::Spline::Gamma::29                    2   0.0983827      0
+X(V)0::Spline::Gamma::30                    2   0.109632       0
+X(V)0::Spline::Gamma::31                    2   0.121417       0
+X(V)0::Spline::Gamma::32                    2   0.133722       0
+X(V)0::Spline::Gamma::33                    2   0.146533       0
+X(V)0::Spline::Gamma::34                    2   0.159836       0
+X(V)0::Spline::Gamma::35                    2   0.173616       0
+X(V)0::Spline::Gamma::36                    2   0.18786        0
+X(V)0::Spline::Gamma::37                    2   0.202552       0
+X(V)0::Spline::Gamma::38                    2   0.21768        0
+X(V)0::Spline::Gamma::39                    2   0.232935       0

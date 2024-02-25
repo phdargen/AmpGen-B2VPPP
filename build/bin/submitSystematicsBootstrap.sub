@@ -1,4 +1,4 @@
-executable  = doFit.sh
+executable  = doFitOnly.sh
 universe    = vanilla
 #getenv 	    = True
 #requirements = (OpSysAndVer =?= "CentOS7")
@@ -44,7 +44,7 @@ endif
 #workday      = 8 hours
 #tomorrow     = 1 day
 
-+JobFlavour = "microcentury"
++JobFlavour = "workday"
 #+MaxDuration = 300
 #request_memory = 8096
 request_cpus   = 2
@@ -56,8 +56,8 @@ request_disk   = 800000
 #stream_output = True
 #stream_error = True
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, doBootstrap.txt, $(INDIR)/$(OPTIONFILE), psi_data_reduced.root, SignalIntegrationEvents_Acc.root, mass_width.csv, MintDalitzSpecialParticles.csv
-arguments = $(Process) main_psi.txt doBootstrap.txt  $(OPTIONFILE)
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, doBootstrap.txt, $(INDIR)/$(OPTIONFILE), SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, psi_data_bkgPdf.root, mass_width.csv, MintDalitzSpecialParticles.csv, omnes/omnes_mod.txt, omnes/omnes.txt, sysBaseline/modelBaseline.txt, freeResoParams.txt
+arguments = $(Process) main_psi.txt doBootstrap.txt $(OPTIONFILE) omnes_mod.txt omnes.txt modelBaseline.txt freeResoParams.txt
  
 #input      = $(OPTIONFILE)
 output      = $(OUTDIR)/out_$(Process).out

@@ -1,0 +1,47 @@
+"doSystematic"  "Ls1"
+addAmpList		""
+
+# Running width for K*(1680)+ from file Histos_PsiKpipiAlt/RunningWidth_K*(1680+.root
+K*(1680)+::Spline  40 0 4
+K*(1680)+::Spline::Gamma::0                     2   0              0 
+K*(1680)+::Spline::Gamma::1                     2   0              0 
+K*(1680)+::Spline::Gamma::2                     2   0              0 
+K*(1680)+::Spline::Gamma::3                     2   0              0 
+K*(1680)+::Spline::Gamma::4                     2   0.00019394     0 
+K*(1680)+::Spline::Gamma::5                     2   0.00413391     0 
+K*(1680)+::Spline::Gamma::6                     2   0.0100242      0 
+K*(1680)+::Spline::Gamma::7                     2   0.0166713      0 
+K*(1680)+::Spline::Gamma::8                     2   0.0237274      0 
+K*(1680)+::Spline::Gamma::9                     2   0.0315704      0 
+K*(1680)+::Spline::Gamma::10                    2   0.0439969      0 
+K*(1680)+::Spline::Gamma::11                    2   0.0796678      0 
+K*(1680)+::Spline::Gamma::12                    2   0.113524       0 
+K*(1680)+::Spline::Gamma::13                    2   0.139802       0 
+K*(1680)+::Spline::Gamma::14                    2   0.163225       0 
+K*(1680)+::Spline::Gamma::15                    2   0.188005       0 
+K*(1680)+::Spline::Gamma::16                    2   0.216445       0 
+K*(1680)+::Spline::Gamma::17                    2   0.244614       0 
+K*(1680)+::Spline::Gamma::18                    2   0.268253       0 
+K*(1680)+::Spline::Gamma::19                    2   0.286663       0 
+K*(1680)+::Spline::Gamma::20                    2   0.300521       0 
+K*(1680)+::Spline::Gamma::21                    2   0.310662       0 
+K*(1680)+::Spline::Gamma::22                    2   0.317814       0 
+K*(1680)+::Spline::Gamma::23                    2   0.322562       0 
+K*(1680)+::Spline::Gamma::24                    2   0.325375       0 
+K*(1680)+::Spline::Gamma::25                    2   0.326628       0 
+K*(1680)+::Spline::Gamma::26                    2   0.326625       0 
+K*(1680)+::Spline::Gamma::27                    2   0.32561        0 
+K*(1680)+::Spline::Gamma::28                    2   0.323784       0 
+K*(1680)+::Spline::Gamma::29                    2   0.321314       0 
+K*(1680)+::Spline::Gamma::30                    2   0.318334       0 
+K*(1680)+::Spline::Gamma::31                    2   0.314958       0 
+K*(1680)+::Spline::Gamma::32                    2   0.311281       0 
+K*(1680)+::Spline::Gamma::33                    2   0.307378       0 
+K*(1680)+::Spline::Gamma::34                    2   0.303317       0 
+K*(1680)+::Spline::Gamma::35                    2   0.299149       0 
+K*(1680)+::Spline::Gamma::36                    2   0.294922       0 
+K*(1680)+::Spline::Gamma::37                    2   0.290671       0 
+K*(1680)+::Spline::Gamma::38                    2   0.286428       0 
+K*(1680)+::Spline::Gamma::39                    2   0.282259       0 
+
+

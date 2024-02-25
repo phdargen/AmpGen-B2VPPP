@@ -51,8 +51,9 @@ CoherentSum::CoherentSum( const EventType& type, const MinuitParameterSet& mps, 
   for( auto& amp : amplitudes ) INFO(prefix + amp.first.decayDescriptor());
   m_matrixElements.resize( amplitudes.size() );
   m_normalisations.resize( m_matrixElements.size(), m_matrixElements.size() ); 
-  size_t      nThreads = NamedParameter<size_t>     ("nCores"    , std::thread::hardware_concurrency(), "Number of threads to use" );
+  int nThreads = NamedParameter<int>("nCores", std::thread::hardware_concurrency(), "Number of threads to use" );
   nThreads = nThreads < 0 ? std::min(omp_get_num_procs(),(int)std::thread::hardware_concurrency()) : nThreads;  
+  INFO( "nThreads = " << nThreads << " for ThreadPool" );
 
   ThreadPool tp(nThreads);
   for(size_t i = 0; i < m_matrixElements.size(); ++i){

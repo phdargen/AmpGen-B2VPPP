@@ -16,7 +16,8 @@ ExtraBranchesMC        ""
 
 maxIntEvents        600000
 
-phspFile SignalIntegrationEvents_Acc.root
+phspFile SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root
+#SignalIntegrationEvents_Acc.root
 weightPhsp        weight
 BranchesPhsp Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ piplus_PE piminus_PX piminus_PY piminus_PZ piminus_PE muplus_PX muplus_PY muplus_PZ muplus_PE muminus_PX muminus_PY muminus_PZ muminus_PE
 
@@ -27,5 +28,5 @@ BranchesMC	""
 addAmpList  ""
 normAmps 1
 ParticleProperties::qsThreshold     0.001
-
+writeToRootFileVerbose		    2
 

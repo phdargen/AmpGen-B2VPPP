@@ -1,0 +1,17 @@
+"doSystematic"  "Ls1"
+addAmpList              ""
+
+"removeAmps"  "X(4500)0[GSpline]" "PiPi00[kMatrix" "PiPi10[kMatrix" "PiPi20[kMatrix" "PiPi30[kMatrix" "PiPi40[kMatrix" "PiPi50[kMatrix"
+
+#X(4500)0_mass  0 4.46896 0.001
+#X(4500)0_width  0 0.186774 0.001
+X(4500)0[CoupledChannel.norm]{rhoOmega10,psi(2S)0}  0 0.7899 0.02307 0 2    0 54.51 2.496 -360 360
+X(4500)0[CoupledChannel.norm]{Z(4240)A+{psi(2S)0,pi+},pi-}  0 0.1069 0.02506 0 10    0 -17.66 11.15 -360 360
+X(4500)0[CoupledChannel.norm]{Z(4240)A-{psi(2S)0,pi-},pi+}_Re = X(4500)0[CoupledChannel.norm]{Z(4240)A+{psi(2S)0,pi+},pi-}_Re
+X(4500)0[CoupledChannel.norm]{Z(4240)A-{psi(2S)0,pi-},pi+}_Im = X(4500)0[CoupledChannel.norm]{Z(4240)A+{psi(2S)0,pi+},pi-}_Im
+
+X(4500)0_channels { X(4500)0{rho(770)0{pi+,pi-},psi(2S)0}  g1  X(4500)0{J/psi0,phi(1020)0} g2  }
+
+#g2_g1             0 0.5 0.001
+g1                2 1 0.001
+g2                0 0.25 0.001 0 1000

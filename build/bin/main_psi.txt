@@ -32,7 +32,8 @@ BranchesMC Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ pip
 "Minimiser::Tolerance"  1.0
 "Minimiser::PrintLevel" 1
 "Minimiser::Normalise"	1
-"nCores"        16
+"nCores"        20
+#"nCores"        -1
 Fit::nReTries	 0
 nFits		 1
 #addAmpList  addAmpListExotic_v5.txt
@@ -41,7 +42,7 @@ normAmps 1
 "fixParamsOptionsFile"      1
 "maxTimePerGen"         24.
 
-saveWeights 	1
+saveWeights 	0
 nBins       60
 MinEventsChi2	25
 "chi2Mode"   1

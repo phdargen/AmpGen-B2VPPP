@@ -37,7 +37,7 @@ endif
 #workday      = 8 hours
 #tomorrow     = 1 day
 
-+JobFlavour = "microcentury"
++JobFlavour = "workday"
 #+MaxDuration = 300
 #request_memory = 8096
 request_cpus   = 2
@@ -49,8 +49,11 @@ request_disk   = 800000
 #stream_output = True
 #stream_error = True
 
-transfer_input_files = myFitter.exe, myPlotter.exe, myToyGen.exe, main_psi.txt, toy_gen.txt, toy_fit.txt, $(INDIR)/$(OPTIONFILE), SignalIntegrationEvents_Acc.root, toy_coreStart.root, mass_width.csv, MintDalitzSpecialParticles.csv
-arguments = $(Process) main_psi.txt toy_gen.txt toy_fit.txt $(OPTIONFILE)
+transfer_input_files = myFitter.exe, myPlotter.exe, myToyGen.exe, main_psi.txt, toy_gen.txt, toy_fit.txt, $(INDIR)/$(OPTIONFILE), SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, toy_coreStart.root, mass_width.csv, MintDalitzSpecialParticles.csv, omnes/omnes_mod.txt, omnes/omnes.txt, toyFitBaseline/toy_modelBaseline.txt, freeResoParams.txt
+
+#arguments = $(Process) main_psi.txt toy_gen.txt $(OPTIONFILE) omnes_mod.txt omnes.txt toy_modelBaseline.txt toy_fit.txt
+arguments = $(Process) main_psi.txt toy_gen.txt $(OPTIONFILE) omnes_mod.txt omnes.txt toy_modelBaseline.txt toy_fit.txt freeResoParams.txt
+
  
 #input      = $(OPTIONFILE)
 output      = $(OUTDIR)/out_$(Process).out

@@ -634,7 +634,7 @@ void sanityChecks(MinuitParameterSet& mps){
                
                auto param = mps[i];
                if(!param->isFree())continue;
-               if(param->name().find( "::Spline::") != std::string::npos){   
+               if(param->name().find( "::Spline::") != std::string::npos){
                    if(param->name().find( head + "::Spline::") != std::string::npos) found = true;
                    TString name(param->name());
                    name.ReplaceAll(head + "::Spline::Re::","");
@@ -670,6 +670,36 @@ void sanityChecks(MinuitParameterSet& mps){
            }
         }
    }  
+    
+    for (int i = 0; i < mps.size();) {
+
+        if (mps[i]->name().find( "::Spline::Omnes" ) != std::string::npos ) {
+            bool found = false;
+            for (int j = 0; j < mps.size(); j++) {
+                auto splinePos = mps[i]->name().find("::Spline::");
+                auto omnesPos = mps[i]->name().find("::", splinePos + 9);
+                auto piPiPart = mps[i]->name().substr(0, splinePos);
+                auto omnesPart = mps[i]->name().substr(splinePos + 9, omnesPos - (splinePos + 9));
+                if (!omnesPart.empty() && omnesPart[0] == ':') {
+                    omnesPart = omnesPart.substr(1);
+                }
+                string searchStr = piPiPart + "[MIPWA." + omnesPart + "]";
+                //INFO(searchStr);
+                if (mps[j]->name().find(searchStr) != std::string::npos) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                INFO("Fitting " + mps[i]->name() + " but there is no matching amplitude, remove it from MinuitParameterSet");
+                mps.unregister(mps[i]);
+                continue;
+            }
+        }
+        ++i;
+    }
+  
+   for(int i=0;i<mps.size();++i) INFO((int)mps[i]->flag() << " " << mps[i]->name());
 }
 
 void checkAmps(PolarisedSum& sig, MinuitParameterSet& mps){
@@ -1439,7 +1469,8 @@ int main( int argc, char* argv[])
               
               sanityChecks(MPS);
               cout << "Number of amplitudes = " << sig.numAmps() << endl;
-              
+              cout << "MPS.size() = " << MPS.size() << endl;
+
               // Set spline start vals
               string head = NamedParameter<std::string>("Head","");
               if(head!="")setSplineVals(MPS,head);
@@ -1546,12 +1577,16 @@ int main( int argc, char* argv[])
                   else lambda = 1 + 1 * (seed-30) ;
               }
               
+              vector<int> rememberFree;
               if(!performFit){
                   for(int i=0;i<MPS.size();i++){
-                      MPS[i]->fix();
+                      if(MPS[i]->isFree()){
+                          MPS[i]->fix();
+                          rememberFree.push_back(i);
+                      }
                   }
               }
-              
+
               double min_LL = 9999999;
               double minChi2 = 999;
               double minChi2PerBin = 999;
@@ -1585,9 +1620,22 @@ int main( int argc, char* argv[])
                       min_LL=fr->LL();
                       fr_best = fr;
                   }
-                  
+                                    
+                  if(phspFile != ""){
+                      auto bNamesPhsp = NamedParameter<std::string>("BranchesPhsp", std::vector<std::string>()).getVector();
+                      std::string weightPhsp = NamedParameter<std::string>("weightPhsp", "weight");
+                      EventList_type eventsPhspMC = EventList_type(phspFile, evtType, GetGenPdf(true), Branches(bNamesPhsp), WeightBranch(weightPhsp));
+                      sig.setMC( eventsPhspMC );
+                      sig.prepare();
+                  }
                   auto ep = fr->getErrorPropagator();
                   auto fitFractions = sig.fitFractions( ep );
+
+                  if(phspFile != ""){
+                      sig.setMC( eventsMC );
+                      sig.prepare();
+                  }
+                  
                   fr->addFractions( fitFractions );
                   auto interferenceFractions = sig.interferenceFractions( ep );
                   fr->addInterferenceFractions( interferenceFractions );
@@ -1626,17 +1674,20 @@ int main( int argc, char* argv[])
                   cout << "Number of parameters = " << nParams << endl;
                   
                   int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
+                  int writeToRootFileVerbose = NamedParameter<int>("writeToRootFileVerbose",0);
+
                   TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
                   fr->setSystematic(doSystematic);
                   fr->print();
                   fr->printToLatexTable(tableFile);
-                  fr->writeToRootFile( output, seed, 0, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds, lambda );
+                  fr->writeToRootFile( output, seed, writeToRootFileVerbose, fr->LL(),  sig.numAmps(), nSig, thresholds, numFracAboveThresholds, lambda );
                   if(replaceAmpAwithB.size()>0 && n>0){
-                      fr->writeToFile(replaceAll(logFile,".txt","_" + to_string(n-1) + ".txt"));
+                      fr->writeToFileMod(replaceAll(logFile,".txt","_" + to_string(n-1) + ".txt"));
                       fr->writeToOptionsFile(replaceAll(modelFile,".txt","_" +  to_string(n-1) + ".txt"), 0);
                   }
                   else{
-                      fr->writeToFile(logFile);
+                      if(!performFit)for(int i=0;i<rememberFree.size();i++) MPS[rememberFree[i]]->setFree();
+                      fr->writeToFileMod(logFile);
                       fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
                   }
                   output->cd();
@@ -1779,7 +1830,7 @@ int main( int argc, char* argv[])
                   ampsToRemoveNParams.push_back((int)fr->floating().size());
                   
                   fr->print();
-                  fr->writeToFile(replaceAll(logFile,".txt","_" + to_string(counterAmpsToRemove) + ".txt"));
+                  fr->writeToFileMod(replaceAll(logFile,".txt","_" + to_string(counterAmpsToRemove) + ".txt"));
                   fr->writeToOptionsFile(replaceAll(modelFile,".txt","_" +  to_string(counterAmpsToRemove) + ".txt"), 0);
                   counterAmpsToRemove++;
                   
@@ -1967,7 +2018,7 @@ int main( int argc, char* argv[])
             int fixParamsOptionsFile = NamedParameter<int>("fixParamsOptionsFile",0);
             TFile* output = TFile::Open( plotFile.c_str(), "RECREATE" ); output->cd();
             fr->print();
-            fr->writeToFile(logFile);
+            fr->writeToFileMod(logFile);
             fr->printToLatexTable(tableFile);
             fr->writeToOptionsFile(modelFile, fixParamsOptionsFile);
             fr->writeToRootFile( output, seed, 0, fr->LL(), 0, nSig, {0}, {0} );
