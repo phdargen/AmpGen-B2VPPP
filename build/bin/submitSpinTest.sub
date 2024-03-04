@@ -13,6 +13,12 @@ else
     BASELINE = bestNoExotic.txt
 endif
 
+if defined a
+    ALTFILE = $(a)
+else
+    ALTFILE = dummy.txt
+endif
+
 if defined d
 	OUTDIR = $(d)
 else 
@@ -31,8 +37,8 @@ endif
 request_cpus   = 2
 request_disk   = 800000
 
-transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(OPTIONFILE), $(BASELINE), SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, psi_data_bkgPdf.root, mass_width.csv, MintDalitzSpecialParticles.csv, omnes/omnes_mod.txt, omnes/omnes.txt, sysBaseline/modelBaseline.txt, freeResoParams.txt, eff_files/SignalIntegrationEvents_Acc_bkgPdf_pidGen.root, eff_files/SignalIntegrationEvents_Acc_bkgPdf_pidRaw.root
-arguments = $(Process) main_psi.txt $(BASELINE) omnes_mod.txt omnes.txt modelBaseline.txt freeResoParams.txt $(OPTIONFILE)
+transfer_input_files = myFitter.exe, myPlotter.exe, main_psi.txt, $(OPTIONFILE), $(BASELINE), SignalIntegrationEventsCP_Acc_bkgPdf_trueP.root, psi_data_bkgPdf.root, mass_width.csv, MintDalitzSpecialParticles.csv, omnes/omnes_mod.txt, omnes/omnes.txt, signTestBaseline/modelBaseline.txt, freeResoParams.txt, doPhspInt.txt, altModels4/$(ALTFILE), toy_coreStart.root
+arguments = $(Process) main_psi.txt $(BASELINE) omnes_mod.txt omnes.txt modelBaseline.txt $(OPTIONFILE)
  
 #output      = $(OUTDIR)/out_$(Process).out
 output      = $(OUTDIR)/out_$SUBSTR(OPTIONFILE, 0, -4).out
@@ -46,7 +52,10 @@ log         = $(OUTDIR)/log.log
 #transfer_output_files = result.root, model.txt, log.txt, amp_plots.pdf, amp_plots2.pdf, amp_plots3.pdf
 #transfer_output_remaps = "result.root = $(OUTDIR)/result_$SUBSTR(OPTIONFILE, 0, -4).root ; amp_plots.pdf = $(OUTDIR)/amp_plots_$SUBSTR(OPTIONFILE, 0, -4).pdf; amp_plots2.pdf = $(OUTDIR)/amp_plots2_$SUBSTR(OPTIONFILE, 0, -4).pdf; amp_plots3.pdf = $(OUTDIR)/amp_plots3_$SUBSTR(OPTIONFILE, 0, -4).pdf ; model.txt =  $(OUTDIR)/model_$SUBSTR(OPTIONFILE, 0, -4).txt ; log.txt = $(OUTDIR)/log_$SUBSTR(OPTIONFILE, 0, -4).txt"
 
-transfer_output_files = result.root, model.txt, log.txt
-transfer_output_remaps = "result.root = $(OUTDIR)/result_$SUBSTR(OPTIONFILE, 0, -4).root ; model.txt =  $(OUTDIR)/model_$SUBSTR(OPTIONFILE, 0, -4).txt ; log.txt = $(OUTDIR)/log_$SUBSTR(OPTIONFILE, 0, -4).txt"
+#transfer_output_files = result.root, model.txt, log.txt
+#transfer_output_remaps = "result.root = $(OUTDIR)/result_$SUBSTR(OPTIONFILE, 0, -4).root ; model.txt =  $(OUTDIR)/model_$SUBSTR(OPTIONFILE, 0, -4).txt ; log.txt = $(OUTDIR)/log_$SUBSTR(OPTIONFILE, 0, -4).txt"
 
-queue OPTIONFILE matching files sys_sWave*.txt
+transfer_output_files = log.txt
+transfer_output_remaps = "log.txt = $(OUTDIR)/log_$SUBSTR(OPTIONFILE, 0, -4).txt"
+
+queue OPTIONFILE matching files sign_ampSpin*.txt

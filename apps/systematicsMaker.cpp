@@ -86,9 +86,11 @@ void EnsureRing( const FitResult& fit, const FitResult& starterFit ){
   for( auto param : params ){
     if( param->name().find("_Im") == string::npos ) continue; 
     MinuitParameter* other_param = fit.mps()->find(param->name() ) ; 
+    if(other_param == nullptr) other_param = fit.mps()->find( replaceAll(param->name(),"GSpline","GSpline.BL") ) ;
+      
     if( other_param == nullptr ){
-         //ERROR(param->name() << " not found in fit! [map size = " << fit.mps()->size() << "]");
-         return;
+         ERROR(param->name() << " not found in fit! [map size = " << fit.mps()->size() << "]");
+         continue;
     }
     other_param->setCurrentFitVal( form_ring( other_param->mean(), param->mean() ) );
   }
@@ -109,15 +111,20 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       double mean = 0;
       double maxDiff = 0;
       double pull_mean = 0;
+      double nFits = 0;
+
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") ){
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline")  ){
                   mean += p->mean();
                   maxDiff = abs(p->mean() - params[i]->mean()) > maxDiff ? abs(p->mean() - params[i]->mean()) : maxDiff;
-                  if(params_toy->find(name_i))pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
+                  if(params_toy->find(name_i)){
+                      pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
+                      nFits++;
+                  }
                   else ERROR(name_i << " not found in toy log file");
-                  //if(name_i=="B+[D]{psi(2S)0,K(1)(1270)+}_Im") INFO(name_i << " : " << p->mean() << " +/- " << p->err());
+                  if(name_i=="B+{Z(4430)+{psi(2S)0,pi+},KPi40}_Re") INFO(name_i << " : " << p->mean() << " +/- " << p->err());
               }
           }
       }
@@ -127,23 +134,23 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
           continue;
       }  
         
-      mean/=double(fits.size());
-      pull_mean/=double(fits.size());
+      mean/=double(nFits);
+      pull_mean/=double(nFits);
 
       double var = 0;
       double pull_var = 0;
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","")  ){
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline")  ){
                   var += pow(p->mean() - mean,2);
                   if(params_toy->find(name_i))pull_var += pow((params_toy->find(name_i)->mean()-p->mean())/p->err() - pull_mean,2);
                   else ERROR(name_i << " not found in toy log file");
               }
           }
       }        
-      var/=double(fits.size()-1.);
-      pull_var/=double(fits.size()-1.);
+      var/=double(nFits-1.);
+      pull_var/=double(nFits-1.);
         
       if(mode=="Bias")covMatrix(i,i) = pow(mean - params[i]->mean(),2 );
       if(mode=="Var") covMatrix(i,i) = var;
@@ -164,21 +171,24 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
         double mean = 0;
         double maxDiff = 0;
         double pull_mean = 0;
+        double nFits = 0;
         for(auto& fit : fits){
             auto fracs_fit = fit.fitFractions();
             for(auto& f: fracs_fit){
-                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","")  ){
+                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline")   ){
                     mean += f.val();
                     maxDiff = abs(f.val() - fracs[i].val()) > maxDiff ? abs(f.val() - fracs[i].val()) : maxDiff;
                     double frac_toy_val = -1;
                     for(auto& f_toy: fracsToy){
                         if(name_i == f_toy.name() ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),".BL","") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),".dm2","") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"CoupledChannel.norm","GSpline") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     if(f.err()>0.0001)pull_mean += (f.val() - frac_toy_val)/f.err();
-                    if(name_i=="Sum_Xs2(V)0") INFO(name_i << " : " << f.val() << " +/- " <<f.err());
-
+                    if(name_i=="X(V)0[GSpline]{Z(4430)+{psi(2S)0,pi+},pi-}") INFO(name_i << " : " << f.val() << " +/- " <<f.err());
+                    nFits++;
                 }
             }
         }
@@ -187,28 +197,30 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
             covMatrix_frac(i,i) = 0;
             continue;
         }  
-        mean/=double(fits.size());
-        pull_mean/=double(fits.size());
+        mean/=double(nFits);
+        pull_mean/=double(nFits);
 
         double var = 0;
         double pull_var = 0;
         for(auto& fit : fits){
             auto fracs_fit = fit.fitFractions();
             for(auto& f: fracs_fit){
-                if(name_i == f.name() ){
+                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline") ){
                     var += pow(f.val() - mean,2);
                     double frac_toy_val = -1;
                     for(auto& f_toy: fracsToy){
-                        if(name_i == f_toy.name() || name_i == replaceAll(f.name(),".BL","")  ) frac_toy_val = f_toy.val();
+                        if(name_i == f_toy.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline")  ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),".BL","")  ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),".dm2","")  ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"CoupledChannel.norm","GSpline") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     if(f.err()>0.0001)pull_var += pow((f.val() - frac_toy_val)/f.err() - pull_mean,2);
                 }
             }
         }
-        var/=double(fits.size()-1.);
-        pull_var/=double(fits.size()-1.);
+        var/=double(nFits-1.);
+        pull_var/=double(nFits-1.);
         
         if(mode=="Bias")covMatrix_frac(i,i) = pow(mean - fracs[i].val(),2);
         if(mode=="Var") covMatrix_frac(i,i) = var;
@@ -282,8 +294,8 @@ vector<TMatrixD> diffMethod(const FitResult& fit1, const FitResult& fit2, const 
 string removeLineshapeMods(string name){
     name =  replaceAll(name,"[GSpline]","");
     name =  replaceAll(name,"[GSpline.BL]","");
-    name =  replaceAll(name,"[D;GSpline.BL]","");
-    name =  replaceAll(name,"[D;GSpline]","");
+    name =  replaceAll(name,"[D;GSpline.BL]","[D]");
+    name =  replaceAll(name,"[D;GSpline]","[D]");
     name =  replaceAll(name,"[GounarisSakurai.Omega.BL]","");
     name =  replaceAll(name,"[GounarisSakurai.Omega]","");
 
@@ -328,7 +340,7 @@ void analyzeResults(){
               continue;
           }
           FitResult fr(sysFiles[0] + to_string(i)+".txt");
-          //EnsureRing( fr, starterFit );
+          EnsureRing( fr, starterFit );
           fits.push_back(fr);
           if(sys=="AltAmp")allModelFits.push_back(fr);
         }
@@ -377,7 +389,7 @@ void analyzeResults(){
             else if(sys=="Toys"){
                 string baseLineToy = NamedParameter<string>("baseLineToy", "");
                 FitResult starterToy(baseLineToy);
-                //EnsureRing( starterToy, starterFit );
+                EnsureRing( starterToy, starterFit );
                 cov = sampleVarMethod(fits,starterFit,starterToy,sysMethod);
             }
             
@@ -541,10 +553,10 @@ void analyzeResults(){
         else{
             double tot = 0.;
             for(int j =0 ; j <covs.size() ; j++)tot += (covs[j])[i][i];
-            ResultFile2 << fixed << setprecision(2) << "$" << starterFit.latexName(params[i]->name()) << "$ & $" ;
-            ResultFile2 << params[i]->mean()  << " \\pm " ;
-            ResultFile2 << params[i]->err() ;
-            if(tot>0)ResultFile2 << " \\pm " << sqrt(tot)  ;
+            ResultFile2 << fixed << setprecision(0) << "$" << starterFit.latexName(params[i]->name()) << "$ & $" ;
+            ResultFile2 << params[i]->mean() * 1000.  << " \\pm " ;
+            ResultFile2 << params[i]->err() * 1000.;
+            if(tot>0)ResultFile2 << " \\pm " << sqrt(tot) * 1000.  ;
             ResultFile2 << "$ \\\\ " << "\n";
         }
         
@@ -808,13 +820,60 @@ void analyzeResults(){
 }
 
 
+void calculateSignificance(){
+    
+    INFO("Calculate significance");
+    string baseLineFit = NamedParameter<string>("baseLineFit", "log.txt");
+    //string outDir = NamedParameter<string>("outDir", "sys/out/");
+    
+    FitResult starterFit(baseLineFit);
+    starterFit.print();
+    auto nParams = starterFit.nParam();
+    auto min_LL = starterFit.LL();
+    auto minChi2 = starterFit.chi2()/((double)starterFit.nBins()-1.-starterFit.nParam());
+    auto minChi2PerBin = starterFit.chi2()/((double)starterFit.nBins()-1.);
+
+    auto signFiles = NamedParameter<string>("signFiles", vector<string>()).getVector(); // basename, first file number, last file number
+    vector<string> removeAmpsSign = NamedParameter<string>("removeAmpsSign",vector<string>() ).getVector();
+    vector<double> scale_dParams = NamedParameter<double>("scale_dParams",vector<double>() ).getVector();
+
+    if( ! (scale_dParams.size() == removeAmpsSign.size() && scale_dParams.size() == (stoi(signFiles[2]) - stoi(signFiles[1]) + 1 ) ) ) ERROR("Inconsistent file settings");
+    
+    vector<FitResult> fits;
+    for(unsigned int i = stoi(signFiles[1]) ; i <= stoi(signFiles[2]) ; ++i){
+        if(! std::ifstream((signFiles[0] + to_string(i)+".txt").c_str()).good()){
+            ERROR("File " << signFiles[0] + to_string(i)+".txt" << " not found");
+            continue;
+        }
+        FitResult fr(signFiles[0] + to_string(i)+".txt");
+        
+        int dParams = abs(fr.nParam() - nParams);
+        double dLL = fr.LL() - min_LL;
+        double dChi2 = minChi2 - fr.chi2()/((double)fr.nBins()-1.-fr.nParam());
+        double dChi2PerBin = minChi2PerBin - fr.chi2()/((double)fr.nBins()-1.);
+        
+        double LL_sig = sqrt(2) * TMath::ErfcInverse(TMath::Prob(abs(dLL),scale_dParams[i-1]*dParams));
+        
+        if(abs(dLL)>0 && TMath::Prob(abs(dLL),dParams) == 0 ) LL_sig = 100;
+        if(dLL) LL_sig *= -1.;
+
+        INFO("Amp= " << removeAmpsSign[i-1] << ":: dLL = " << dLL << " (" << LL_sig << " sigma) ; dChi2 = " << dChi2 << " ; dChi2PerBin = " << dChi2PerBin  );
+    }
+    
+}
+
+
 int main( int argc, char* argv[] ){
 
   OptionsParser::setArgs( argc, argv );
 
   gStyle->SetOptStat(0);
   LHCbStyle();
-  analyzeResults();
+    
+  auto mode = NamedParameter<Int_t>("systematicsMaker::mode", 0);
 
+  if(mode==0)analyzeResults();
+  if(mode==1)calculateSignificance();
+    
   return 0;
 }

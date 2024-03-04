@@ -39,7 +39,7 @@ nFits		 1
 #addAmpList  addAmpListExotic_v5.txt
 "randomizeStartVals"     0
 normAmps 1
-"fixParamsOptionsFile"      1
+"fixParamsOptionsFile"      0
 "maxTimePerGen"         24.
 
 saveWeights 	0

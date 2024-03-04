@@ -849,6 +849,8 @@ FitResult* doFit( likelihoodType&& likelihood, EventList_type& data, EventList_t
         }
     }
     
+    //unsigned int nFitsFixed = NamedParameter<unsigned int>( "Fit::nFitsFixed", 0 );
+    
     //std::vector<TGraph*> rw_new;
     //for( auto& shape : threeBodyShapes ) rw_new.push_back(shape.widthGraph(1.));
     //for( auto& graph : rw_new) graph->Write();
@@ -1346,11 +1348,21 @@ int main( int argc, char* argv[])
   for(int n=0; n<removeAmps.size();n++){
       for(int i=0;i<MPS.size();i++){
           if(MPS[i]->name().find(removeAmps[n]) != std::string::npos){
-              INFO("Removing parameter " << MPS[i]->name());
+              INFO("removeAmps::Removing parameter " << MPS[i]->name());
               MPS.unregister(MPS[i]);
               i=-1;
           }
       }
+  }
+  vector<string> removeAmpsSign = NamedParameter<string>("removeAmpsSign",vector<string>() ).getVector();
+    for(int n=0; n<removeAmpsSign.size();n++){
+        for(int i=0;i<MPS.size();i++){
+            if(MPS[i]->name().find(removeAmpsSign[n]) != std::string::npos){
+                INFO("removeAmpsSign::Removing parameter " << MPS[i]->name());
+                MPS.unregister(MPS[i]);
+                i=-1;
+            }
+        }
   }
     
   //Randomize start values   
