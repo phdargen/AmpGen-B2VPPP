@@ -10,5 +10,6 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_96python3/x86_64-centos7-gcc8-opt/setup.
 touch result.root
 touch log.txt
 touch model.txt
+touch Fit_weights.root
 ./myFitter.exe "$@"
 #./myPlotter.exe "$@"

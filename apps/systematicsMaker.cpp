@@ -87,7 +87,10 @@ void EnsureRing( const FitResult& fit, const FitResult& starterFit ){
     if( param->name().find("_Im") == string::npos ) continue; 
     MinuitParameter* other_param = fit.mps()->find(param->name() ) ; 
     if(other_param == nullptr) other_param = fit.mps()->find( replaceAll(param->name(),"GSpline","GSpline.BL") ) ;
-      
+    if(other_param == nullptr) other_param = fit.mps()->find( replaceAll(param->name(),"X(4500)0[GSpline]{rhoOmega40","X(4500)0[GSpline]{rhoOmega10") ) ;
+    if(other_param == nullptr) other_param = fit.mps()->find( replaceAll(param->name(),"X(4685)0[GSpline]{Z(4240)A", "X(4685)0[GSpline]{Z(4430)") ) ;
+    if(other_param == nullptr) other_param = fit.mps()->find( replaceAll(param->name(),"K(1)(1270)+[GSpline]{KPi10,pi+}","K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}") ) ;
+
     if( other_param == nullptr ){
          ERROR(param->name() << " not found in fit! [map size = " << fit.mps()->size() << "]");
          continue;
@@ -104,7 +107,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
     TMatrixD covMatrix( params.size(), params.size() );
     INFO("Number of toys " << fits.size());
     
-    auto params_toy = toyFit.mps();
+    auto params_toy = toyFit.floating();
 
     for( unsigned int i = 0 ; i < params.size(); ++i ){
       string name_i = params[i]->name();
@@ -116,14 +119,34 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline")  ){
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline") 
+                 || name_i == replaceAll(p->name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") || name_i == replaceAll(p->name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") || name_i == replaceAll(p->name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}")
+                 ){
                   mean += p->mean();
                   maxDiff = abs(p->mean() - params[i]->mean()) > maxDiff ? abs(p->mean() - params[i]->mean()) : maxDiff;
-                  if(params_toy->find(name_i)){
-                      pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
+                  
+                  //if(params_toy->find(name_i)){
+                      //pull_mean += (params_toy->find(name_i)->mean()-p->mean())/p->err();
+                      //nFits++;
+                  //}
+                  //else ERROR(name_i << " not found in toy log file");
+                  
+                  double p_toy_val = -9999;
+                  for(auto& p_toy: params_toy){
+                      if(name_i == p_toy->name() ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),".BL","") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),".dm2","") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"CoupledChannel.norm","GSpline") ) p_toy_val = p_toy->mean();
+                      
+                      else if(name_i == replaceAll(p_toy->name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ) p_toy_val = p_toy->mean();
+                  }
+                  if(p_toy_val==-9999)ERROR(name_i << " not found in log file");
+                  else if(p->err()>0.00001){
+                      pull_mean +=  (p_toy_val-p->mean())/p->err();
                       nFits++;
                   }
-                  else ERROR(name_i << " not found in toy log file");
                   if(name_i=="B+{Z(4430)+{psi(2S)0,pi+},KPi40}_Re") INFO(name_i << " : " << p->mean() << " +/- " << p->err());
               }
           }
@@ -142,10 +165,27 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
       for(auto& fit : fits){
           auto params_fit = fit.floating();
           for(auto& p: params_fit){
-              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline")  ){
+              if(name_i == p->name() || name_i == replaceAll(p->name(),".BL","") || name_i == replaceAll(p->name(),".dm2","") || name_i == replaceAll(p->name(),"CoupledChannel.norm","GSpline")  || name_i == replaceAll(p->name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") || name_i == replaceAll(p->name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") || name_i == replaceAll(p->name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ){
                   var += pow(p->mean() - mean,2);
-                  if(params_toy->find(name_i))pull_var += pow((params_toy->find(name_i)->mean()-p->mean())/p->err() - pull_mean,2);
-                  else ERROR(name_i << " not found in toy log file");
+                  
+                  //if(params_toy->find(name_i))pull_var += pow((params_toy->find(name_i)->mean()-p->mean())/p->err() - pull_mean,2);
+                  //else ERROR(name_i << " not found in toy log file");
+                  
+                  double p_toy_val = -9999;
+                  for(auto& p_toy: params_toy){
+                      if(name_i == p_toy->name() ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),".BL","") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),".dm2","") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"CoupledChannel.norm","GSpline") ) p_toy_val = p_toy->mean();
+                      
+                      else if(name_i == replaceAll(p_toy->name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") ) p_toy_val = p_toy->mean();
+                      else if(name_i == replaceAll(p_toy->name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ) p_toy_val = p_toy->mean();
+                  }
+                  if(p_toy_val==-9999)ERROR(name_i << " not found in log file");
+                  else if(p->err()>0.00001){
+                      pull_var += pow((p_toy_val-p->mean())/p->err() - pull_mean,2);
+                  }
               }
           }
       }        
@@ -175,7 +215,7 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
         for(auto& fit : fits){
             auto fracs_fit = fit.fitFractions();
             for(auto& f: fracs_fit){
-                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline")   ){
+                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline") || name_i == replaceAll(f.name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") || name_i == replaceAll(f.name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") || name_i == replaceAll(f.name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}")  ){
                     mean += f.val();
                     maxDiff = abs(f.val() - fracs[i].val()) > maxDiff ? abs(f.val() - fracs[i].val()) : maxDiff;
                     double frac_toy_val = -1;
@@ -184,6 +224,10 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
                         else if(name_i == replaceAll(f_toy.name(),".BL","") ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),".dm2","") ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),"CoupledChannel.norm","GSpline") ) frac_toy_val = f_toy.val();
+                        
+                        else if(name_i == replaceAll(f_toy.name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     if(f.err()>0.0001)pull_mean += (f.val() - frac_toy_val)/f.err();
@@ -205,14 +249,18 @@ vector<TMatrixD> sampleVarMethod( const vector<FitResult>& fits, const FitResult
         for(auto& fit : fits){
             auto fracs_fit = fit.fitFractions();
             for(auto& f: fracs_fit){
-                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline") ){
+                if(name_i == f.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline") || name_i == replaceAll(f.name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") || name_i == replaceAll(f.name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") || name_i == replaceAll(f.name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}")){
                     var += pow(f.val() - mean,2);
                     double frac_toy_val = -1;
                     for(auto& f_toy: fracsToy){
-                        if(name_i == f_toy.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline")  ) frac_toy_val = f_toy.val();
+                        if(name_i == f_toy.name() || name_i == replaceAll(f.name(),".BL","") || name_i == replaceAll(f.name(),".dm2","") || name_i == replaceAll(f.name(),"CoupledChannel.norm","GSpline") || name_i == replaceAll(f.name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") || name_i == replaceAll(f.name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") || name_i == replaceAll(f.name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),".BL","")  ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),".dm2","")  ) frac_toy_val = f_toy.val();
                         else if(name_i == replaceAll(f_toy.name(),"CoupledChannel.norm","GSpline") ) frac_toy_val = f_toy.val();
+                        
+                        else if(name_i == replaceAll(f_toy.name(),"X(4500)0[GSpline]{rhoOmega10","X(4500)0[GSpline]{rhoOmega40") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"X(4685)0[GSpline]{Z(4430)","X(4685)0[GSpline]{Z(4240)A") ) frac_toy_val = f_toy.val();
+                        else if(name_i == replaceAll(f_toy.name(),"K(1)(1270)+[GSpline]{KPi10[FOCUS.Kpi]{K+,pi-},pi+}","K(1)(1270)+[GSpline]{KPi10,pi+}") ) frac_toy_val = f_toy.val();
                     }
                     if(frac_toy_val<0)ERROR(name_i << " not found in log file");
                     if(f.err()>0.0001)pull_var += pow((f.val() - frac_toy_val)/f.err() - pull_mean,2);
@@ -298,6 +346,10 @@ string removeLineshapeMods(string name){
     name =  replaceAll(name,"[D;GSpline]","[D]");
     name =  replaceAll(name,"[GounarisSakurai.Omega.BL]","");
     name =  replaceAll(name,"[GounarisSakurai.Omega]","");
+    name =  replaceAll(name,"rhoOmega10","rho(770)0{pi+,pi-}");
+    name =  replaceAll(name,"rhoOmega20","rho(770)0{pi+,pi-}");
+    name =  replaceAll(name,"rhoOmega30","rho(770)0{pi+,pi-}");
+    name =  replaceAll(name,"rhoOmega40","rho(770)0{pi+,pi-}");
 
     return name;
 }
@@ -683,8 +735,8 @@ void analyzeResults(){
     for(int i =0 ; i < interferenceFracs.size() ; i++){
             if(abs(interferenceFracs[i].val() * 100.) < 0.1)continue;
             IntFracResultFile << fixed << setprecision(2) << "$" << starterFit.latexName(interferenceFracs[i].name()) << "$ & $" ;
-            IntFracResultFile << interferenceFracs[i].val() * 100. << " \\pm " ;
-            IntFracResultFile << interferenceFracs[i].err() * 100.  ;
+            IntFracResultFile << 2*interferenceFracs[i].val() * 100. << " \\pm " ;
+            IntFracResultFile << 2*interferenceFracs[i].err() * 100.  ;
             IntFracResultFile << "$ \\\\ " << "\n";
     }
 
