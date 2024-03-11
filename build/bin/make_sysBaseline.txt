@@ -1,4 +1,4 @@
-"baseLineFit" "baselineResult/log_baseline.txt"
+"baseLineFit" "baselineModel_v2/log_baselineModel_v2.txt"
 "baseLineToy" "sys_toyBaseline/log_toyFitBaseline.txt"
 
 #"includeSys" "Toys" "MC" "Acc" "Bkg" "FF" "NR" "LS" "Res" "AltAmp"
@@ -6,35 +6,35 @@
 #"includeSys" "Toys" 
 
 "sysNameAcc" "Acc."
-"sysFilesAcc" "sysBaseline/log_sys_acc" 1 7
+"sysFilesAcc" "sysBaseline_v2/log_sys_acc" 1 7
 "sysMethodAcc" "Var"
 
 "sysNameBkg" "Bkg."
-"sysFilesBkg" "sysBaseline/log_sys_bkg" 1 3
+"sysFilesBkg" "sysBaseline_v2/log_sys_bkg" 1 3
 "sysMethodBkg" "Diff"
 
 "sysNameFF" "Form Factors"
-"sysFilesFF" "sysBaseline/log_sys_ff" 1 6
+"sysFilesFF" "sysBaseline_v2/log_sys_ff" 1 6
 "sysMethodFF" "Var"
 
-"sysNameFixed" "Fixed Amps."
-"sysFilesFixed" "sysBaseline/log_sys_fixedAmps" 1 2
+"sysNameFixed" "$\rho/\omega$"
+"sysFilesFixed" "sysBaseline_v2/log_sys_rhoOmega" 1 1
 "sysMethodFixed" "MaxDiff"
 
 "sysNameSwave" "S-wave"
-"sysFilesSwave" "sysBaseline/log_sys_sWave" 2 6
+"sysFilesSwave" "sysBaseline_v2/log_sys_sWave" 1 7
 "sysMethodSwave" "Var"
 
 "sysNameLS" "Lineshapes"
-"sysFilesLS" "sysBaseline/log_sys_ls" 1 17
+"sysFilesLS" "sysBaseline_v2/log_sys_ls" 1 15
 "sysMethodLS" "Var"
 
 "sysNameRes" "$m,\Gamma$"
-"sysFilesRes" "sysBaseline/log_sysVary_res_" 0 23
+"sysFilesRes" "sysBaseline_v2/log_sysVary_res_" 0 23
 "sysMethodRes" "Diff"
 
 "sysNameAltAmp" "Alt. Amp."
-"sysFilesAltAmp" "altModels4/log_" 1 12
+"sysFilesAltAmp" "altModels_v2/final/log_altModel_" 1 12
 "sysMethodAltAmp" "Var"
 
 "sysNameMC" "MC Integ."

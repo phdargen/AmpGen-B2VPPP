@@ -59,6 +59,10 @@ smoothFitProj 1
 #-   0  1   2   3   4
 
 filter_plotN	1 3 4 5
+# K*
+# high Kpipi
+# low Kpipi
+# rho
 
 #K pi
 "invertCut_plot1"     0
