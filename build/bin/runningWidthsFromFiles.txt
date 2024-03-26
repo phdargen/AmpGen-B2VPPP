@@ -31,14 +31,25 @@ prepareRunningWidthFromFiles    1
 #"RunningWidthFiles" "Histos_PsiKpipi_v2/RunningWidth_K(1)(1650)+.root" "Histos_PsiKpipi_v2/RunningWidth_K(1)(1650)+_phsp.root" "Histos_PsiKpipi_v2/RunningWidth_K(1830)+_phsp.root" "Histos_PsiKpipi_v2/RunningWidth_K*(1680+.root" "Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root" "Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root" "Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root" "Histos_PsiKpipi_v2/RunningWidth_K(2)(1770)+.root"
 #outName     splineKnots_v2.txt
 
-outDir runningWidthsFromFiles/v2/
-"ThreeBodiesToIntegrate"    "X(4500)0" "X(4685)0" "X(4700)0" "X(V)0" "Xs(S)0" "Xs(A)0" "Xs2(A)0" "Xs2(V)0"
-"RunningWidthFiles"     "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2phsp.root"
-outName     splineKnotsX.txt
+#outDir runningWidthsFromFiles/v2/
+#"ThreeBodiesToIntegrate"    "X(4500)0" "X(4685)0" "X(4700)0" "X(V)0" "Xs(S)0" "Xs(A)0" "Xs2(A)0" "Xs2(V)0"
+#"RunningWidthFiles"     "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_X2rho.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2phsp.root"
+#outName     splineKnotsX.txt
 
-outDir runningWidthsFromFiles/alt_v2/
-"ThreeBodiesToIntegrate"    "X(4500)0" "X(4685)0" "X(4700)0" "X(V)0"
-"RunningWidthFiles"     "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root"
-outName     splineKnotsX.txt
+#outDir runningWidthsFromFiles/alt_v2/
+#"ThreeBodiesToIntegrate"    "X(4500)0" "X(4685)0" "X(4700)0" "X(V)0"
+#"RunningWidthFiles"     "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root"
+#outName     splineKnotsX.txt
 
 
+#outDir runningWidthsFromFiles/alt_v2/
+#"ThreeBodiesToIntegrate"    "Xs(A)0" "Xs2(A)0" "Xs(S)0" "Xs2(V)0"
+#"RunningWidthFiles"     "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" "Histos_PsiKpipi/RunningWidth_Xs2Ks.root" 
+#outName     splineKnotsXs.txt
+
+
+
+outDir runningWidthsFromFiles/paper/
+"ThreeBodiesToIntegrate"      K(1)(1270)+ K(1)(1400)+ K*(1410)+ K(2)*(1430)+ K*(1680)+ K(2)(1770)+ X(S)0 Xs(S)0 
+"RunningWidthFiles" "Histos_KKpipi_LHCb/RunningWidth_K(1)(1270)+.root" "Histos_PsiKpipi/RunningWidth_K(1)(1400)+.root" "Histos_PsiKpipi/RunningWidth_K*(1410+.root" "Histos_PsiKpipi/RunningWidth_K(2*(1430+.root" "Histos_PsiKpipi/RunningWidth_K*(1680+.root" "Histos_PsiKpipi/RunningWidth_K(2)(1770)+.root" "Histos_PsiKpipi/RunningWidth_X2phsp.root" "Histos_PsiKpipi/RunningWidth_Xs2phsp.root" 
+outName     splineKnots_paper.txt
