@@ -10,7 +10,7 @@ CouplingConstant::AngularUnits deg
 PhaseSpace RecursivePhaseSpace
 #Normalise 0
 
-Output toy_K1.root
+Output toy_K1_v2.root
 #Seed    2
 
 #Output toy_phspAmpGen_1M.root
@@ -20,9 +20,14 @@ Output toy_K1.root
 #Seed    3
 
 normAmps 1
-phspFile SignalIntegrationEvents_Acc.root
-weightPhsp        weight
-BranchesPhsp Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ piplus_PE piminus_PX piminus_PY piminus_PZ piminus_PE muplus_PX muplus_PY muplus_PZ muplus_PE muminus_PX muminus_PY muminus_PZ muminus_PE
+#phspFile SignalIntegrationEvents_Acc.root
+#weightPhsp        weight
+#BranchesPhsp Kplus_PX Kplus_PY Kplus_PZ Kplus_PE piplus_PX piplus_PY piplus_PZ piplus_PE piminus_PX piminus_PY piminus_PZ piminus_PE muplus_PX muplus_PY muplus_PZ muplus_PE muminus_PX muminus_PY muminus_PZ muminus_PE
+
+phspFile        toy_coreStart.root
+weightPhsp      weight
+BranchesPhsp    ""
+
 
 psi(2S)0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
 
