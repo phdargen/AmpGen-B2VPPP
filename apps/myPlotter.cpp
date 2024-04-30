@@ -228,7 +228,10 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
   TH1D* histo = new TH1D(name.c_str(),"",dim.size()==1 ? nBinsAngles*2 : nBins*2,limits[0],limits[1]);
   histo->SetMinimum(0.);
   histo->GetXaxis()->SetTitle(title.c_str());
-  histo->GetYaxis()->SetTitle("Yield (norm.)");
+  histo->GetYaxis()->SetTitle("Candidates (normalised)");
+  histo->GetYaxis()->SetTitleSize(histo->GetYaxis()->GetTitleSize()*0.9);
+  histo->GetYaxis()->SetTitleOffset(histo->GetYaxis()->GetTitleOffset()*1.2);
+
   histo->SetMarkerSize(1.);
 	//histo->SetMarkerStyle(21);
   histos.push_back(histo);
@@ -245,7 +248,7 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
             //h->SetFillColor(kRed+1);
             //h->SetFillStyle(3353);
       }else if(i==7){
-            h->SetLineColor(kGreen+1);
+            h->SetLineColor(kOrange-7);
             h->SetLineWidth(3);
             //h->SetFillColor(kGreen+3);
             //h->SetFillStyle(3353);
@@ -264,24 +267,30 @@ vector<TH1D*> createHistos(vector<unsigned int> dim,string name, string title, i
             //h->SetFillColor(kGray+3);
             //h->SetFillStyle(1001);
       }else if(i==3){
-            h->SetLineColor(kOrange-7);
+            h->SetLineColor(kGreen+3);
             h->SetLineWidth(3);
-            //h->SetFillColor(kGray+3);
-            //h->SetFillStyle(1001);
+            //h->SetFillColor(kGreen+3);
+            //h->SetFillStyle(3350);
       }else if(i==8){
           h->SetLineColor(kOrange+1);
           h->SetLineWidth(3);
           //h->SetFillColor(kGray+3);
           //h->SetFillStyle(1001);
-      }else if(i==weights.size()-1){
-          h->SetLineColor(kGray);
-          h->SetLineWidth(3);
-          h->SetFillColor(kGray);
-          //h->SetFillStyle(1001);
       }else {
           h->SetLineColor(kBlack);
           h->SetLineWidth(3);
           h->SetLineStyle(kDashed);
+      }
+      
+      if(i==weights.size()-1){
+          h->SetLineColor(kGray+3);
+          h->SetLineWidth(3);
+          h->SetFillColor(kGray+3);
+          //h->SetFillStyle(1001);
+      }
+      else if(i>2){
+            h->SetLineStyle(i-1);
+            h->SetLineWidth(10);
       }
       histos.push_back(h);
   }
@@ -323,10 +332,6 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
     histos[0]->SetMarkerSize(markerSize);
     //histos[0]->GetYaxis()->SetTitle("");
   }
-  histos[0]->SetMinimum(1);
-  //if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
-  histos[0]->SetMaximum(histos[0]->GetMaximum()*scaleMax);
-  histos[0]->DrawNormalized("",1);
   
   //Compute err bands for fit
   unsigned int nPermErrorBands   = NamedParameter<unsigned int>("nPermErrorBands",0);  
@@ -335,7 +340,13 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
   unsigned int addSysErrBand   = NamedParameter<unsigned int>("addSysErrBand",0);  
   unsigned int plotAltModels   = NamedParameter<unsigned int>("plotAltModels",0);
 
-//  INFO("nPermErrorBands = " << nPermErrorBands);  
+  histos[0]->SetMinimum(1);
+  //if(plotComponents == true && style == 0)histos[0]->SetMaximum(histos[0]->GetMaximum()*1.3);
+  if(plotAltModels==2)scaleMax *= 1.2;
+  histos[0]->SetMaximum(histos[0]->GetMaximum()*scaleMax);
+  histos[0]->DrawNormalized("",1);
+    
+//  INFO("nPermErrorBands = " << nPermErrorBands);
 //  INFO("nAltModels = " << nAltModels);  
 //  INFO("addSysErrBand = " << addSysErrBand);  
 
@@ -354,6 +365,7 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         histos[1]->SetLineColor(kRed+1);
         histos[1]->SetMarkerColor(kRed+1);
         histos[1]->SetLineStyle(kDashed);
+        histos[1]->SetMarkerSize(0.);
 
         histos[histos.size()-1]->SetLineColor(kAzure - 4);
         histos[histos.size()-1]->SetMarkerColor(kAzure - 4);
@@ -361,7 +373,8 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         histos[histos.size()-1]->SetMarkerSize(0.);
         histos[histos.size()-1]->DrawNormalized("histsame",1);
 
-        histos[histos.size()-2]->SetLineColor(kGreen+1);
+        histos[histos.size()-2]->SetLineColor(kGreen+3);
+        //histos[histos.size()-2]->SetLineStyle(kDashed);
         //histos[histos.size()-2]->SetMarkerColor(kAzure - 4);
         //histos[histos.size()-2]->SetFillColorAlpha(kAzure - 4, 1);
         //histos[histos.size()-2]->SetMarkerSize(0.);
@@ -517,6 +530,7 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
       histos[i]->SetMinimum(1);
       
       if(i==1)histos[i]->SetLineWidth(lineWidthFit);
+      else if(i==2)histos[i]->SetLineWidth(lineWidthFit-1);
       else histos[i]->SetLineWidth(lineWidthAmps);
       if(style == 0 && i==1)histos[i]->SetLineWidth(4);
       if(nPermErrorBands>3)histos[1]->SetLineWidth(2);
@@ -537,7 +551,7 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
 
         TLegend* leg;
         if(legendLeft)leg = new TLegend(0.15,0.75,0.3,0.9,"");
-        else leg = new TLegend(0.7,0.75,0.9,0.9,"");
+        else leg = new TLegend(0.65,0.75,0.9,0.9,"");
         leg->SetLineStyle(0);
         leg->SetLineColor(0);
         leg->SetFillColor(0);
@@ -546,13 +560,30 @@ void plotHistos(vector<TH1D*>histos, bool plotComponents = true, int style = 0, 
         leg->SetTextSize(0.06);
         leg->SetTextAlign(12);
         leg->SetEntrySeparation(0.0);
-        leg->AddEntry((TObject*)0,"#font[22]{LHCb}","");
+        leg->AddEntry((TObject*)0,"#font[132]{LHCb 9 fb^{#minus1}}","");
         TLegendEntry* le_chi2 = leg->AddEntry((TObject*)0,leg_chi2,"");
         leg->SetEntrySeparation(0.0);
         le_chi2->SetTextColor(kBlue);
         le_chi2->SetTextSize(0.04);
         leg->Draw();
   }
+  else{
+      TLegend* leg;
+      if(legendLeft)leg = new TLegend(0.15,0.75,0.3,0.9,"");
+      else leg = new TLegend(0.65,0.75,0.9,0.9,"");
+      leg->SetLineStyle(0);
+      leg->SetLineColor(0);
+      leg->SetFillColor(0);
+      leg->SetTextFont(132);
+      leg->SetTextColor(1);
+      leg->SetTextSize(0.06);
+      leg->SetTextAlign(12);
+      leg->SetEntrySeparation(0.0);
+      leg->AddEntry((TObject*)0,"#font[132]{LHCb}","");
+      leg->Draw();
+  }
+    
+  ///for (unsigned int i =3 ; i < histos.size()-nPermErrorBands-nAltModels-1; i++) histos[i]->DrawNormalized("histcsame",1);
   histos[1]->DrawNormalized("histcsame",1);
   histos[0]->DrawNormalized("same",1);
   gPad->RedrawAxis();
@@ -1352,7 +1383,7 @@ void makePlotsMuMu(){
     vector<vector<double>> limits{lim012,lim02,lim12,lim3412,lim341,lim342,lim340,lim3402};
     
     titles.push_back("cos(#theta)");
-    titles.push_back("#chi");
+    titles.push_back("#chi [rad.]");
     limits.push_back({-1,1});
     limits.push_back({-3.141,3.141});
     
@@ -1365,7 +1396,7 @@ void makePlotsMuMu(){
     limits.push_back(lim01);
     limits.push_back(lim34);
     
-    titles.push_back("cos(#theta_K*)");
+    titles.push_back("cos(#theta_{K^{*}})");
     limits.push_back({-1,1});
     
     // Plot fit
@@ -1587,9 +1618,9 @@ void makePlotsMuMu(){
     leg.SetFillColor(0);
     leg.SetTextFont(132);
     leg.SetTextColor(1);
-    leg.SetTextSize(0.065);
+    leg.SetTextSize(0.05);
     leg.SetTextAlign(12);
-    for(unsigned int k=2; k<nHists;k++)leg.AddEntry(histo_set[0][k],legend[k].c_str(),"l");
+    for(unsigned int k=2; k<nHists;k++)leg.AddEntry(histo_set[0][k],legend[k].c_str(),"f");
     
     //Get chi2 for legend
     string resultsFileName = NamedParameter<string>("ResultsFile","result.root");
@@ -1597,7 +1628,7 @@ void makePlotsMuMu(){
     results_file->cd();
     auto result_tree = (TTree*) results_file->Get("Result");
     
-    double nll,chi2,sumFractions;
+    double nll,chi2 ,sumFractions;
     int status, nPar,nAmps, seed;
     result_tree->SetBranchAddress("nll",&nll);
     result_tree->SetBranchAddress("chi2",&chi2);
@@ -1608,11 +1639,11 @@ void makePlotsMuMu(){
     result_tree->GetEntry(0);
     stringstream ss_chi;
     ss_chi << setprecision(3) << chi2;
-    leg.AddEntry((TObject *)0,("#chi^{2}/ndf = " + ss_chi.str()).c_str() ,"");
+    //leg.AddEntry((TObject *)0,("#chi^{2}/ndf = " + ss_chi.str()).c_str() ,"");
     //leg.AddEntry((TObject *)0,"" ,"");
-    leg.AddEntry((TObject *)0,("nPar = " + to_string(nPar)).c_str() ,"");
-    leg.AddEntry((TObject *)0,("nAmps = " + to_string(nAmps)).c_str() ,"");
-    leg.SetNColumns(2);
+    //leg.AddEntry((TObject *)0,("nPar = " + to_string(nPar)).c_str() ,"");
+    //leg.AddEntry((TObject *)0,("nAmps = " + to_string(nAmps)).c_str() ,"");
+    //leg.SetNColumns(2);
     
     auto plotOnlyData = NamedParameter<bool>("plotOnlyData", 0,"plotOnlyData");
     if(plotOnlyData)for(int j=0;j<dims.size();j++){
