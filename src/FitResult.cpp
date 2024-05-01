@@ -135,31 +135,25 @@ void FitResult::addObservable( const std::string& name, const double& F ) { m_ob
 
 void FitResult::writeToFileMod( const std::string& fname )
 {
-  std::ofstream outlog;
-  outlog.open( fname );
-  /*
-  for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
-    auto param = m_mps->at(i);
-    outlog << "Parameter"
-      << " " << param->name() << " " << to_string<Flag>(param->flag()) << " " << param->mean() << " "
-      << ( param->isFree() ? m_mps->at(i)->err() : 0 ) << " ";
-    for (size_t j = 0; j < (size_t)m_covarianceMatrix.GetNcols(); ++j ) outlog << m_covarianceMatrix[i][j] << " ";
-    outlog << std::endl;
-  }
-  */
-  outlog << std::setprecision( 8 );
-  outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
-  for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " +/- " << f.err()  << "\n";
-  //for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
-  for (size_t i = 0; i < (size_t)m_mps->size(); ++i ) {
+    std::ofstream outlog;
+    outlog.open( fname );
+    for (size_t i = 0; i < (size_t)m_covarianceMatrix.GetNrows(); ++i ) {
         auto param = m_mps->at(i);
-        if(!param->isFree() || param->name().find( "::Spline" ) != std::string::npos )continue;
-        if(param->name().find( "_Re" ) != std::string::npos || param->name().find( "_Im" ) != std::string::npos) continue;
-        outlog << "Parameter "  << param->name()  << " " << param->mean() << " +/- " << param->err() <<  "\n";
+        if(!param->isFree())continue;
+        outlog << "Parameter"
+        << " " << param->name() << " " << to_string<Flag>(param->flag()) << " " << param->mean() << " "
+        << ( param->isFree() ? m_mps->at(i)->err() : 0 ) << " ";
+        for (size_t j = 0; j < (size_t)m_covarianceMatrix.GetNcols(); ++j ) if(m_mps->at(j)->isFree())outlog << m_covarianceMatrix[i][j] << " ";
+        outlog << std::endl;
     }
-
-  outlog << "End Log\n";
-  outlog.close();
+    outlog << std::setprecision( 8 );
+    outlog << "FitQuality " << m_chi2 << " " << m_nBins << " " << m_nParam << " " << m_LL    << " " << m_status << "\n";
+    for ( auto& f : m_fitFractions )  outlog << "FitFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
+    for ( auto& f : m_interferenceFractions )  outlog << "InterferenceFraction " << f.name() << " " << f.val() << " " << f.err()  << "\n";
+    for ( auto& o : m_observables )   outlog << "Observable "  << o.first  << " " << o.second << "\n";
+    outlog << "Systematic " << m_sys << "\n";
+    outlog << "End Log\n";
+    outlog.close();
 }
 
 void FitResult::writeToFile( const std::string& fname )

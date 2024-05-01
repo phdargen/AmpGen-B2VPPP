@@ -7,6 +7,10 @@
 
 #"AltFitWeightFileNames" "modelSelNoExotic/v12/Fit_weights.root" "modelSelNoExotic/v10/Fit_weights.root" "sys/nr1/Fit_weights.root" "sys/nr2/Fit_weights.root" "sys/nr3/Fit_weights.root"
 
+"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+ K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ psi(4 NonRes
+"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6
+"plot_legend" "Data" "Fit" "#it{B#rightarrow}#it{#psi(2S)}#it{[K_{1}(1270)/K_{1}(1400)]}" "#it{B}#rightarrow#it{#psi(2S)}#it{[K^{*}(1410)/K^{*}(1680)]}" "#it{B}#rightarrow#it{#psi(2S)}#it{K(1460)}" "#it{B}#rightarrow#it{#psi(2S)}#it{[K_{2}^{*}(1430)/K_{2}(1770)]}" "#it{B}#rightarrow#it{[#psi(4360)/#psi(4415)/#psi(4660)]}#it{K}" "Others"
+
 B+[D]{psi(2S)0,K(1)(1270)+}  0 0.6043 0.02373 0 2    0 127 2.243 -360 360 
 B+[P]{psi(2S)0,K(1)(1270)+}  0 0.3773 0.02496 0 2    0 -125.9 3.705 -360 360 
 B+[P]{psi(2S)0,K(1)(1400)+}  0 0.4703 0.03847 0 2    0 128 4.684 -360 360 
