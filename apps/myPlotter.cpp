@@ -1699,9 +1699,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+".pdf").c_str());
-        //c->Print((outDir+"/"+labels[j]+".png").c_str());
-        //if(j==0)c->Print((outDir+"/"+labels[j]+".C").c_str());
-        //if(j==0)c->Print((outDir+"/"+labels[j]+".root").c_str());
+        c->Print((outDir+"/"+labels[j]+".png").c_str());
+        c->Print((outDir+"/"+labels[j]+".C").c_str());
+        c->Print((outDir+"/"+labels[j]+".root").c_str());
+        c->Print((outDir+"/"+labels[j]+".eps").c_str());
     }
     
     //
@@ -1710,6 +1711,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut1[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut1.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut1.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut1.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut1.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut1.eps").c_str());
     }
     
     for(unsigned int j=0;j<dims.size();j++){
@@ -1717,6 +1722,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut2[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut2.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut2.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut2.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut2.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut2.eps").c_str());
     }
     
     for(unsigned int j=0;j<dims.size();j++){
@@ -1724,6 +1733,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut3[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut3.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut3.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut3.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut3.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut3.eps").c_str());
     }
     
     for(unsigned int j=0;j<dims.size();j++){
@@ -1731,6 +1744,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut4[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut4.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut4.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut4.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut4.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut4.eps").c_str());
     }
     
     for(unsigned int j=0;j<dims.size();j++){
@@ -1738,6 +1755,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut5[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut5.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut5.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut5.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut5.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut5.eps").c_str());
     }
     
     for(unsigned int j=0;j<dims.size();j++){
@@ -1745,6 +1766,10 @@ void makePlotsMuMu(){
         double scaleMax = dims[j].size()==1 ? 1.5 : 1.1;
         plotHistos(histo_set_cut6[j], true, 1, true, legendLeft, scaleMax);
         c->Print((outDir+"/"+labels[j]+"_cut6.pdf").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut6.png").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut6.C").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut6.root").c_str());
+        c->Print((outDir+"/"+labels[j]+"_cut6.eps").c_str());
     }
         
     cout << "f_bkg = " << histo_set[0][histo_set[0].size()-1]->Integral()/histo_set[0][1]->Integral() << endl;
@@ -1930,7 +1955,10 @@ void makePlotsMuMu(){
     c->Clear();
     leg.Draw();
     c->Print((outDir+"/"+"leg.pdf").c_str());
-    
+    c->Print((outDir+"/"+"leg.png").c_str());
+    c->Print((outDir+"/"+"leg.C").c_str());
+    c->Print((outDir+"/"+"leg.eps").c_str());
+
     leg.SetNColumns(2);
     c->Clear();
     leg.Draw();
