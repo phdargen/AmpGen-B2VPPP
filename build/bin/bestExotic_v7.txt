@@ -1,4 +1,16 @@
 
+"plot_amps"	"K(1)(1270)+_K(1)(1400)+" "K*(1410)+_K*(1680)+_K(1460)+_K(2)*(1430)+" "X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9(" "B+{Z(4_B+[P]{Z(4_B+[D]{Z(4" "B+{Zs(_B+[D]{rhoOmega20" "NonRes"
+"plot_weights"	weight_1 weight_2 weight_3 weight_4 weight_5 weight_6
+"plot_legend"	"Data" "Fit" "#it{B#rightarrow}#it{#psi(2S)}#it{#[]{K_{1}(1270)/K_{1}(1400)}}" "All other #it{K'#rightarrow K#pi#pi}" "#it{B#rightarrowX K}" "#it{B#rightarrowT_{c#bar{c}} #[]{K#pi}}" "#it{B#rightarrowT_{c#bar{c}#bar{s}} #[]{#pi#pi}}" "Others"
+
+#"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+ K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ psi(4 NonRes
+#"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6
+#"plot_legend" "Data" "Fit" "#it{B#rightarrow}#it{#psi(2S)}#it{[K_{1}(1270)/K_{1}(1400)]}" "#it{B}#rightarrow#it{#psi(2S)}#it{[K^{*}(1410)/K^{*}(1680)]}" "#it{B}#rightarrow#it{#psi(2S)}#it{K(1460)}" "#it{B}#rightarrow#it{#psi(2S)}#it{[K_{2}^{*}(1430)/K_{2}(1770)]}" "#it{B}#rightarrow#it{[#psi(4360)/#psi(4415)/#psi(4660)]}#it{K}" "Others"
+
+#"plot_amps"   K(1)(1270)+_K(1)(1400)+_K(1)(1650)+ K*(1410)+_K*(1680)+ K(1460)+_K(2)*(1430)+_K(2)(1580)+_K(2)(1770)+ NonRes Z(_Z2(_Z3( Zs(_Zs2(_Zs3( X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9( Xs(_Xs2(_Xs3(_Xs4(
+#"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6 weight_7 weight_8
+#"plot_legend" "Data" "Fit" "#it{B#rightarrow}#psi(2S)#it{K}_{1}" "#it{B}#rightarrow#psi(2S)#it{K^{*}}" "#it{B}#rightarrow#psi(2S)#it{K/K}_{2}" "#it{B#rightarrow}NonRes" "#it{B#rightarrowZK#pi}" "#it{B#rightarrowZ_{s}#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowX_{s}#pi}"
+
 B+[P]{NonResV0[ExpNR]{psi(2S)0,K+},rho(770)0[GounarisSakurai]{pi+,pi-}}  0 0.3614 0.01779 0 2    0 -56.2 2.555 -360 360
 B+[P]{Z(4100)+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.3409 0.01603 0 2    0 102.8 3.328 -360 360
 B+{NonResA0[ExpNR]{psi(2S)0,K+},PiPi00}  0 0.3253 0.03861 0 2    0 -0.6291 6.484 -360 360

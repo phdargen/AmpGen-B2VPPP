@@ -1,3 +1,10 @@
+
+"plot_amps" "K(1)(1270)+_K(1)(1400)+" "K*(1410)+_K*(1680)+_K(1460)+_K(2)*(1430)+" "X(_psi(4_X2(_X3(_X4(_X5(_X6(_X7(_X8(_X9(" "B+{Z(_B+[P]{Z(_B+[D]{Z(" "B+{Zs(_B+[D]{rhoOmega20,Zs" "Xs(_Xs2(_Xs3(_Xs4("
+"plot_weights"   weight_1 weight_2 weight_3 weight_4 weight_5 weight_6
+#"plot_legend" "Data" "Fit" "#it{B#rightarrow}#it{#psi(2S)}#it{[K_{1}(1270)/K_{1}(1400)]}" "All other #it{K'#rightarrow K#pi#pi}" "#it{B#rightarrowXK}" "#it{B#rightarrowT_{c#bar{c}}[K#pi]}" "#it{B#rightarrowT_{c#bar{c}#bar{s}}[#pi#pi]}" "#it{B#rightarrowT_{c#bar{c}#bar{s}} #pi}"
+"plot_legend"   "Data" "Fit" "#it{B#rightarrow}#it{#psi(2S)}#it{#[]{K_{1}(1270)/K_{1}(1400)}}" "All other #it{K'#rightarrow K#pi#pi}" "#it{B#rightarrowX K}" "#it{B#rightarrowT_{c#bar{c}} #[]{K#pi}}" "#it{B#rightarrowT_{c#bar{c}#bar{s}} #[]{#pi#pi}}" "#it{B#rightarrowT_{c#bar{c}#bar{s}} #pi}"
+
+
 B+[D]{Z(4240)A+{psi(2S)0,pi+},K*(892)0{K+,pi-}}  0 0.8139 0.05154 0 2    0 -53.35 3.78 -360 360 
 B+[D]{psi(2S)0,K(1)(1270)+}  0 0.9565 0.04601 0 2    0 -212 2.785 -600 360 
 B+[D]{rhoOmega20,Zs(4000)+{psi(2S)0,K+}}  0 0.6938 0.04256 0 2    0 4.122 3.958 -360 360 

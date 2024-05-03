@@ -103,13 +103,13 @@ void makePlotWeightFile(PolarisedSum& sig, IncoherentSum& bkg, const EventList_t
                 std::string substr;
                 getline( ss, substr, '!' );
                 selectKeys.push_back( substr );
-                //INFO("Found " <<substr);
+                INFO("Found " <<substr);
             }
             if(selectKeys.size()!=2)throw "ERROR";
             for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
                 if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
                     index.push_back(counter);
-                    //if(selectAmp != "")INFO("Found " << key);
+                    INFO("Found " << key);
                 }
             }
             counter++;
@@ -255,6 +255,8 @@ void makePlotWeightFile(PolarisedSum& sig, BkgPDF& bkg, const EventList_type& ev
             std::string substr;
             getline( ss, substr, '_' );
             selectAmps.push_back( AmpGen::programatic_name(substr) );
+            //INFO("selectAmps:: " << substr );
+            //INFO("selectAmps::programatic_name:: " << AmpGen::programatic_name(substr) );
         }
         
         vector<unsigned> index;
@@ -272,7 +274,7 @@ void makePlotWeightFile(PolarisedSum& sig, BkgPDF& bkg, const EventList_type& ev
             for(int a = 0; a<selectAmps.size();a++)for(int b = 0; b<selectAmps.size();b++){
                 if ( ( (selectKeys[0].find(selectAmps[a]) != std::string::npos) && (selectKeys[1].find(selectAmps[b]) != std::string::npos) ) || plot_amps[i] == "") {
                     index.push_back(counter);
-                    //if(selectAmp != "")INFO("Found " << key);
+                    //if(plot_amps[i] != "")INFO("Found " << key);
                 }
             }
             counter++;
