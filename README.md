@@ -1,7 +1,20 @@
 
-
-[![Build Status][travis-badge]][travis-link]
 [![License: LGPL v3][license-badge]](./LICENSE)
+
+## Analysis code for the Amplitude analysis of B -> psi(2S) K pi pi decays 
+
+This is fork of [AmpGen](https://github.com/GooFit/AmpGen) that implements an amplitude fit of B -> psi(2S) K pi pi decays.
+
+The amplitude models published in LHCb-PAPER-2024-014 can be found in B2psiKpipi_models/.
+
+Generate pseudo-data according to a give model
+```shell
+./myToyGen.exe main_psi.txt toy_gen.txt baselineModel.txt --seed=1 
+./myFitter.exe main_psi.txt toy_gen.txt toy_fit.txt baselineModel.txt
+./myPlotter.exe main_psi.txt toy_gen.txt toy_fit.txt baselineModel.txt
+```
+
+## AmpGen
 
 <p align="center">
   <img src="https://github.com/GooFit/AmpGen/raw/master/doc/figs/logo.png">
