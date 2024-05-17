@@ -1,5 +1,7 @@
 
 [![License: LGPL v3][license-badge]](./LICENSE)
+[![DOI](https://zenodo.org/badge/801641946.svg)](https://zenodo.org/doi/10.5281/zenodo.11212409)
+
 
 ## Analysis code for the Amplitude analysis of B -> psi(2S) K pi pi decays 
 
