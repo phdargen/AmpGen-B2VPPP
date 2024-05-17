@@ -1,7 +1,0 @@
-Xs(S)0_mass    2 4.600 0.05  3.5   5.5
-Xs(S)0_width   2 0.050 0.10  0.01  0.8
-
-Xs(S)0[GSpline]{psi(2S)0,K*(892)0{K+,pi-}}   0 0.5 0.001 0 1     0 0.0 0.1 -360 360
-
-"scanParam"	"Xs(S)0_mass" 4.4 5.1 50
-addAmpList	""

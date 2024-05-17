@@ -1,3 +1,0 @@
-"replaceAmpAwithB"      "Z(4100)" "Z(A)" "Z(T)" "Z(PT)" "Z(P)" 
-addAmpList              ""
-saveWeights             0

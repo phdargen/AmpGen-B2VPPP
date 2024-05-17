@@ -1,4 +1,0 @@
-"doSystematic"  "Acc1"
-IntegrationSample   SignalIntegrationEvents_Acc_bkgPdf_pidRaw.root
-weightMC		weight
-addAmpList		""

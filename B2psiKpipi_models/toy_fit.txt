@@ -1,0 +1,21 @@
+useBkgBDT   0
+DataSample        toy.root
+weightData        noWeight
+IntegrationSample   toy_coreStart.root
+ExtraBranches        ""
+ExtraBranchesMC        ""
+maxIntEvents        600000
+
+phspFile toy_coreStart.root
+weightPhsp        weight
+BranchesPhsp ""
+
+DataUnits	GeV
+Branches	""
+BranchesMC	""
+
+addAmpList  ""
+normAmps 1
+ParticleProperties::qsThreshold     0.001
+writeToRootFileVerbose		    2
+

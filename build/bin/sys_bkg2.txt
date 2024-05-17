@@ -1,4 +1,0 @@
-"doSystematic"  "Bkg1"
-f_bkg       2  0.0243 0.005
-f_sig       = 1 - f_bkg
-addAmpList		""

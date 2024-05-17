@@ -1,5 +1,0 @@
-"ParamsToRelease"       ""
-"AmpsToRemove"          "Z(4055)V+" "Z(4240)A+" "Z(4430)+" "X(4630)T0" "X(4685)0" "X(4700)0" "Xs(A)0" "Xs(S)0" "Xs2(A)" "Xs2(V)0" "Xs4(S)0"
-# "NonResA0" "NonResV0" 
-addAmpList              ""
-saveWeights             0

@@ -1,3 +1,0 @@
-"doSystematic"  "Ls1"
-addAmpList              ""
-

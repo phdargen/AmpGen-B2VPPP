@@ -1,3 +1,0 @@
-"replaceAmpAwithB"      "X(4500)" "X(A)" "X(V)" "X(T)" "X(PT)" "X(P)" 
-addAmpList              ""
-saveWeights             0

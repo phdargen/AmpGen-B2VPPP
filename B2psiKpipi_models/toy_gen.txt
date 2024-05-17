@@ -1,0 +1,23 @@
+EventType B+ K+ pi+ pi- mu+ mu-
+
+nEvents    32000
+BlockSize   500000
+Type PolarisedSum
+CouplingConstant::Coordinates  polar
+CouplingConstant::AngularUnits deg
+#PhaseSpace TreePhaseSpace
+PhaseSpace RecursivePhaseSpace
+
+Output toy.root
+#Seed    2
+
+normAmps 1
+phspFile toy_coreStart.root
+weightPhsp        weight
+BranchesPhsp ""
+
+psi(2S)0[SBW]{mu-,mu+}       2 1.0 0.000         2 0.0 0.0
+ParticleProperties::qsThreshold     0.001
+
+"fixParamsOptionsFile"      0
+saveWeights     0

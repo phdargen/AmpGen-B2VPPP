@@ -1,8 +1,0 @@
-"baseLineFit" "bestModel5/log.txt"
-"outDir" "bestModel5_hel/"
-
-"includeSys" "AltAmp"
-
-"sysNameAltAmp" "Alt. Amp."
-"sysFilesAltAmp" "bestModel5_hel/log_" 1 2
-"sysMethodAltAmp" "Bias"

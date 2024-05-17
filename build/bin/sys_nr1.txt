@@ -1,6 +1,0 @@
-"doSystematic"  "Nr1"
-
-NonResV0_alpha         0 0. 0.001 -10 10
-NonResV0_beta          0 0. 0.001 -10 10
-
-addAmpList		""
