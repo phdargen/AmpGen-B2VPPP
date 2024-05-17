@@ -7,7 +7,7 @@ This is fork of [AmpGen](https://github.com/GooFit/AmpGen) that implements an am
 
 The amplitude models published in LHCb-PAPER-2024-014 can be found in B2psiKpipi_models/.
 
-Generate pseudo-data according to a give model
+Generate pseudo-data according to a given model (eg. baselineModel.txt):
 ```shell
 ./myToyGen.exe main_psi.txt toy_gen.txt baselineModel.txt --seed=1 
 ./myFitter.exe main_psi.txt toy_gen.txt toy_fit.txt baselineModel.txt
