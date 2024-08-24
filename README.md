@@ -1,13 +1,14 @@
 
 [![License: LGPL v3][license-badge]](./LICENSE)
 [![DOI](https://zenodo.org/badge/801641946.svg)](https://zenodo.org/doi/10.5281/zenodo.11212409)
+[![arXiv](https://img.shields.io/badge/arXiv-2407.12475-b31b1b.svg)](https://arxiv.org/abs/2407.12475)
 
 
 ## Analysis code for the Amplitude analysis of B -> psi(2S) K pi pi decays 
 
 This is fork of [AmpGen](https://github.com/GooFit/AmpGen) that implements amplitude fits of B -> psi(2S) K pi pi decays, or more generally B -> V P P P decays.
 
-The B -> psi(2S) K pi pi amplitude models published in LHCb-PAPER-2024-014 can be found in B2psiKpipi_models/.
+The B -> psi(2S) K pi pi amplitude models published in LHCb-PAPER-2024-014 ([arxiv:2407.12475](https://arxiv.org/abs/2407.12475)) can be found in B2psiKpipi_models/.
 
 Generate pseudo-data according to a given model (eg. baselineModel.txt):
 ```shell
