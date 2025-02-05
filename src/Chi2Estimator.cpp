@@ -71,7 +71,7 @@ void   Chi2Estimator::doChi2( const EventList_type& dataEvents, const EventList_
     double delta = data[i].val() - mc[i].val();
     double tChi2 = delta * delta / ( data[i].var() + mc[i].var() );
     //double tChi2 = delta * delta / ( data[i].var() + mc[i].var() );
-    if(isnan(tChi2)){ERROR("chi2 nan in bin " << i << "; data = " << data[i].val() << " ; mc = " << mc[i].val()); continue;}  
+    if(std::isnan(tChi2)){ERROR("chi2 nan in bin " << i << "; data = " << data[i].val() << " ; mc = " << mc[i].val()); continue;}  
     //if(tChi2>20){
         //INFO("bin " << i << ": chi2 = " << tChi2);
         //INFO("data = " << data[i].val() << " ; mc = " << mc[i].val());    
