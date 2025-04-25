@@ -17,6 +17,14 @@ Generate pseudo-data according to a given model (eg. baselineModel.txt):
 ./myPlotter.exe main_psi.txt toy_gen.txt toy_fit.txt baselineModel.txt
 ```
 
+[Git LFS](https://git-lfs.github.com/) is needed to obtain the  phsp integration sample: B2psiKpipi_models/toy_coreStart.root
+```shell
+git lfs install
+git lfs pull
+```
+
+
+
 ## AmpGen
 
 <p align="center">
