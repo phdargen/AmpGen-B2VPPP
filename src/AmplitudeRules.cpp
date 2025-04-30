@@ -16,7 +16,7 @@
 #include "AmpGen/NamedParameter.h"
 
 using namespace AmpGen;
-using namespace std::complex_literals; 
+using namespace std::complex_literals;
 
 Coupling::Coupling(MinuitParameter* re, MinuitParameter* im) :
   m_re(re),
@@ -32,25 +32,25 @@ Coupling::Coupling(MinuitParameter* re, MinuitParameter* im) :
   else {
     ERROR("Ill-formed decay descriptor: " << m_name );
   }
-  
+
   m_particle = Particle(m_name);
   coordinateType coord = NamedParameter<coordinateType>("CouplingConstant::Coordinates", coordinateType::cartesian);
   angType degOrRad     = NamedParameter<angType>("CouplingConstant::AngularUnits"      , angType::rad);
-  m_isCartesian = true; 
-  
-  if( coord == coordinateType::polar ) m_isCartesian = false; 
-  
+  m_isCartesian = true;
+
+  if( coord == coordinateType::polar ) m_isCartesian = false;
+
   if ( coord == coordinateType::Invalid){
     FATAL("Coordinates for coupling constants must be either cartesian or polar");
-  } 
-  if ( degOrRad == angType::deg) m_sf = M_PI / 180; 
-  
+  }
+  if ( degOrRad == angType::deg) m_sf = M_PI / 180;
+
   if ( degOrRad == angType::Invalid ){
     FATAL("TotalCoupling::AngularUnits must be either rad or deg");
-  } 
+  }
 }
 
-Coupling::Coupling(MinuitExpression* expression) : 
+Coupling::Coupling(MinuitExpression* expression) :
   m_name(expression->name()),
   m_expr(expression),
   m_particle(m_name){}
@@ -58,17 +58,17 @@ Coupling::Coupling(MinuitExpression* expression) :
 AmplitudeRules::AmplitudeRules( const MinuitParameterSet& mps, const std::string&  prefix )
 {
   for ( auto& it_re : mps ) {
-    auto& name = it_re->name(); 
+    auto& name = it_re->name();
     DEBUG("Attempting to parse: " << it_re->name() );
     if ( name.find("_Re") != std::string::npos ){
       auto it_im = mps.find(replaceAll( name, "_Re","_Im") );
       if( it_im == nullptr ){
         ERROR("Cannot find matching imaginary part / phase for: " <<  it_re->name() );
-        continue; 
+        continue;
       }
       auto decayDescriptor = name.substr(0, name.find("_Re"));
       if(prefix != "") decayDescriptor = replaceAll( decayDescriptor, prefix, "");
-      if( ! Particle::isValidDecayDescriptor(decayDescriptor) ) continue; 
+      if( ! Particle::isValidDecayDescriptor(decayDescriptor) ) continue;
       Coupling p(it_re, it_im);
       m_rules[p.head()].emplace_back(p);
     }
@@ -80,22 +80,22 @@ AmplitudeRules::AmplitudeRules( const MinuitParameterSet& mps, const std::string
         if( expression != nullptr ){
           Coupling p(expression);
           m_rules[p.head()].emplace_back(p);
-        } 
-      } 
+        }
+      }
     }
   }
 }
 
-TotalCoupling::TotalCoupling(const TotalCoupling& other, const Coupling& pA) : 
+TotalCoupling::TotalCoupling(const TotalCoupling& other, const Coupling& pA) :
   couplings(other.couplings)
 {
   couplings.emplace_back(pA);
 }
 
 
-bool AmplitudeRules::hasDecay(const std::string& head) 
-{ 
-  return m_rules.find(head) != m_rules.end(); 
+bool AmplitudeRules::hasDecay(const std::string& head)
+{
+  return m_rules.find(head) != m_rules.end();
 }
 
 std::vector<Coupling> AmplitudeRules::rulesForDecay(const std::string& head, const std::string&  prefix)
@@ -108,7 +108,7 @@ std::vector<Coupling> AmplitudeRules::rulesForDecay(const std::string& head, con
 }
 
 const std::map<std::string, std::vector<Coupling>>& AmplitudeRules::rules() const
-{ 
+{
   return m_rules;
 }
 
@@ -124,28 +124,28 @@ EventType Coupling::eventType() const
 
 TotalCoupling::TotalCoupling(const Coupling& pA)
 {
-  couplings.emplace_back(pA);  
+  couplings.emplace_back(pA);
 }
 
-std::complex<double> Coupling::operator()() const 
+std::complex<double> Coupling::operator()() const
 {
-  return m_expr != nullptr ? m_expr->getVal() : ( m_isCartesian ? complex_t( m_re->mean(), m_im->mean() ) : m_re->mean() * exp( 1i* m_sf * m_im->mean() ) ); 
+  return m_expr != nullptr ? m_expr->getVal() : ( m_isCartesian ? complex_t( m_re->mean(), m_im->mean() ) : m_re->mean() * exp( 1i* m_sf * m_im->mean() ) );
 }
 
-Expression Coupling::to_expression() const 
+Expression Coupling::to_expression() const
 {
   return m_expr != nullptr ? m_expr->expression() : ( m_isCartesian ? ComplexParameter(Parameter(m_re->name()), Parameter(m_im->name())) : Parameter( m_re->name() ) * fcn::exp( 1i * m_sf * Parameter(m_im->name()) ) );
 }
 
 std::complex<double> TotalCoupling::operator()() const
 {
-  return std::accumulate( couplings.begin(), couplings.end(), complex_t(m_scale,0), [](auto& prod, auto& coupling ){ return prod * coupling() ; } );
+  return std::accumulate( couplings.begin(), couplings.end(), complex_t(m_scale,0), [](const auto& prod, const auto& coupling ){ return prod * coupling() ; } );
 }
 
 Expression TotalCoupling::to_expression() const
 {
      LambdaExpression scale( [this](){ return m_scale; } );
-     Expression val = std::accumulate( couplings.begin(), couplings.end(), Expression(1), [](auto& prod, auto& coupling ){ return prod * coupling.to_expression(); } );
+     Expression val = std::accumulate( couplings.begin(), couplings.end(), Expression(1), [](const auto& prod, const auto& coupling ){ return prod * coupling.to_expression(); } );
      return scale * val;
 }
 
@@ -158,7 +158,7 @@ void TotalCoupling::print() const
 std::vector<std::pair<Particle, TotalCoupling>> AmplitudeRules::getMatchingRules(const EventType& type, const std::string& prefix )
 {
   auto rules        = rulesForDecay( type.mother(), prefix );
-  std::vector<std::pair<Particle, TotalCoupling>> rt; 
+  std::vector<std::pair<Particle, TotalCoupling>> rt;
   for ( auto& rule : rules ) {
     if ( rule.prefix() != prefix ) continue;
     std::vector<std::pair<Particle, TotalCoupling>> tmpParticles;
@@ -204,7 +204,7 @@ bool TotalCoupling::isFixed() const
   return std::all_of(begin(), end(), [](auto& c){ return c.x()->isFixed() && c.y()->isFixed() ; } );
 }
 
-bool TotalCoupling::contains( const std::string& label ) const 
+bool TotalCoupling::contains( const std::string& label ) const
 {
   return std::any_of(begin(), end(), [&label](auto& c){ return c.name().find(label) != std::string::npos ; } );
 }
